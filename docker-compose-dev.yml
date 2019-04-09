@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+
+  api:
+    build:
+      context: ./api
+      dockerfile: ./dev.Dockerfile
+    volumes:
+      - './api:/usr/src/app'
+    ports:
+      - 5000:5000
+    environment:
+      - FLASK_APP=gitlab/__init__.py
+      - FLASK_ENV=development
+      - APP_SETTINGS=gitlab.config.DevelopmentConfig
+  mongo-gitlab:
+    image: mongo
+    volumes:
+      - /mongo_gitlab:/data/db
+    ports:
+      - 27017:27017 
+  
