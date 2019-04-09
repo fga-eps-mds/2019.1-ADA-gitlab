@@ -5,7 +5,7 @@ services:
   api:
     build:
       context: ./api
-      dockerfile: ./dev.Dockerfile
+      dockerfile: ./docker/dev.Dockerfile
     volumes:
       - './api:/usr/src/app'
     ports:
