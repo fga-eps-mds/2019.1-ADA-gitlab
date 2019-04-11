@@ -1,0 +1,24 @@
+stages:
+  - test
+
+lint-flake8:
+  image: ejplatform/python:alpine
+  stage: test
+  script:
+    - flake8
+
+services:
+  - mongo:latest
+
+unit test:
+  image: python:3.6-alpine
+  stage: test
+  variables:
+    FLASK_ENV: development
+    FLASK_APP: gitlab/__init__.py
+    APP_SETTINGS: gitlab.config.DevelopmentConfig  
+  before_script:    
+    - cd api/
+    - pip install -r docker/requirements.txt    
+  script:
+    - python manage.py test
