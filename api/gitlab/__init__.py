@@ -1,9 +1,8 @@
 # api/gitlab/__init__.py
 
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_mongoengine import MongoEngine
-import sys
 
 
 # instantiate the app
