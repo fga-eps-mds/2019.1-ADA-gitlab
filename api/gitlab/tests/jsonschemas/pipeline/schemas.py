@@ -42,3 +42,25 @@ invalid_project_schema = {
     },
     "required": ["status_code"]
 }
+
+pipeline_valid_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "status": {"type": "string"},
+        "web_url": {"type": "string"}
+    },
+    "required": ["status", "web_url"]
+}
+
+pipeline_invalid_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "message": {"type": "string"},
+        "status_code": {"type": "integer"}
+    },
+    "required": ["message", "status_code"]
+}

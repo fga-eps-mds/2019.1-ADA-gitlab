@@ -3,7 +3,8 @@ import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.pipeline.schemas import\
      ping_schema, valid_schema, unauthorized_schema,\
-     invalid_project_schema
+     invalid_project_schema, pipeline_valid_schema,\
+     pipeline_invalid_schema
 from jsonschema import validate
 from gitlab.pipeline.utils import Pipeline
 from requests.exceptions import HTTPError
@@ -18,6 +19,28 @@ class TestPipeline(BaseTestCase):
         ping_json = json.loads(ping_string)
         self.assertEqual(response.status_code, 200)
         validate(data, ping_json)
+
+    def test_view_get_project_pipeline(self):
+        project_owner = "gitlab-org"
+        project_name = "gitlab-runner"
+        response = self.client.get("/pipeline/{project_owner}/{project_name}"
+                                   .format(project_owner=project_owner,
+                                           project_name=project_name))
+        data = json.loads(response.data.decode())
+        pipeline_string = json.dumps(pipeline_valid_schema)
+        pipeline_json = json.loads(pipeline_string)
+        self.assertEqual(response.status_code, 200)
+        validate(data, pipeline_json)
+
+    def test_view_get_project_pipeline_invalid_project(self):
+        project_owner = "wrong_name"
+        project_name = "gitlab-runner"
+        response = self.client.get("/pipeline/{project_owner}/{project_name}"
+                                   .format(project_owner=project_owner,
+                                           project_name=project_name))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
 
     def test_get_project_pipeline(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
