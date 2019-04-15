@@ -11,17 +11,17 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     MONGODB_SETTINGS = {
-        'db': 'api',
-        'host': 'mongodb://mongo-gitlab:27010/api'
+        "db": "api",
+        "host": "mongodb://mongo-gitlab:27010/api"
     }
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    MONGO_DATABASE_URI = os.environ.get('DATABASE_TEST_URL')
+    MONGO_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    MONGO_DATABASE_URI = os.environ.get('DATABASE_URL')
+    MONGO_DATABASE_URI = os.environ.get("DATABASE_URL")
