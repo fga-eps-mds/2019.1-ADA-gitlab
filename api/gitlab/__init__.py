@@ -1,26 +1,32 @@
-# api/gitlab/__init__.py
-
 import os
-from flask import Flask, jsonify
+from flask import Flask
+from gitlab.pipeline.views import pipeline_blueprint
+from flask_cors import CORS
 from flask_mongoengine import MongoEngine
 
 
-# instantiate the app
-app = Flask(__name__)
-
-# set config
-app_settings = os.getenv('APP_SETTINGS')
-app.config.from_object(app_settings)
-
-
-# instantiate the db
+cors = CORS()
 db = MongoEngine()
-db.init_app(app)
 
 
-@app.route('/api/ping', methods=['GET'])
-def ping_pong():
-    return jsonify({
-        'status': 'success',
-        'message': 'pong!'
-    })
+def create_app(script_info=None):
+
+    # instantiate the app
+    app = Flask(__name__)
+
+    # set config
+    app_settings = os.getenv('APP_SETTINGS')
+    app.config.from_object(app_settings)
+
+    db.init_app(app)
+    cors.init_app(app)
+
+    # register blueprints
+    app.register_blueprint(pipeline_blueprint)
+
+    # shell context for flask cli
+    @app.shell_context_processor
+    def ctx():
+        return {'app': app}
+
+    return app

@@ -12,7 +12,7 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     MONGODB_SETTINGS = {
         'db': 'api',
-        'host': 'mongodb://mongo-gitlab:27017/api'
+        'host': 'mongodb://mongo-gitlab:27010/api'
     }
 
 

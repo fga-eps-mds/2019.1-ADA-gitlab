@@ -3,11 +3,12 @@
 
 from flask.cli import FlaskGroup
 
-from gitlab import app
+from gitlab import create_app
 import unittest
 
 
-cli = FlaskGroup(app)
+app = create_app()
+cli = FlaskGroup(create_app=create_app)
 
 
 @cli.command()

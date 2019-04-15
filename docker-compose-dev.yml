@@ -8,16 +8,26 @@ services:
       dockerfile: ./docker/dev.Dockerfile
     volumes:
       - './api:/usr/src/app'
+    networks: 
+      - 20191-ada_adanetwork
     ports:
       - 5000:5000
     environment:
+      - GITLAB_API_TOKEN=${GITLAB_API_TOKEN} 
       - FLASK_APP=gitlab/__init__.py
       - FLASK_ENV=development
       - APP_SETTINGS=gitlab.config.DevelopmentConfig
   mongo-gitlab:
     image: mongo
+    command: mongod --port 27010
     volumes:
       - /mongo_gitlab:/data/db
+    networks: 
+      - 20191-ada_adanetwork
     ports:
-      - 27017:27017 
-  
+      - 27010:27010
+
+networks:
+  20191-ada_adanetwork:
+    external: true
+    driver: "bridge"
