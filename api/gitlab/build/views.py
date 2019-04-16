@@ -41,4 +41,3 @@ def get_project_build(project_owner, project_name):
             "pipeline": requested_build["pipeline"],
             "web_url": requested_build["web_url"]
         }), 200
-        
