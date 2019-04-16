@@ -38,6 +38,6 @@ def get_project_build(project_owner, project_name):
             "name": requested_build["name"],
             "stage": requested_build["stage"],
             "status": requested_build["status"],
-            "pipeline": requested_build["pipeline"],
-            "web_url": requested_build["web_url"]
+            "web_url": requested_build["web_url"],
+            "pipeline ref": requested_build['pipeline']["ref"]
         }), 200
