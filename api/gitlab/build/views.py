@@ -1,9 +1,9 @@
-from gitlab.build.error_messages import NOT_FOUND, UNAUTHORIZED
-from requests.exceptions import HTTPError
 from flask import jsonify, Blueprint
-from gitlab.build.utils import Build
 from flask_cors import CORS
+from gitlab.build.utils import Build
+from gitlab.build.error_messages import NOT_FOUND, UNAUTHORIZED
 import json
+from requests.exceptions import HTTPError
 import os
 
 
@@ -21,7 +21,7 @@ def ping_pong():
 
 
 @build_blueprint.route("/build/<project_owner>/"
-                       "<project_name>", methods=["GET"])
+                       "<project_name>/jobs", methods=["GET"])
 def get_project_build(project_owner, project_name):
     try:
         build = Build(GITLAB_API_TOKEN)
@@ -35,9 +35,13 @@ def get_project_build(project_owner, project_name):
             return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
-            "name": requested_build["name"],
-            "stage": requested_build["stage"],
-            "status": requested_build["status"],
-            "pipeline": requested_build["pipeline"],
-            "web_url": requested_build["web_url"]
+            "id": requested_build[0]["id"],
+            "branch": requested_build[0]["ref"],
+            "commit": requested_build[0]["commit"]["title"],
+            "stage": requested_build[0]["stage"],
+            "status": requested_build[0]["status"],
+            "name": requested_build[0]["name"],
+            "web_url": requested_build[0]["web_url"],
+            "status1": requested_build[1]["status"],
+            "name1": requested_build[1]["name"]
         }), 200

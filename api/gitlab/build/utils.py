@@ -1,6 +1,8 @@
-import json
+# api/gitlab/__init__.py
+
 import requests
 from requests.exceptions import HTTPError
+import json
 
 
 class Build():
@@ -25,7 +27,7 @@ class Build():
             raise HTTPError(json.dumps(dict_error))
         else:
             request_build = response.json()
-            return request_build[0]
+            return request_build
 
     def get_project_id(self, project_owner, project_name):
         headers = {
