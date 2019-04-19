@@ -1,11 +1,6 @@
-
-# api/gitlab/tests/test_config.py
-
 import unittest
-
 from flask import current_app
 from flask_testing import TestCase
-
 from gitlab import create_app
 
 
