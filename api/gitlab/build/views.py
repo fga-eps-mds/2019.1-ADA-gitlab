@@ -34,6 +34,6 @@ def get_project_build(project_owner, project_name):
         else:
             return jsonify(NOT_FOUND), 404
     else:
-        return jsonify({
-            "status": "success"
-        }), 200
+        return jsonify(
+            requested_build
+        ), 200
