@@ -19,6 +19,7 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
     MONGO_DATABASE_URI = os.environ.get("DATABASE_TEST_URL")
 
 
