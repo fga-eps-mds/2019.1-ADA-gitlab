@@ -9,7 +9,6 @@ from jsonschema import validate
 from gitlab.build.utils import Build
 from requests.exceptions import HTTPError
 import os
-import sys
 
 
 class TestBuild(BaseTestCase):
@@ -24,7 +23,7 @@ class TestBuild(BaseTestCase):
     def test_view_get_project_build(self):
         project_owner = "gitlab-org"
         project_name = "gitlab-ee"
-        response = self.client.get("/build/{project_owner}/{project_name}/jobs"
+        response = self.client.get("/build/{project_owner}/{project_name}"
                                    .format(project_owner=project_owner,
                                            project_name=project_name))
         data = json.loads(response.data.decode())
@@ -36,7 +35,7 @@ class TestBuild(BaseTestCase):
     def test_view_get_project_build_invalid_project(self):
         project_owner = "wrong_name"
         project_name = "gitlab-ee"
-        response = self.client.get("/build/{project_owner}/{project_name}/jobs"
+        response = self.client.get("/build/{project_owner}/{project_name}"
                                    .format(project_owner=project_owner,
                                            project_name=project_name))
         invalid_project_json = json.loads(response.data.decode())
@@ -45,8 +44,6 @@ class TestBuild(BaseTestCase):
 
     def test_get_project_build(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        print("TOKEN/n",file=sys.stderr)
-        print(GITLAB_API_TOKEN, file=sys.stderr)
         build = Build(GITLAB_API_TOKEN)
         project_owner = "gitlab-org"
         project_name = "gitlab-ee"
@@ -54,27 +51,27 @@ class TestBuild(BaseTestCase):
                                                   project_name)
         validate(requested_build, valid_schema)
 
-#     def test_get_project_build_invalid_token(self):
-#         GITLAB_API_TOKEN = "wrong_token"
-#         build = Build(GITLAB_API_TOKEN)
-#         project_owner = "gitlab-org"
-#         project_name = "gitlab-ee"
-#         with self.assertRaises(HTTPError) as context:
-#             build.get_project_build(project_owner, project_name)
-#         unauthorized_json = json.loads(str(context.exception))
-#         self.assertTrue(unauthorized_json["status_code"], 401)
-#         validate(unauthorized_json, unauthorized_schema)
+    def test_get_project_build_invalid_token(self):
+        GITLAB_API_TOKEN = "wrong_token"
+        build = Build(GITLAB_API_TOKEN)
+        project_owner = "gitlab-org"
+        project_name = "gitlab-ee"
+        with self.assertRaises(HTTPError) as context:
+            build.get_project_build(project_owner, project_name)
+        unauthorized_json = json.loads(str(context.exception))
+        self.assertTrue(unauthorized_json["status_code"], 401)
+        validate(unauthorized_json, unauthorized_schema)
 
-#     def test_get_project_build_invalid_project(self):
-#         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-#         build = Build(GITLAB_API_TOKEN)
-#         project_owner = "wrong_name"
-#         project_name = "gitlab-ee"
-#         with self.assertRaises(HTTPError) as context:
-#             build.get_project_build(project_owner, project_name)
-#         invalid_project_json = json.loads(str(context.exception))
-#         self.assertTrue(invalid_project_json["status_code"], 404)
-#         validate(invalid_project_json, invalid_project_schema)
+    def test_get_project_build_invalid_project(self):
+        GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
+        build = Build(GITLAB_API_TOKEN)
+        project_owner = "wrong_name"
+        project_name = "gitlab-ee"
+        with self.assertRaises(HTTPError) as context:
+            build.get_project_build(project_owner, project_name)
+        invalid_project_json = json.loads(str(context.exception))
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, invalid_project_schema)
 
 
 if __name__ == "__main__":

@@ -12,20 +12,19 @@ ping_schema = {
 valid_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User response schema",
-    "type": "object",
+    "type": "array",
     "properties": {
+        "job_id": {"type": "integer"},
         "branch": {"type": "string"},
         "commit": {"type": "string"},
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "name1": {"type": "string"},
         "stage": {"type": "string"},
+        "job_name": {"type": "string"},
         "status": {"type": "string"},
-        "status1": {"type": "string"},
-        "web_url": {"type": "string"}
+        "web_url": {"type": "string"},
+        "pipeline_url": {"type": "string"}
     },
-    "required": ["branch", "commit", "id", "name", "name1",
-                 "stage", "status", "status1", "web_url"]
+    "required": ["job_id", "branch", "commit", "stage", "job_name",
+                 "status", "web_url", "pipeline_url"]
 }
 
 unauthorized_schema = {
@@ -51,20 +50,19 @@ invalid_project_schema = {
 build_valid_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User response schema",
-    "type": "object",
+    "type": "array",
     "properties": {
+        "job_id": {"type": "integer"},
         "branch": {"type": "string"},
         "commit": {"type": "string"},
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "name1": {"type": "string"},
         "stage": {"type": "string"},
+        "job_name": {"type": "string"},
         "status": {"type": "string"},
-        "status1": {"type": "string"},
-        "web_url": {"type": "string"}
+        "web_url": {"type": "string"},
+        "pipeline_url": {"type": "string"}
     },
-    "required": ["branch", "commit", "id", "name", "name1",
-                 "stage", "status", "status1", "web_url"]
+    "required": ["job_id", "branch", "commit", "stage", "job_name",
+                 "status", "web_url", "pipeline_url"]
 }
 
 build_invalid_schema = {
