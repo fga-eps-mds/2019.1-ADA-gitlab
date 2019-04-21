@@ -25,6 +25,7 @@ def create_app(script_info=None):
     # register blueprints
     app.register_blueprint(pipeline_blueprint)
     app.register_blueprint(build_blueprint)
+    app.register_blueprint(report_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor
