@@ -34,4 +34,4 @@ def generate_report(project_owner, project_name):
             return jsonify(NOT_FOUND), 404
 
     else:
-        return generate_report       
+        return generated_report       

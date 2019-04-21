@@ -34,7 +34,7 @@ Projects
     -Name
     -Path
     -Description
-    -http_url_to_repo
+    -web_url
 
 *** Info necessaria para pegar essas info: id do project
 '''
@@ -112,10 +112,61 @@ class Report():
                 return filtered_commits
 
     def get_jobs(project_id, headers):
-        pass
+        pass # quantos jobs vamos pegar ?
 
     def get_members(project_id, headers):
-        pass
+        try:
+            response = requests.get("https://gitlab.com/api/"
+                                    "v4/projects/{project_id}/\
+                                     members".format(project_id=
+                                     project_id["id"]), headers=headers)
+            members = response.json()
+            filtered_members = []
+            for i, item in enumerate(members):
+                keys = {"name": 0, "username": 0, "state": 0}
+                keys["name"] = members[i]["name"]
+                keys["username"] = members[i]["username"]
+                keys["state"] = members[i]["state"]
+                filtered_members.append(keys)
+            response.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
+        else:
+            return filtered_members
+
+    def get_project(project_id, headers):
+        try:
+            response = requests.get("https://gitlab.com/api/"
+                                    "v4/projects/{project_id}".
+                                    format(project_id=project_id["id"]),
+                                           headers=headers)
+            project = response.json()
+            filtered_project = []
+            for i, item in enumerate(project):
+                keys = {"name": 0, "path": 0, "description": 0, "web_url": 0}
+                keys["name"] = project[i]["name"]
+                keys["path"] = project[i]["path"]
+                keys["description"] = project[i]["description"]
+                keys["web_url"] = project[i]["web_url"]
+                filtered_project.append(keys)
+            response.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
+        else:
+            return filtered_project
+
+    def get_pipeline(project_id, headers):
+        # ultima pipeline
+        # desempenho do ultimo mes
+        #try:
+        #    response = requests.get("https://gitlab.com/api/"
+        #                            "v4/projects/{project_id}/pipelines".
+        #                            format(project_id=project_id["id"]),
+        #                                   headers=headers)
+        #    pipelines = response.json()
+            pass
 
     def generate_report(self, project_owner, project_name):
         headers = {
@@ -129,12 +180,14 @@ class Report():
         commits = get_commits(project_id, headers)
         jobs = get_jobs(project_id, headers)
         members = get_members(project_id, headers)
-        projects = get_projects(project_id, headers)
+        projects = get_project(project_id, headers)
+        pipeline_info = get_pipeline(project_id, headers)
         # retornar para a Ada
         return jsonify({
             "branches": branches,
             "commits": commits,
             "jobs": jobs,
             "members": members,
-            "projects": projects
+            "project": project,
+            "pipeline_info": pipeline_info
         }), 200
