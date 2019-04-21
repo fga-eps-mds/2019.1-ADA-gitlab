@@ -1,5 +1,10 @@
 import coverage
 
+from flask.cli import FlaskGroup
+
+from gitlab import create_app
+import unittest
+
 COV = coverage.coverage(
     branch=True,
     include='gitlab/*',
@@ -9,12 +14,6 @@ COV = coverage.coverage(
     ]
 )
 COV.start()
-
-
-from flask.cli import FlaskGroup
-
-from gitlab import create_app
-import unittest
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
@@ -30,6 +29,7 @@ def test():
     if result.wasSuccessful():
         return 0
     return 1
+
 
 @cli.command()
 def cov():

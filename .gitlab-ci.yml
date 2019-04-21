@@ -19,6 +19,8 @@ unit test:
     APP_SETTINGS: gitlab.config.DevelopmentConfig  
   before_script:    
     - cd api/
+    - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
     - pip install -r docker/requirements.txt    
   script:
     - python manage.py test
+    - python manage.py cov
