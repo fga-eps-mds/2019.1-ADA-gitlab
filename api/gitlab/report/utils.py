@@ -9,16 +9,19 @@ import sys
 US30 - Informações para o relatório
 Project Resources - https://docs.gitlab.com/ee/api/#project-resources
 
-Nome do repo -> projects [ name ]
-Branches
-    -Name
-Commits
-    -Quantidade de commits (como ?)
-    -Último commit
-        -Title
-        -Author_name
-        -Author_email
-        -Authored_date
+Nome do repo -> projects [ name ] --> ok
+
+Branches --> ok
+    -Name --> ok
+
+Commits --> ok
+    -Quantidade de commits (como ?) --> ok
+    -Último commit --> ok
+        -Title --> ok
+        -Author_name --> ok
+        -Author_email --> ok
+        -Authored_date --> ok
+
 Jobs
     -Status
     -Stage
@@ -28,25 +31,33 @@ Jobs
         -Ref
         -Status
         -Web_url
-Members from project , not from groups
-    -Name
-    -Username
-    -State
-Projects
-    -Name
-    -Path
-    -Description
-    -web_url
+
+Members from project , not from groups --> ok
+    -Name --> ok
+    -Username --> ok
+    -State --> ok
+
+Projects --> ok
+    -Name --> ok
+    -Description --> ok
+    -web_url --> ok
+
 Pipelines
     -number_of_pipelines --> ok
     -succeded --> ok
     -failed --> ok
     -succeded_percentage --> ok
     -Gráfico de sucesso de pipelines da última semana e último mês (imagem)
-Current_pipeline
-    -name
-    -jobs
-        -status
+
+Current_pipeline --> ok
+    -name --> ok
+    -id --> ok
+    -jobs --> ok
+        -duration --> ok
+        -Name --> ok
+        -stage --> ok
+        -status --> ok
+        -web_url --> ok
 
 *** Info necessaria para pegar essas info: id do project
 '''
@@ -203,14 +214,26 @@ class Report():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         # saber qual e a pipeline atual
-        current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
         current_pipeline_name = self.repo_json["pipelines"]["current_pipeline_name"]
+        current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/\
-                       {project_id}/pipelines/{current_pipeline_id}/jobs".
-                       format(project_id=project_id["id"]), headers=headers)
-            # terminando. commitei para todos terem acesso
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}/jobs".format(project_id=project_id["id"], current_pipeline_id=current_pipeline_id), headers=headers)
+            current_pipeline = response.json()
+            response.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
+        else:
+            jobs = []
+            for i, item in enumerate(current_pipeline):
+                jobs.append({"name": current_pipeline[i]["name"],
+                    "stage": current_pipeline[i]["stage"],
+                    "status": current_pipeline[i]["status"],
+                    "duration": current_pipeline[i]["duration"],
+                    "web_url": current_pipeline[i]["web_url"]})
+        self.repo_json["current_pipeline"]["name"] = current_pipeline_name
+        self.repo_json["current_pipeline"]["jobs"] = jobs
 
     def get_project_id(self, project_owner, project_name):
         headers = {
@@ -239,6 +262,7 @@ class Report():
         self.get_commits(project_owner, project_name)
         self.get_project(project_owner, project_name)
         self.get_pipeline(project_owner, project_name)
+        self.get_current_pipeline(project_owner, project_name)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
