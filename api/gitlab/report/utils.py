@@ -46,7 +46,7 @@ Pipelines
 Current_pipeline
     -name
     -jobs
-        -status 
+        -status
 
 *** Info necessaria para pegar essas info: id do project
 '''
@@ -59,7 +59,9 @@ class Report():
                          "author_email": 0, "authored_date": 0}, "number_of_commits": 0},
                           "project": {"description": 0, "name": 0, "web_url": 0},
                           "pipelines":{"number_of_pipelines": 0, "succeded_pipelines": 0,
-                          "failed_pipelines": 0, "percent_succeded": 0}}
+                          "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
+                          "current_pipeline_name": 0}, "current_pipeline":
+                          {"name": 0, "jobs": 0}}
 
     def get_branches(self, project_owner, project_name):
         headers = {
@@ -192,30 +194,23 @@ class Report():
             self.repo_json["pipelines"]["succeded_pipelines"] = success_pipeline
             self.repo_json["pipelines"]["failed_pipelines"] = failed_pipeline
             self.repo_json["pipelines"]["percent_succeded"] = percent_success
+            self.repo_json["pipelines"]["current_pipeline_id"] = pipelines[0]["id"]
+            self.repo_json["pipelines"]["current_pipeline_name"] = pipelines[0]["ref"]
 
-    # def generate_report(self, project_owner, project_name):
-    #     headers = {
-    #         "Content-Type": "application/json",
-    #         "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-    #     }
-    #     # pegar o id
-    #     project_id = self.get_project_id(project_owner, project_name)
-    #     # pegar as outras info
-    #     branches = self.get_branches(project_owner, project_name)
-    #     commits = self.get_commits(project_owner, project_name)
-    #     jobs = self.get_jobs(project_owner, project_name)
-    #     members = self.get_members(project_owner, project_name)
-    #     project = self.get_project(project_owner, project_name)
-    #     pipeline_info = self.get_pipeline(project_owner, project_name)
-    #     # retornar para a Ada
-    #     return jsonify({
-    #         "branches": branches,
-    #         "commits": commits,
-    #         "jobs": jobs,
-    #         "members": members,
-    #         "project": project,
-    #         "pipeline_info": pipeline_info
-    #     }), 200
+    def get_current_pipeline(self, project_owner, project_name):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        # saber qual e a pipeline atual
+        current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
+        current_pipeline_name = self.repo_json["pipelines"]["current_pipeline_name"]
+        project_id = self.get_project_id(project_owner, project_name)
+        try:
+            response = requests.get("https://gitlab.com/api/v4/projects/\
+                       {project_id}/pipelines/{current_pipeline_id}/jobs".
+                       format(project_id=project_id["id"]), headers=headers)
+            # terminando. commitei para todos terem acesso
 
     def get_project_id(self, project_owner, project_name):
         headers = {
