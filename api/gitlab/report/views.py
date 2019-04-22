@@ -37,4 +37,3 @@ def generate_report(project_owner, project_name):
         return jsonify(
             generated_report
         ), 200      
-
