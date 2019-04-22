@@ -1,6 +1,8 @@
 import requests
 from requests.exceptions import HTTPError
 import json
+from flask import jsonify
+import sys
 
 
 '''
@@ -43,11 +45,11 @@ class Report():
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
 
-    def get_project_id(self, project_owner, project_name):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
+    def get_project_id(self, project_owner, project_name, headers):
+        #headers = {
+        #    "Content-Type": "application/json",
+        #    "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        #}
         project_url = project_owner + "%2F" + project_name
         try:
             response = requests.get("https://gitlab.com/api/"
@@ -66,13 +68,14 @@ class Report():
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/repository/\
-                                     branches"
-                                    .format(project_id=project_id["id"]),
-                                    headers=headers)
+                                     branches".format(project_id=
+                                     project_id["id"]), headers=headers)
             branches = response.json()
             branches_names = []
+            #print(branches, file=sys.stderr)
             for i, item in enumerate(branches):
                 names = {"name": 0}
+                #print(branches[i]["name"], file=sys.stderr)
                 names["name"] = branches[i]["name"]
                 branches_names.append(names)
             response.raise_for_status()
@@ -96,9 +99,9 @@ class Report():
                                        "author_email": 0,
                                        "authored_date": 0}}
             keys["last_commit"]["title"] = commits[0]["title"]
-            keys["last_commit"]["author_name"] = commits[0]["author_name"]
-            keys["last_commit"]["author_email"] = commits[0]["author_email"]
-            keys["last_commit"]["authored_date"] = commits[0]["authored_date"]
+            #keys["last_commit"]["author_name"] = commits[0]["author_name"]
+            #keys["last_commit"]["author_email"] = commits[0]["author_email"]
+            #keys["last_commit"]["authored_date"] = commits[0]["authored_date"]
             number_of_commits = 0
             for i, item in enumerate(commits):
                 number_of_commits = number_of_commits + 1
@@ -108,13 +111,13 @@ class Report():
         except HTTPError as http_error:
                 dict_error = {"status_code": http_error.response.status_code}
                 raise HTTPError(json.dumps(dict_error))
-            else:
-                return filtered_commits
+        else:
+            return filtered_commits
 
-    def get_jobs(project_id, headers):
+    def get_jobs(self, project_id, headers):
         pass # quantos jobs vamos pegar ?
 
-    def get_members(project_id, headers):
+    def get_members(self, project_id, headers):
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/\
@@ -135,7 +138,7 @@ class Report():
         else:
             return filtered_members
 
-    def get_project(project_id, headers):
+    def get_project(self, project_id, headers):
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}".
@@ -157,7 +160,7 @@ class Report():
         else:
             return filtered_project
 
-    def get_pipeline(project_id, headers):
+    def get_pipeline(self, project_id, headers):
         # ultima pipeline
         # desempenho do ultimo mes
         #try:
@@ -174,14 +177,14 @@ class Report():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         # pegar o id
-        project_id = get_project_id(project_owner, project_name);
+        project_id = self.get_project_id(project_owner, project_name, headers);
         # pegar as outras info
-        branches = get_branches(project_id, headers)
-        commits = get_commits(project_id, headers)
-        jobs = get_jobs(project_id, headers)
-        members = get_members(project_id, headers)
-        projects = get_project(project_id, headers)
-        pipeline_info = get_pipeline(project_id, headers)
+        branches = self.get_branches(project_id, headers)
+        commits = self.get_commits(project_id, headers)
+        jobs = self.get_jobs(project_id, headers)
+        members = self.get_members(project_id, headers)
+        projects = self.get_project(project_id, headers)
+        pipeline_info = self.get_pipeline(project_id, headers)
         # retornar para a Ada
         return jsonify({
             "branches": branches,
