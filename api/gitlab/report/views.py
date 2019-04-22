@@ -24,7 +24,7 @@ def ping_pong():
 def generate_report(project_owner, project_name):
     try:
         report = Report(GITLAB_API_TOKEN)
-        generated_report = report.generate_report(project_owner, project_name)
+        generated_report = report.repo_informations(project_owner, project_name)
 
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
@@ -34,4 +34,6 @@ def generate_report(project_owner, project_name):
             return jsonify(NOT_FOUND), 404
 
     else:
-        return generated_report       
+        return jsonify(
+            generated_report
+        ), 200      
