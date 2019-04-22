@@ -37,6 +37,16 @@ Projects
     -Path
     -Description
     -web_url
+Pipelines
+    -number_of_pipelines --> ok
+    -succeded --> ok
+    -failed --> ok
+    -succeded_percentage --> ok
+    -Gráfico de sucesso de pipelines da última semana e último mês (imagem)
+Current_pipeline
+    -name
+    -jobs
+        -status 
 
 *** Info necessaria para pegar essas info: id do project
 '''
@@ -47,16 +57,16 @@ class Report():
         self.repo_json = {"branches": {"name": 0}, "members": {"name": 0, "username": 0,
                          "state": 0}, "commits": {"last_commit": {"title": 0, "author_name": 0,
                          "author_email": 0, "authored_date": 0}, "number_of_commits": 0},
-                          "project": {"description": 0, "name": 0, "web_url": 0}}
+                          "project": {"description": 0, "name": 0, "web_url": 0},
+                          "pipelines":{"number_of_pipelines": 0, "succeded_pipelines": 0,
+                          "failed_pipelines": 0, "percent_succeded": 0}}
 
     def get_branches(self, project_owner, project_name):
-
-    def get_project_id(self, project_owner, project_name, headers):
-        #headers = {
-        #    "Content-Type": "application/json",
-        #    "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        #}
-        project_url = project_owner + "%2F" + project_name
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/repository/branches"
@@ -73,10 +83,7 @@ class Report():
                 branch_name["name"].append(branches_json[i]["name"])
             self.repo_json["branches"]["name"] = branch_name["name"]
 
-
-
     def get_members(self, project_owner, project_name):
-
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
@@ -126,7 +133,7 @@ class Report():
             for i, item in enumerate(commits_json):
                 number_of_commits = number_of_commits + 1
             self.repo_json["commits"]["number_of_commits"] = number_of_commits
-            print(self.repo_json, file=sys.stderr)
+            # print(self.repo_json, file=sys.stderr)
 
     def get_jobs(self, project_id, headers):
         pass # quantos jobs vamos pegar ?
@@ -153,18 +160,38 @@ class Report():
             self.repo_json["project"]["description"] = project_json["description"]
             self.repo_json["project"]["web_url"] = project_json["web_url"]
 
-            print(self.repo_json, file=sys.stderr)
+            # print(self.repo_json, file=sys.stderr)
 
-    def get_pipeline(self, project_owner, project_id):
+    def get_pipeline(self, project_owner, project_name):
         # ultima pipeline
         # desempenho do ultimo mes
-        #try:
-        #    response = requests.get("https://gitlab.com/api/"
-        #                            "v4/projects/{project_id}/pipelines".
-        #                            format(project_id=project_id["id"]),
-        #                                   headers=headers)
-        #    pipelines = response.json()
-            pass
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        project_id = self.get_project_id(project_owner, project_name)
+        try:
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines".format(project_id=project_id["id"]), headers=headers)
+            pipelines = response.json()
+            response.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
+        else:
+            number_of_pipelines = 0
+            success_pipeline = 0
+            failed_pipeline = 0
+            for i, item in enumerate(pipelines):
+                number_of_pipelines = number_of_pipelines + 1 #total
+                if pipelines[i]["status"] == "success":
+                    success_pipeline = success_pipeline + 1
+                else:
+                    failed_pipeline = failed_pipeline + 1
+            percent_success = (success_pipeline / number_of_pipelines) * 100.0
+            self.repo_json["pipelines"]["number_of_pipelines"] = number_of_pipelines
+            self.repo_json["pipelines"]["succeded_pipelines"] = success_pipeline
+            self.repo_json["pipelines"]["failed_pipelines"] = failed_pipeline
+            self.repo_json["pipelines"]["percent_succeded"] = percent_success
 
     # def generate_report(self, project_owner, project_name):
     #     headers = {
@@ -216,6 +243,7 @@ class Report():
         self.get_members(project_owner, project_name)
         self.get_commits(project_owner, project_name)
         self.get_project(project_owner, project_name)
+        self.get_pipeline(project_owner, project_name)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
