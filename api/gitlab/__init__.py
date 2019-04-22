@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from gitlab.pipeline.views import pipeline_blueprint
+from gitlab.report.views import report_blueprint
 from gitlab.build.views import build_blueprint
 from flask_cors import CORS
 from flask_mongoengine import MongoEngine
