@@ -60,9 +60,9 @@ Current_pipeline --> ok
         -web_url --> ok
 
 Por quanto tempo os pipelines estão rodando?
-    -Média de tempo de execução dos pipelines
-    -Menor tempo de execução
-    -Maior tempo de execução
+    -Média de tempo de execução dos pipelines --> ok
+    -Menor tempo de execução --> ok
+    -Maior tempo de execução --> ok
     -Gráfico de tempo de execução
 
     # pegar todos os id das pipelines existentes, via api get pipelines --> ok
@@ -82,7 +82,8 @@ class Report():
                           "pipelines":{"number_of_pipelines": 0, "succeded_pipelines": 0,
                           "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
                           "current_pipeline_name": 0}, "current_pipeline":
-                          {"name": 0, "jobs": 0}}
+                          {"name": 0, "jobs": 0}, "pipelines_times": {"average": 0,
+                          "lower": 0, "higher": 0, "total": 0}}
 
     def get_branches(self, project_owner, project_name):
         headers = {
@@ -292,6 +293,10 @@ class Report():
         pipelines_average_time = pipelines_total_time / (len(self.pipelines_ids))
         pipelines_lower_time = min(pipelines_durations)
         pipelines_higher_time = max(pipelines_durations)
+        self.repo_json["pipelines_times"]["average"] = pipelines_average_time
+        self.repo_json["pipelines_times"]["total"] = pipelines_total_time
+        self.repo_json["pipelines_times"]["higher"] = pipelines_higher_time
+        self.repo_json["pipelines_times"]["lower"] = pipelines_lower_time
         # print(pipelines_higher_time, file=sys.stderr)
 
     def repo_informations(self, project_owner, project_name):
