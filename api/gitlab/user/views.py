@@ -5,7 +5,7 @@ from gitlab.user.error_messages import NOT_FOUND, UNAUTHORIZED
 import json
 from requests.exceptions import HTTPError
 import os
-
+import sys
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
@@ -19,6 +19,7 @@ def ping_pong():
         "message": "pong!"
     }), 200
 
+
 @user_blueprint.route("/user/<project_owner>", methods=["GET"])
 def get_project_user(project_owner):
     try:
@@ -31,6 +32,10 @@ def get_project_user(project_owner):
         else:
             return jsonify(NOT_FOUND), 404
     else:
+        repositories_names = []
+
+        for n in requested_user:
+            repositories_names.append(n["name"])
         return jsonify({
-            "repo": requested_user["name"]
+            "repositories": repositories_names
         }), 200

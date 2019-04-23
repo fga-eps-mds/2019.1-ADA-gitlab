@@ -3,6 +3,7 @@
 import requests
 from requests.exceptions import HTTPError
 import json
+import sys
 
 
 class User():
@@ -18,7 +19,7 @@ class User():
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/users/{project_user_id}/projects"
-                                    .format(project_user_id=project_user_id["id"]),
+                                    .format(project_user_id=project_user_id[0]["id"]),
                                     headers=headers)
             response.raise_for_status()
         except HTTPError as http_error:
