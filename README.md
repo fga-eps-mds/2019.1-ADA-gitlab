@@ -34,8 +34,6 @@ Utilizando o Docker
 docker-compose -f docker-compose-dev.yml up --build
 ```
 
+## Licença
 
-
-
-
-
+[GPL](https://opensource.org/licenses/GPL-3.0)
