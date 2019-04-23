@@ -59,10 +59,20 @@ Current_pipeline --> ok
         -status --> ok
         -web_url --> ok
 
+Por quanto tempo os pipelines estão rodando?
+    -Média de tempo de execução dos pipelines
+    -Menor tempo de execução
+    -Maior tempo de execução
+    -Gráfico de tempo de execução
+
+    # pegar todos os id das pipelines existentes, via api get pipelines --> ok
+    # passar em cada pipeline e guardar a duracao
+
 *** Info necessaria para pegar essas info: id do project
 '''
 
 class Report():
+    pipelines_ids = []
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
         self.repo_json = {"branches": {"name": 0}, "members": {"name": 0, "username": 0,
@@ -195,6 +205,8 @@ class Report():
             success_pipeline = 0
             failed_pipeline = 0
             for i, item in enumerate(pipelines):
+                self.pipelines_ids.append(pipelines[i]["id"])
+                # print(self.pipelines_ids, file=sys.stderr)
                 number_of_pipelines = number_of_pipelines + 1 #total
                 if pipelines[i]["status"] == "success":
                     success_pipeline = success_pipeline + 1
@@ -254,6 +266,33 @@ class Report():
             requested_id = response.json()
             return requested_id
 
+    def get_pipelines_times(self, project_owner, project_name):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        project_id = self.get_project_id(project_owner, project_name)
+        pipelines_durations = []
+        pipelines_total_time = 0
+        pipelines_average_time = 0
+        pipelines_lower_time = 0
+        pipelines_higher_time = 0
+        for i in self.pipelines_ids:
+            try:
+                response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(project_id=project_id["id"], current_pipeline_id=i), headers=headers)
+                pipeline = response.json()
+                response.raise_for_status()
+            except HTTPError as http_error:
+                dict_error = {"status_code": http_error.response.status_code}
+                raise HTTPError(json.dumps(dict_error))
+            else:
+                pipelines_durations.append(pipeline["duration"])
+                pipelines_total_time = pipelines_total_time + pipeline["duration"]
+        # print(pipelines_durations, file=sys.stderr)
+        pipelines_average_time = pipelines_total_time / (len(self.pipelines_ids))
+        pipelines_lower_time = min(pipelines_durations)
+        pipelines_higher_time = max(pipelines_durations)
+        # print(pipelines_higher_time, file=sys.stderr)
 
     def repo_informations(self, project_owner, project_name):
 
@@ -263,6 +302,7 @@ class Report():
         self.get_project(project_owner, project_name)
         self.get_pipeline(project_owner, project_name)
         self.get_current_pipeline(project_owner, project_name)
+        self.get_pipelines_times(project_owner, project_name)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
