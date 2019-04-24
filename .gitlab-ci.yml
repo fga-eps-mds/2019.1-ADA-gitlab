@@ -1,5 +1,10 @@
 stages:
   - test
+  - build
+  - deploy
+
+variables:
+  ADA_GITLAB_IMAGE: $DOCKER_USER/ada-gitlab
 
 lint-flake8:
   image: ejplatform/python:alpine
@@ -18,9 +23,36 @@ unit test:
     FLASK_APP: gitlab/__init__.py
     APP_SETTINGS: gitlab.config.DevelopmentConfig  
   before_script:    
-    - cd api/
     - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
     - pip install -r docker/requirements.txt    
+    - cd api/
   script:
     - python manage.py test
     - python manage.py cov
+
+
+build ada-bot-prod:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - docker build -f ./docker/dev.Dockerfile -t $ADA_GITLAB_IMAGE:prod .
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker push $ADA_GITLAB_IMAGE:prod
+  only:
+    - /118-Deploy/
+
+deploy ada-bot-prod:
+  image: cdrx/rancher-gitlab-deploy
+  stage: deploy
+  script:
+    - "upgrade
+            --rancher-url $RANCHER_PROD_URL
+            --rancher-key $RANCHER_PROD_ACCESS_KEY
+            --rancher-secret $RANCHER_PROD_SECRET_KEY
+            --environment $RANCHER_ENVIRONMENT
+            --stack $RANCHER_STACK
+            --service ada-gitlab"
+  only:
+    - /118-Deploy/

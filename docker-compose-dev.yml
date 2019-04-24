@@ -4,7 +4,7 @@ services:
 
   api:
     build:
-      context: ./api
+      context: .
       dockerfile: ./docker/dev.Dockerfile
     volumes:
       - './api:/usr/src/app'

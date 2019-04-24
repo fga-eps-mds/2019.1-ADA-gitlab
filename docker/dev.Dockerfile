@@ -1,6 +1,7 @@
 # base image
 FROM python:3.6-slim
 
+
 # set working directory
 WORKDIR /usr/src/app
 
