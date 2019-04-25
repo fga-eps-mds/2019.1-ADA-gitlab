@@ -10,9 +10,11 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
+    DB_URL = os.environ.get("DB_URL", "")
+    DB_NAME = os.environ.get("DB_NAME", "")
     MONGODB_SETTINGS = {
-        "db": "api",
-        "host": "mongodb://mongo-gitlab:27010/api"
+        "db": DB_NAME,
+        "host": DB_URL
     }
 
 
