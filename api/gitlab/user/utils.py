@@ -16,6 +16,8 @@ class User():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         project_user_id = self.get_project_user_id(project_owner)
+        if len(project_user_id) == 0:
+            return []
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/users/{project_user_id}/projects"

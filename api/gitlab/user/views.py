@@ -25,6 +25,8 @@ def get_project_user(project_owner):
     try:
         user = User(GITLAB_API_TOKEN)
         requested_user = user.get_project_user(project_owner)
+        if len(requested_user) == 0:
+            return jsonify(NOT_FOUND), 404
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:
