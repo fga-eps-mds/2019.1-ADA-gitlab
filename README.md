@@ -1,7 +1,7 @@
 # ADA GitLab API
 
-[![pipeline status](https://gitlab.com/adabot/ada-gitlab/badges/devel/pipeline.svg)](https://gitlab.com/adabot/ada-gitlab/commits/devel) 
-[![coverage report](https://gitlab.com/adabot/ada-gitlab/badges/devel/coverage.svg)](https://gitlab.com/adabot/ada-gitlab/commits/devel) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![pipeline status](https://gitlab.com/adabot/ada-gitlab/badges/master/pipeline.svg)](https://gitlab.com/adabot/ada-gitlab/commits/master)
+[![coverage report](https://gitlab.com/adabot/ada-gitlab/badges/master/coverage.svg)](https://gitlab.com/adabot/ada-gitlab/commits/master) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Sobre o Projeto
 
