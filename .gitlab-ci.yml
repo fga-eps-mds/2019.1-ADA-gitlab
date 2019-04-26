@@ -1,0 +1,103 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  ADA_GITLAB_IMAGE: $DOCKER_USER/ada-gitlab
+
+#############################################################
+########################## TEST #############################
+#############################################################
+
+lint-flake8:
+  image: ejplatform/python:alpine
+  stage: test
+  script:
+    - flake8
+
+services:
+  - mongo:latest
+
+unit test:
+  image: python:3.6-alpine
+  stage: test
+  variables:
+    FLASK_ENV: development
+    FLASK_APP: gitlab/__init__.py
+    APP_SETTINGS: gitlab.config.DevelopmentConfig  
+  before_script:    
+    - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
+    - pip install -r docker/requirements.txt    
+    - cd api/
+  script:
+    - python manage.py test
+    - python manage.py cov
+
+#############################################################
+################## BUILD HOMOLOG ############################
+#############################################################
+
+build ada-gitlab-homolog:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - docker build -f ./docker/dev.Dockerfile -t $ADA_GITLAB_IMAGE:homolog .
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker push $ADA_GITLAB_IMAGE:homolog
+  only:
+    - /devel/
+
+#############################################################
+################## BUILD PROD ###############################
+#############################################################
+
+build ada-gitlab-prod:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - docker build -f ./docker/dev.Dockerfile -t $ADA_GITLAB_IMAGE:prod .
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS
+    - docker push $ADA_GITLAB_IMAGE:prod
+  only:
+    - /master/
+
+#############################################################
+################## DEPLOY HOMOLOG ###########################
+#############################################################
+
+deploy ada-gitlab-homolog:
+  image: cdrx/rancher-gitlab-deploy
+  stage: deploy
+  script:
+    - "upgrade
+            --rancher-url $RANCHER_URL
+            --rancher-key $RANCHER_ACCESS_KEY
+            --rancher-secret $RANCHER_SECRET_KEY
+            --environment $RANCHER_ENVIRONMENT
+            --stack $RANCHER_HOMOLOG_STACK
+            --service ada-gitlab-homolog"
+  only:
+    - /devel/
+
+#############################################################
+################## DEPLOY PROD ##############################
+#############################################################
+
+deploy ada-gitlab-prod:
+  image: cdrx/rancher-gitlab-deploy
+  stage: deploy
+  script:
+    - "upgrade
+            --rancher-url $RANCHER_URL
+            --rancher-key $RANCHER_ACCESS_KEY
+            --rancher-secret $RANCHER_SECRET_KEY
+            --environment $RANCHER_ENVIRONMENT
+            --stack $RANCHER_PROD_STACK
+            --service ada-gitlab"
+  only:
+    - /master/
