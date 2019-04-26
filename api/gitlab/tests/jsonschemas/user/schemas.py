@@ -14,14 +14,9 @@ valid_schema = {
     "title": "User response schema",
     "type": "array",
     "properties": {
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "username": {"type": "string"},
-        "state": {"type": "string"},
-        "avatar_url": {"type": "string"},
-        "web_url": {"type": "string"}
+        "status_code": {"type": "integer"}
     },
-    "required": ["id", "name", "username", "state", "avatar_url", "web_url"]
+    "required": ["status_code"]
 }
 
 unauthorized_schema = {
@@ -47,9 +42,11 @@ invalid_project_schema = {
 user_valid_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User response schema",
-    "type": "array",
+    "type": "object",
     "properties": {
-        "repositories": {"type": "string"}
+        "repositories": {
+            "type": "array",
+        }
     },
     "required": ["repositories"]
 }

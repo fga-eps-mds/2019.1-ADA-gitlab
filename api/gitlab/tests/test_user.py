@@ -9,6 +9,7 @@ from jsonschema import validate
 from gitlab.user.utils import User
 from requests.exceptions import HTTPError
 import os
+import sys
 
 
 class TestUser(BaseTestCase):
@@ -42,8 +43,7 @@ class TestUser(BaseTestCase):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
         user = User(GITLAB_API_TOKEN)
         project_owner = "sudjoao"
-        requested_user = user.get_project_user(project_owner,
-                                            )
+        requested_user = user.get_project_user(project_owner)
         validate(requested_user, valid_schema)
 
     def test_get_project_user_invalid_token(self):
