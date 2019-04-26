@@ -1,19 +1,18 @@
-version: '3.7'
+version: "3.7"
 
 services:
-
   api:
     build:
       context: ./api
       dockerfile: ./docker/dev.Dockerfile
     volumes:
-      - './api:/usr/src/app'
-    networks: 
+      - "./api:/usr/src/app"
+    networks:
       - 20191-ada_adanetwork
     ports:
       - 5000:5000
     environment:
-      - GITLAB_API_TOKEN=${GITLAB_API_TOKEN} 
+      - GITLAB_API_TOKEN=${GITLAB_API_TOKEN}
       - FLASK_APP=gitlab/__init__.py
       - FLASK_ENV=development
       - APP_SETTINGS=gitlab.config.DevelopmentConfig
@@ -22,7 +21,7 @@ services:
     command: mongod --port 27010
     volumes:
       - /mongo_gitlab:/data/db
-    networks: 
+    networks:
       - 20191-ada_adanetwork
     ports:
       - 27010:27010
