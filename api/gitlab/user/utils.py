@@ -3,7 +3,6 @@
 import requests
 from requests.exceptions import HTTPError
 import json
-import sys
 
 
 class User():
@@ -15,13 +14,16 @@ class User():
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_user_id = self.get_project_user_id(project_owner)
-        if len(project_user_id) == 0:
-            return []
+        user_id = self.get_user_id(project_owner)
+        if len(user_id) == 0:
+            dict_error = {"status_code": 404}
+            raise HTTPError(json.dumps(dict_error))
         try:
             response = requests.get("https://gitlab.com/api/"
-                                    "v4/users/{project_user_id}/projects"
-                                    .format(project_user_id=project_user_id[0]["id"]),
+                                    "v4/users/{user_id}/projects"
+                                    .format(
+                                        user_id=user_id[0]["id"]
+                                    ),
                                     headers=headers)
             response.raise_for_status()
         except HTTPError as http_error:
@@ -31,13 +33,14 @@ class User():
             requested_user = response.json()
             return requested_user
 
-    def get_project_user_id(self, project_owner):
+    def get_user_id(self, project_owner):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         try:
-            response = requests.get("https://gitlab.com/api/v4/users?username={project_owner}"
+            response = requests.get("https://gitlab.com/api/v4/users?username="
+                                    "{project_owner}"
                                     .format(project_owner=project_owner),
                                     headers=headers)
             response.raise_for_status()

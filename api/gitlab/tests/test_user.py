@@ -9,7 +9,6 @@ from jsonschema import validate
 from gitlab.user.utils import User
 from requests.exceptions import HTTPError
 import os
-import sys
 
 
 class TestUser(BaseTestCase):
@@ -24,7 +23,7 @@ class TestUser(BaseTestCase):
     def test_view_get_project_user(self):
         project_owner = "sudjoao"
         response = self.client.get("/user/{project_owner}"
-                                    .format(project_owner=project_owner))
+                                   .format(project_owner=project_owner))
         data = json.loads(response.data.decode())
         user_string = json.dumps(user_valid_schema)
         user_json = json.loads(user_string)

@@ -5,7 +5,7 @@ from gitlab.user.error_messages import NOT_FOUND, UNAUTHORIZED
 import json
 from requests.exceptions import HTTPError
 import os
-import sys
+
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
