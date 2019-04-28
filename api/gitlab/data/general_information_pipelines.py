@@ -14,7 +14,7 @@ class GeneralInformationPipelines(mongoengine.Document):
         'collection': 'Pipeline'
     }
 
-    def create_general_information_pipeline(self, project: Project, number_of_pipelines: int, successful_pipelines: int) -> GeneralInformationPipelines:
+    def create_general_information_pipeline(self, project: Project, number_of_pipelines: int, successful_pipelines: int):
         pipeline = GeneralInformationPipelines()
         pipeline.project_id = project.id
         pipeline.number_of_pipelines = number_of_pipelines
@@ -24,7 +24,7 @@ class GeneralInformationPipelines(mongoengine.Document):
         return pipeline
 
 
-    def get_general_information_pipeline(self, project: Project) -> GeneralInformationPipelines:
+    def get_general_information_pipeline(self, project: Project):
         pipeline = GeneralInformationPipelines.objects(
             project_id=project.id).first()
         return pipeline
