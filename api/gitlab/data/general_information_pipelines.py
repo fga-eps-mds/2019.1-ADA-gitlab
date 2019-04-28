@@ -23,8 +23,26 @@ class GeneralInformationPipelines(mongoengine.Document):
         pipeline.save()
         return pipeline
 
-
+    @staticmethod
     def get_general_information_pipeline(self, project: Project):
-        pipeline = GeneralInformationPipelines.objects(
+        general_information_pipeline = GeneralInformationPipelines.objects(
             project_id=project.id).first()
-        return pipeline
+        return general_information_pipeline
+
+
+    def add_pipeline(self, pipeline: Pipeline, project: Project):
+        general_information_pipeline = self.get_general_information_pipeline(project)
+        general_information_pipeline.modify(upsert=True, new=True, inc__number_of_pipelines=1)
+        all_jobs_successful = True
+        for job in pipeline.jobs:
+            if not job['status']:
+                all_jobs_successful = False
+                break
+            else:
+                # do nothing, if job status is true then it is successful
+                continue
+        if all_jobs_successful:
+            general_information_pipeline.modify(upsert=True, new=True, inc__successful_pipelines=1)
+        else:
+            # do nothing, if pipeline fails, only the number of pipelines increases
+            pass

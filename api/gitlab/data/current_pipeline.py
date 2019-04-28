@@ -4,7 +4,7 @@ from gitlab.data.general_information_pipelines import GeneralInformationPipeline
 from gitlab.data.project import Project
 
 class CurrentPipeline(mongoengine.Document):
-    current_pipeline_id = mongoengine.ObjectIdField(required=True)
+    project_id = mongoengine.ObjectIdField(required=True)
     name = mongoengine.StringField(required=True)
     jobs = mongoengine.ListField(mongoengine.DictField())
 
@@ -14,17 +14,17 @@ class CurrentPipeline(mongoengine.Document):
         'collection': 'CurrentPipeline'
     }
 
-    def create_current_pipeline(self, name: str, jobs: list):
+    def create_current_pipeline(self, name: str, jobs: list, project: Project):
         current_pipeline = CurrentPipeline()
         current_pipeline.name = name
         current_pipeline.jobs = jobs
+        current_pipeline.project_id = project.id
 
         current_pipeline.save()
         return current_pipeline
 
     def get_current_pipeline(self, project: Project):
-        pipeline_info = GeneralInformationPipelines()
-        pipeline = pipeline_info.get_general_information_pipeline(project)
+        pipeline = GeneralInformationPipelines.get_general_information_pipeline(project)
         current_pipeline = CurrentPipeline.objects(pipeline_id=pipeline.id).all()
 
         return current_pipeline
