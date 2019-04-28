@@ -5,6 +5,7 @@ from gitlab.data import init_db
 
 class User(mongoengine.Document):
     username = mongoengine.StringField(required=True)
+    project_id = mongoengine.ListField(mongoengine.ObjectIdField)
 
     init_db()
     meta = {
