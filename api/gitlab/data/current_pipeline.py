@@ -1,22 +1,47 @@
 import mongoengine
-from jobs_embedded import JobEmbedded
 from mongo_setup import global_init
 
 
 class CurrentPipeline(mongoengine.Document):
     #pipeline_id = mongoengine.ObjectIdField(required=True)
     name = mongoengine.StringField(required=True)
-    jobs = mongoengine.DictField()
+    jobs = mongoengine.ListField(mongoengine.DictField())
 
     global_init()
     meta = {
         'db_alias': 'AdaBot',
-        'collection': 'owners'
+        'collection': 'CurrentPipeline'
     }
+
+    def clean(self):
+        jobs = self.jobs
+
+        for job in jobs:
+            if not job['duration']:
+                raise ValidationError('Duration of pipeline not defined')
+            if not job['date']:
+                raise ValidationError('date of pipeline not defined')
+            if not job['name']:
+                raise ValidationError('name of pipeline not defined')
+            if not job['stage']:
+                raise ValidationError('stage of pipeline not defined')
+            if not job['status']:
+                raise ValidationError('status of pipeline not defined')
+            if not job['web_url']:
+                raise ValidationError('Web Url of pipeline not defined')
 
 
 test = CurrentPipeline()
-test.name = "Caio"
-test.save()
+test.name = "trollei7"
+test.jobs = [{
+    'duration': 'huehuheu',
+    'date': 'dddd',
+    'name': 'Caio',
+    'stage': 'ddd',
+    'status': 'Success',
+    'web_url': 'localhost'
+}]
 
+test.save()
+print(test.jobs)
 print(test.name)
