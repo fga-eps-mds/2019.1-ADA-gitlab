@@ -29,19 +29,3 @@ class CurrentPipeline(mongoengine.Document):
                 raise ValidationError('status of pipeline not defined')
             if not job['web_url']:
                 raise ValidationError('Web Url of pipeline not defined')
-
-
-test = CurrentPipeline()
-test.name = "trollei7"
-test.jobs = [{
-    'duration': 'huehuheu',
-    'date': 'dddd',
-    'name': 'Caio',
-    'stage': 'ddd',
-    'status': 'Success',
-    'web_url': 'localhost'
-}]
-
-test.save()
-print(test.jobs)
-print(test.name)
