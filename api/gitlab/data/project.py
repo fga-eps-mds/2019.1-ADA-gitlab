@@ -1,6 +1,6 @@
 import mongoengine
 from user import User
-from mongo_setup import global_init
+from gitlab.data import init_db
 
 
 class Project(mongoengine.Document):
@@ -10,7 +10,7 @@ class Project(mongoengine.Document):
     web_url = mongoengine.URLField
     branches = mongoengine.ListField
 
-    global_init()
+    init_db()
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'project'

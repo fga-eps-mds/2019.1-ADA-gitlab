@@ -3,11 +3,8 @@ from flask import Flask
 from gitlab.pipeline.views import pipeline_blueprint
 from gitlab.build.views import build_blueprint
 from flask_cors import CORS
-from flask_mongoengine import MongoEngine
-
 
 cors = CORS()
-db = MongoEngine()
 
 
 def create_app(script_info=None):
@@ -19,7 +16,6 @@ def create_app(script_info=None):
     app_settings = os.getenv("APP_SETTINGS")
     app.config.from_object(app_settings)
 
-    db.init_app(app)
     cors.init_app(app)
 
     # register blueprints

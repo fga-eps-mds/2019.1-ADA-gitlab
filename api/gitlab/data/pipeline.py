@@ -1,4 +1,5 @@
 import mongoengine
+from gitlab.data import init_db
 
 
 class Pipeline(mongoengine.Document):

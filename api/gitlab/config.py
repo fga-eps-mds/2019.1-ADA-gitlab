@@ -5,14 +5,13 @@ import os
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     MONGODB_SETTINGS = {
-        "db": "api",
-        "host": "mongodb://mongo-gitlab:27010/api"
+        "db": os.environ.get("DB_NAME", ""),
+        "host": os.environ.get("DB_NAME", "")
     }
 
 

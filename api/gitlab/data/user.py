@@ -1,11 +1,12 @@
 import mongoengine
-from mongo_setup import global_init
+from gitlab.data import init_db
+
 
 
 class User(mongoengine.Document):
     username = mongoengine.StringField(required=True)
 
-    global_init()
+    init_db()
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'User'

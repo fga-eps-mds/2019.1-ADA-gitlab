@@ -1,6 +1,5 @@
 import mongoengine
-from jobs_embedded import JobEmbedded
-from mongo_setup import global_init
+from gitlab.data import init_db
 
 
 class CurrentPipeline(mongoengine.Document):
@@ -8,7 +7,7 @@ class CurrentPipeline(mongoengine.Document):
     name = mongoengine.StringField(required=True)
     jobs = mongoengine.DictField()
 
-    global_init()
+    init_db()
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'owners'
