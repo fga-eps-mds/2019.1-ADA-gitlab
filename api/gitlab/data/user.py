@@ -4,6 +4,7 @@ from mongo_setup import global_init
 
 class User(mongoengine.Document):
     username = mongoengine.StringField(required=True)
+    project_id = mongoengine.ListField(mongoengine.ObjectIdField)
 
     global_init()
     meta = {
