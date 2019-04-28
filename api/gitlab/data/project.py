@@ -1,8 +1,6 @@
 import mongoengine
 from urllib.parse import urlparse
-from user import User
 from gitlab.data import init_db
-from gitlab.data.user import User
 
 
 class Project(mongoengine.Document):
@@ -17,7 +15,7 @@ class Project(mongoengine.Document):
         'collection': 'project'
     }
 
-    def create_project(self, user: User, description: str, name: str, web_url: str, branches: list) -> Project:
+    def create_project(self, user, description: str, name: str, web_url: str, branches: list):
         project = Project()
         project.user_id = user.id
         project.description = description
@@ -27,12 +25,12 @@ class Project(mongoengine.Document):
 
         project.save()
 
-        user = User()
-        user.add_project_user(project, user)
+        # user = User()
+        # user.add_project_user(project, user)
         return project
 
 
-    def get_project(self, name: str) -> Project:
+    def get_project(self, name: str):
         project = Project.objects(name=name).first()
         return project
     

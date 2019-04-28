@@ -4,10 +4,15 @@ from gitlab.data.project import Project
 
 
 class User(mongoengine.Document):
-    username = mongoengine.StringField(required=True)
-    project_id = mongoengine.ListField(mongoengine.ObjectIdField)
-
     init_db()
+    username = mongoengine.StringField(max_length=100)
+    project_id = mongoengine.StringField(max_length=100)
+    gitlab_user = mongoengine.StringField(max_length=100)
+    chat_id = mongoengine.StringField(max_length=100)
+    gitlab_user_id = mongoengine.StringField(max_length=100)
+    project_name = mongoengine.StringField(max_length=100)
+
+
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'User'
@@ -25,7 +30,20 @@ class User(mongoengine.Document):
         return user
 
 
-    def add_project_user(self, project: Project, user: User):
+    def add_project_user(self, project, user):
         user.project_id.append(project.id)
         user.save()
+        return user
+
+    def save_gitlab_user_data(self, user, gitlab_user, chat_id, gitlab_user_id):
+        user.gitlab_user = gitlab_user
+        user.chat_id = chat_id
+        user.gitlab_user_id = gitlab_user_id
+        user.save()
+        return user
+
+    def save_gitlab_repo_data(self, user, project_name, project_id):
+        user.project_name = project_name
+        user.project_id = project_id
+        user.update(project_id=project_id, project_name=project_name)
         return user
