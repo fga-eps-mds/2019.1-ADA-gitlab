@@ -5,43 +5,43 @@ from requests.exceptions import HTTPError
 import json
 
 
-class Pipeline():
+class User():
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
 
-    def get_project_pipeline(self, project_owner, project_name):
+    def get_project_user(self, project_owner):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
+        user_id = self.get_user_id(project_owner)
+        if len(user_id) == 0:
+            dict_error = {"status_code": 404}
+            raise HTTPError(json.dumps(dict_error))
         try:
             response = requests.get("https://gitlab.com/api/"
-                                    "v4/projects/{project_id}/pipelines"
-                                    .format(project_id=project_id["id"]),
+                                    "v4/users/{user_id}/projects"
+                                    .format(
+                                        user_id=user_id[0]["id"]
+                                    ),
                                     headers=headers)
             response.raise_for_status()
-
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
-            requested_pipeline = response.json()
-            if len(requested_pipeline) == 0:
-                dict_error = {"status_code": 404}
-                raise HTTPError(json.dumps(dict_error))
-            return requested_pipeline[0]
+            requested_user = response.json()
+            return requested_user
 
-    def get_project_id(self, project_owner, project_name):
+    def get_user_id(self, project_owner):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_url = project_owner + "%2F" + project_name
         try:
-            response = requests.get("https://gitlab.com/api/"
-                                    "v4/projects/{project_url}"
-                                    .format(project_url=project_url),
+            response = requests.get("https://gitlab.com/api/v4/users?username="
+                                    "{project_owner}"
+                                    .format(project_owner=project_owner),
                                     headers=headers)
             response.raise_for_status()
         except HTTPError as http_error:

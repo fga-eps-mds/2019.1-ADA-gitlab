@@ -3,6 +3,7 @@ from flask import Flask
 from gitlab.pipeline.views import pipeline_blueprint
 from gitlab.build.views import build_blueprint
 from gitlab.webhook.views import webhook_blueprint
+from gitlab.user.views import user_blueprint
 from flask_cors import CORS
 
 cors = CORS()
@@ -23,6 +24,7 @@ def create_app(script_info=None):
     app.register_blueprint(pipeline_blueprint)
     app.register_blueprint(build_blueprint)
     app.register_blueprint(webhook_blueprint)
+    app.register_blueprint(user_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor
