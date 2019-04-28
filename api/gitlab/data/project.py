@@ -1,14 +1,17 @@
 import mongoengine
+from urllib.parse import urlparse
 from user import User
 from mongo_setup import global_init
 
 
 class Project(mongoengine.Document):
     user_id = mongoengine.ObjectIdField(required=True)
-    description = mongoengine.StringField
-    name = mongoengine.StringField
-    web_url = mongoengine.URLField
-    branches = mongoengine.ListField
+    description = mongoengine.StringField(required=True)
+    name = mongoengine.StringField(required=True)
+    web_url = mongoengine.URLField(required=True)
+    branches = mongoengine.ListField(required=True)
+
+    def clean_jobs(self):
 
     global_init()
     meta = {
