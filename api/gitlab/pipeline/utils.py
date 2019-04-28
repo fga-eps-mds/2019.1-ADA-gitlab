@@ -3,6 +3,7 @@
 import requests
 from requests.exceptions import HTTPError
 import json
+import sys
 
 
 class Pipeline():
@@ -21,11 +22,15 @@ class Pipeline():
                                     .format(project_id=project_id["id"]),
                                     headers=headers)
             response.raise_for_status()
+
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
             requested_pipeline = response.json()
+            if len(requested_pipeline) == 0:
+                dict_error = {"status_code": 404}
+                raise HTTPError(json.dumps(dict_error))
             return requested_pipeline[0]
 
     def get_project_id(self, project_owner, project_name):
