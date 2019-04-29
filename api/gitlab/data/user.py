@@ -1,11 +1,12 @@
 import mongoengine
-from gitlab.data import init_db
-from gitlab.data.project import Project
+from __init__ import init_db
+from project import Project
 
 
 class User(mongoengine.Document):
     init_db()
     username = mongoengine.StringField(max_length=100)
+    project = mongoengine.ReferenceField(Project)
     project_id = mongoengine.StringField(max_length=100)
     gitlab_user = mongoengine.StringField(max_length=100)
     chat_id = mongoengine.StringField(max_length=100)
@@ -19,20 +20,13 @@ class User(mongoengine.Document):
     }
 
     def create_user(self, username: str):
-        user = User()
-        user.username = username
-        user.save()
-        return user
+        self.username = username
+        self.save()
+        return self
 
 
     def get_user(self, username: str):
         user = User.objects(username=username).first()
-        return user
-
-
-    def add_project_user(self, project, user):
-        user.project_id.append(project.id)
-        user.save()
         return user
 
     def save_gitlab_user_data(self, user, gitlab_user, chat_id, gitlab_user_id):
@@ -47,3 +41,8 @@ class User(mongoengine.Document):
         user.project_id = project_id
         user.update(project_id=project_id, project_name=project_name)
         return user
+    
+    def add_project_user(self, project):
+        self.project = project
+        self.save()
+        return self
