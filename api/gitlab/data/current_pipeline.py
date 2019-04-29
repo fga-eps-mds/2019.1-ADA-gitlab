@@ -1,10 +1,10 @@
 import mongoengine
-from gitlab.data import init_db
-from gitlab.data.general_information_pipelines import GeneralInformationPipelines
-from gitlab.data.project import Project
+from __init__ import init_db
+from general_information_pipelines import GeneralInformationPipelines
+from project import Project
 
 class CurrentPipeline(mongoengine.Document):
-    project_id = mongoengine.ObjectIdField(required=True)
+    project = mongoengine.ReferenceField(Project, required=True)
     name = mongoengine.StringField(required=True)
     jobs = mongoengine.ListField(mongoengine.DictField())
 
@@ -18,7 +18,7 @@ class CurrentPipeline(mongoengine.Document):
         current_pipeline = CurrentPipeline()
         current_pipeline.name = name
         current_pipeline.jobs = jobs
-        current_pipeline.project_id = project.id
+        current_pipeline.project = project
 
         current_pipeline.save()
         return current_pipeline

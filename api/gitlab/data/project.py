@@ -1,9 +1,5 @@
 import mongoengine
-from urllib.parse import urlparse
-from user import User
-from gitlab.data import init_db
-from gitlab.data.user import User
-
+from __init__ import init_db
 
 class Project(mongoengine.Document):
     user_id = mongoengine.ObjectIdField(required=True)
@@ -17,7 +13,7 @@ class Project(mongoengine.Document):
         'collection': 'project'
     }
 
-    def create_project(self, user: User, description: str, name: str, web_url: str, branches: list):
+    def create_project(self, user, description: str, name: str, web_url: str, branches: list):
         project = Project()
         project.user_id = user.id
         project.description = description

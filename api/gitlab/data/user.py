@@ -1,11 +1,11 @@
 import mongoengine
-from gitlab.data import init_db
-from gitlab.data.project import Project
+from __init__ import init_db
+from project import Project
 
 
 class User(mongoengine.Document):
     username = mongoengine.StringField(required=True)
-    project_id = mongoengine.StringField(mongoengine.ObjectIdField)
+    project = mongoengine.ReferenceField(Project)
 
     init_db()
     meta = {
@@ -25,7 +25,7 @@ class User(mongoengine.Document):
         return user
 
 
-    def add_project_user(self, project: Project, user: User):
-        user.project_id.append(project.id)
+    def add_project_user(self, project: Project, user):
+        user.project = project
         user.save()
         return user
