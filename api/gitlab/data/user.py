@@ -14,18 +14,12 @@ class User(mongoengine.Document):
     }
 
     def create_user(self, username: str):
-        user = User()
-        user.username = username
-        user.save()
-        return user
+        self.username = username
+        self.save()
+        return self
 
 
-    def get_user(self, username: str):
-        user = User.objects(username=username).first()
-        return user
-
-
-    def add_project_user(self, project: Project, user):
-        user.project = project
-        user.save()
-        return user
+    def add_project_user(self, project: Project):
+        self.project = project
+        self.save()
+        return self

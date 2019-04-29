@@ -15,13 +15,12 @@ class CurrentPipeline(mongoengine.Document):
     }
 
     def create_current_pipeline(self, name: str, jobs: list, project: Project):
-        current_pipeline = CurrentPipeline()
-        current_pipeline.name = name
-        current_pipeline.jobs = jobs
-        current_pipeline.project = project
+        self.name = name
+        self.jobs = jobs
+        self.project = project
 
-        current_pipeline.save()
-        return current_pipeline
+        self.save()
+        return self
 
     def get_current_pipeline(self, project: Project):
         pipeline = GeneralInformationPipelines.get_general_information_pipeline(project)

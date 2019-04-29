@@ -14,17 +14,11 @@ class Project(mongoengine.Document):
     }
 
     def create_project(self, user, description: str, name: str, web_url: str, branches: list):
-        project = Project()
-        project.user_id = user.id
-        project.description = description
-        project.name = name
-        project.web_url = web_url
-        project.branches = branches
+        self.user_id = user.id
+        self.description = description
+        self.name = name
+        self.web_url = web_url
+        self.branches = branches
 
-        project.save()
-        return project
-
-
-    def get_project(self, name: str):
-        project = Project.objects(name=name).first()
-        return project
+        self.save()
+        return self
