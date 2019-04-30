@@ -1,6 +1,5 @@
 import mongoengine
 from gitlab.data import init_db
-from gitlab.data.general_information_pipelines import GeneralInformationPipelines
 from gitlab.data.project import Project
 
 
