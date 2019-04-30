@@ -1,5 +1,5 @@
 import mongoengine
-from __init__ import init_db
+from gitlab.data import init_db
 
 
 class Project(mongoengine.Document):
