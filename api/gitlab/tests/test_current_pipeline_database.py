@@ -1,13 +1,13 @@
-import unittest
-from mongoengine import *
+from gitlab.tests.base import BaseTestCase
 from gitlab.data import init_db
 from gitlab.data.user import User
 from gitlab.data.project import Project
-from gitlab.data.general_information_pipelines import GeneralInformationPipelines
+from gitlab.data.general_information_pipelines import \
+    GeneralInformationPipelines
 from gitlab.data.current_pipeline import CurrentPipeline
-import sys
 
-class Test(unittest.TestCase):
+
+class Test(BaseTestCase):
 
     def setup(self):
         init_db()
@@ -37,10 +37,8 @@ class Test(unittest.TestCase):
         pipeline_jobs = [{"Teste": "Testando"}]
         current_pipeline.create_current_pipeline(name, pipeline_jobs, project)
 
-        current_pipeline2 = CurrentPipeline.objects(name = name).first()
+        current_pipeline2 = CurrentPipeline.objects(name=name).first()
 
-        print(current_pipeline.id, file=sys.stderr)
-        print(current_pipeline2.id, file=sys.stderr)
         self.assertEqual(current_pipeline, current_pipeline2)
 
     def test_get_current_pipeline(self):
@@ -51,7 +49,7 @@ class Test(unittest.TestCase):
         user = User()
         user.username = "User test current pipeline"
         user.save()
-        
+
         project = Project()
         project.user_id = user.id
         project.description = "Test project current pipeline"
@@ -75,14 +73,3 @@ class Test(unittest.TestCase):
         pipelines_in_db = CurrentPipeline.get_current_pipeline(project)
         for pipeline in pipelines_in_db:
             self.assertEqual(currentpipeline, pipeline)
-
-
-
-
-
-
-
-        
-
-
-
