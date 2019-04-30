@@ -309,10 +309,6 @@ class Report():
         }
         project_id = self.get_project_id(project_owner, project_name)
         pipelines_durations = []
-        pipelines_total_time = 0
-        pipelines_average_time = 0
-        pipelines_lower_time = 0
-        pipelines_higher_time = 0
         for i in self.pipelines_ids:
             try:
                 response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(project_id=project_id["id"], current_pipeline_id=i), headers=headers)
@@ -323,8 +319,9 @@ class Report():
                 raise HTTPError(json.dumps(dict_error))
             else:
                 pipelines_durations.append(pipeline["duration"])
-                pipelines_total_time = pipelines_total_time + pipeline["duration"]
+                pipelines_total_time = pipeline["duration"]
         # print(pipelines_durations, file=sys.stderr)
+        # print(pipelines_total_time, file=sys.stderr)
         pipelines_average_time = pipelines_total_time / (len(self.pipelines_ids))
         pipelines_lower_time = min(pipelines_durations)
         pipelines_higher_time = max(pipelines_durations)
