@@ -23,10 +23,9 @@ class CurrentPipeline(mongoengine.Document):
         self.save()
         return self
 
-    def get_current_pipeline(self, project: Project):
-        pipeline = GeneralInformationPipelines.\
-            get_general_information_pipeline(project)
+    @staticmethod
+    def get_current_pipeline(project: Project):
         current_pipeline = CurrentPipeline.\
-            objects(pipeline_id=pipeline.id).all()
+            objects(project=project).all()
 
         return current_pipeline
