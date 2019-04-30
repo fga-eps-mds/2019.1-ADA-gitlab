@@ -35,6 +35,8 @@ def get_project_user(project_owner):
             return jsonify(UNAUTHORIZED), 401
         else:
             return jsonify(NOT_FOUND), 404
+    except IndexError:
+        return jsonify(NOT_FOUND), 404
     else:
         repositories_names = []
 

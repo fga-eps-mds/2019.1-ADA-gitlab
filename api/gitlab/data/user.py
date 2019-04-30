@@ -22,7 +22,6 @@ class User(mongoengine.Document):
         self.save()
         return self
 
-
     def get_user(self, username: str):
         user = User.objects(username=username).first()
         return user

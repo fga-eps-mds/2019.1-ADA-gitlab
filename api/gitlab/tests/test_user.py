@@ -9,6 +9,7 @@ from jsonschema import validate
 from gitlab.user.utils import User
 from requests.exceptions import HTTPError
 import os
+import sys
 
 
 class TestUser(BaseTestCase):
@@ -58,12 +59,11 @@ class TestUser(BaseTestCase):
     def test_get_project_user_invalid_project(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
         user = User(GITLAB_API_TOKEN)
-        project_owner = "wrong_name"
-        with self.assertRaises(HTTPError) as context:
+        project_owner = "wrong_project"
+        with self.assertRaises(IndexError) as context:
             user.get_project_user(project_owner)
-        invalid_project_json = json.loads(str(context.exception))
-        self.assertTrue(invalid_project_json["status_code"], 404)
-        validate(invalid_project_json, invalid_project_schema)
+        
+        self.assertTrue(str(context.exception), "list index out of range")
 
 
 if __name__ == "__main__":

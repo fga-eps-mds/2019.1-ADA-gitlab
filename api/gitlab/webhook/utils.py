@@ -17,7 +17,9 @@ class Webhook():
         user = User.objects(chat_id=chat_id).first()
         if user.project:
             dict_error = {"message":
-                          "Você já possui um projeto cadastrado"}
+                          "Eu vi aqui que você já tem um projeto cadastrado. "
+                          "Sinto muito, mas no momento não é possível "
+                          "cadastrar um projeto novo ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
         project = Project()
         project.save_webhook_infos(user, project_name, project_id)
@@ -29,11 +31,11 @@ class Webhook():
         chat_id = user_data["chat_id"]
         gitlab_user_id = user_data["gitlab_user_id"]
         existing_user = User.objects(chat_id=chat_id).first()
-        print('#'*30, file=sys.stderr)
-        print(existing_user, file=sys.stderr)
-        print('#'*30, file=sys.stderr)
         if existing_user:
             dict_error = {"message":
-                          "Esse usuário já existe"}
+                          "Eu vi aqui que você já cadastrou o usuário do GitLab. "
+                          "Sinto muito, mas no momento não é possível "
+                          "cadastrar um novo usuário do GitLab "
+                          "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
         user.save_gitlab_user_data(user, gitlab_user, chat_id, gitlab_user_id)

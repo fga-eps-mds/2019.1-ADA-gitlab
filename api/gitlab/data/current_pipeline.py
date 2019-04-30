@@ -1,7 +1,8 @@
 import mongoengine
 from gitlab.data import init_db
-from general_information_pipelines import GeneralInformationPipelines
+from gitlab.data.general_information_pipelines import GeneralInformationPipelines
 from gitlab.data.project import Project
+
 
 class CurrentPipeline(mongoengine.Document):
     project = mongoengine.ReferenceField(Project, required=True)
@@ -22,8 +23,9 @@ class CurrentPipeline(mongoengine.Document):
         self.save()
         return self
 
-    def get_current_pipeline(self, project: Project):
-        pipeline = GeneralInformationPipelines.get_general_information_pipeline(project)
-        current_pipeline = CurrentPipeline.objects(pipeline_id=pipeline.id).all()
+    @staticmethod
+    def get_current_pipeline(project: Project):
+        current_pipeline = CurrentPipeline.\
+            objects(project=project).all()
 
         return current_pipeline
