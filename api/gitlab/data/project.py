@@ -1,6 +1,7 @@
 import mongoengine
 from __init__ import init_db
 
+
 class Project(mongoengine.Document):
     user_id = mongoengine.ObjectIdField(required=True)
     description = mongoengine.StringField(required=True)
@@ -13,7 +14,8 @@ class Project(mongoengine.Document):
         'collection': 'project'
     }
 
-    def create_project(self, user, description: str, name: str, web_url: str, branches: list):
+    def create_project(self, user, description: str,
+                       name: str, web_url: str, branches: list):
         self.user_id = user.id
         self.description = description
         self.name = name

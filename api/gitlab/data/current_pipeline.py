@@ -3,6 +3,7 @@ from __init__ import init_db
 from general_information_pipelines import GeneralInformationPipelines
 from project import Project
 
+
 class CurrentPipeline(mongoengine.Document):
     project = mongoengine.ReferenceField(Project, required=True)
     name = mongoengine.StringField(required=True)
@@ -23,7 +24,9 @@ class CurrentPipeline(mongoengine.Document):
         return self
 
     def get_current_pipeline(self, project: Project):
-        pipeline = GeneralInformationPipelines.get_general_information_pipeline(project)
-        current_pipeline = CurrentPipeline.objects(pipeline_id=pipeline.id).all()
+        pipeline = GeneralInformationPipelines.\
+            get_general_information_pipeline(project)
+        current_pipeline = CurrentPipeline.\
+            objects(pipeline_id=pipeline.id).all()
 
         return current_pipeline

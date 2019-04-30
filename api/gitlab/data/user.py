@@ -18,7 +18,6 @@ class User(mongoengine.Document):
         self.save()
         return self
 
-
     def add_project_user(self, project: Project):
         self.project = project
         self.save()
