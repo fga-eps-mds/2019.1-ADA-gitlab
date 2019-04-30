@@ -1,17 +1,15 @@
 import mongoengine
-from __init__ import init_db
-from project import Project
+from gitlab.data import init_db
+from gitlab.data.project import Project
 
 
 class User(mongoengine.Document):
     init_db()
     username = mongoengine.StringField(max_length=100)
     project = mongoengine.ReferenceField(Project)
-    project_id = mongoengine.StringField(max_length=100)
     gitlab_user = mongoengine.StringField(max_length=100)
     chat_id = mongoengine.StringField(max_length=100)
     gitlab_user_id = mongoengine.StringField(max_length=100)
-    project_name = mongoengine.StringField(max_length=100)
 
 
     meta = {
@@ -36,10 +34,9 @@ class User(mongoengine.Document):
         user.save()
         return user
 
-    def save_gitlab_repo_data(self, user, project_name, project_id):
-        user.project_name = project_name
-        user.project_id = project_id
-        user.update(project_id=project_id, project_name=project_name)
+    def save_gitlab_repo_data(self, user, project):
+        user.project = project
+        user.update(project=project)
         return user
     
     def add_project_user(self, project):

@@ -1,7 +1,7 @@
 import mongoengine
-from __init__ import init_db
+from gitlab.data import init_db
 from general_information_pipelines import GeneralInformationPipelines
-from project import Project
+from gitlab.data.project import Project
 
 class CurrentPipeline(mongoengine.Document):
     project = mongoengine.ReferenceField(Project, required=True)

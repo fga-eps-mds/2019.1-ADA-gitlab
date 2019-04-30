@@ -1,8 +1,8 @@
 import mongoengine
 from urllib.parse import urlparse
 from gitlab.data import init_db
+import sys
 
-from __init__ import init_db
 
 class Project(mongoengine.Document):
     user_id = mongoengine.ObjectIdField(required=True)
@@ -10,19 +10,26 @@ class Project(mongoengine.Document):
     name = mongoengine.StringField(max_length=100)
     web_url = mongoengine.URLField()
     branches = mongoengine.ListField()
-    id = mongoengine.StringField(max_length=100)
+    project_id = mongoengine.StringField(max_length=100)
     init_db()
     meta = {
         'db_alias': 'AdaBot',
-        'collection': 'project'
+        'collection': 'Project'
     }
 
-    def create_project(self, user, description, name, web_url, branches):
+    def create_project(self, user, description, name, web_url, branches, project_id):
         self.user_id = user.id
         self.description = description
         self.name = name
         self.web_url = web_url
         self.branches = branches
+        self.project_id = project_id
+        self.save()
+        return self
 
+    def save_webhook_infos(self, user, name, project_id):
+        self.user_id = user.id
+        self.name = name
+        self.project_id = project_id
         self.save()
         return self

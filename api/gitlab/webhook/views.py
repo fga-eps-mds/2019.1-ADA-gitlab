@@ -3,6 +3,11 @@ from flask_cors import CORS
 import os
 import sys
 from gitlab.data.user import User
+from gitlab.data.project import Project
+from gitlab.webhook.utils import Webhook
+import json
+from requests.exceptions import HTTPError
+
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
@@ -25,11 +30,16 @@ def webhook_repository(userid, projectid):
 @webhook_blueprint.route("/webhooks/user", methods=["POST"])
 def register_user():
     user_data = request.get_json()
-    user = User()
-    gitlab_user = user_data["gitlab_user"]
-    chat_id = user_data["chat_id"]
-    gitlab_user_id = user_data["gitlab_user_id"]
-    user.save_gitlab_user_data(user, gitlab_user, chat_id, gitlab_user_id)
+    try:
+        webhook = Webhook()
+        webhook.register_user(user_data)
+    except HTTPError as error:
+        dict_message = json.loads(str(error))
+        return jsonify(dict_message), 203
+    else:
+        return jsonify({
+            "status": "OK"
+        }), 200
     return jsonify({
         "status": "OK"
     }), 200
@@ -38,14 +48,13 @@ def register_user():
 @webhook_blueprint.route("/webhooks/repo", methods=["POST"])
 def register_repository():
     repo_data = request.get_json()
-
-    project_name = repo_data["project_name"]
-    chat_id = repo_data["chat_id"]
-    project_id = repo_data["project_id"]
-
-    user = User.objects(chat_id=chat_id).first()
-
-    user.save_gitlab_repo_data(user, project_name, project_id)
-    return jsonify({
-        "status": "OK"
-    }), 200
+    try:
+        webhook = Webhook()
+        webhook.register_repo(repo_data)
+    except HTTPError as error:
+        dict_message = json.loads(str(error))
+        return jsonify(dict_message), 203
+    else:
+        return jsonify({
+            "status": "OK"
+        }), 200

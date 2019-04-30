@@ -1,6 +1,6 @@
 import mongoengine
-from __init__ import init_db
-from project import Project
+from gitlab.data import init_db
+from gitlab.data.project import Project
 
 class GeneralInformationPipelines(mongoengine.Document):
     project = mongoengine.ReferenceField(Project, required=True)
