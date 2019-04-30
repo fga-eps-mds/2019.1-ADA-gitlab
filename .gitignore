@@ -65,4 +65,5 @@ venv.bak/
 .history
 export.sh
 
+export.sh
 # End of https://www.gitignore.io/api/macos,python,visualstudiocode

@@ -9,6 +9,8 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
+    DB_URL = os.environ.get("DB_URL", "")
+    DB_NAME = os.environ.get("DB_NAME", "")
     MONGODB_SETTINGS = {
         "db": os.environ.get("DB_NAME", ""),
         "host": os.environ.get("DB_NAME", "")
