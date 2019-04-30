@@ -3,6 +3,8 @@ from requests.exceptions import HTTPError
 import json
 from flask import jsonify
 import sys
+import matplotlib.pyplot as matplot
+from datetime import date
 
 
 '''
@@ -47,7 +49,8 @@ Pipelines
     -succeded --> ok
     -failed --> ok
     -succeded_percentage --> ok
-    -Gráfico de sucesso de pipelines da última semana e último mês (imagem)
+    -Gráfico de sucesso de pipelines da última semana e último mês (imagem) ->\
+        via método check_pipeline_date()
 
 Current_pipeline --> ok
     -name --> ok
@@ -66,7 +69,7 @@ Por quanto tempo os pipelines estão rodando?
     -Gráfico de tempo de execução
 
     # pegar todos os id das pipelines existentes, via api get pipelines --> ok
-    # passar em cada pipeline e guardar a duracao
+    # passar em cada pipeline e guardar a duracao --> ok
 
 *** Info necessaria para pegar essas info: id do project
 '''
@@ -187,6 +190,9 @@ class Report():
             # print(self.repo_json, file=sys.stderr)
 
     def get_pipeline(self, project_owner, project_name):
+        '''Busca o numero de pipelines, quantas falharam, quantas passaram\
+           e busca as pipelines da ultima semana e do ultimo mes, via \
+           check_pipeline_date(), para montar um grafico'''
         # ultima pipeline
         # desempenho do ultimo mes
         headers = {
@@ -206,6 +212,7 @@ class Report():
             success_pipeline = 0
             failed_pipeline = 0
             for i, item in enumerate(pipelines):
+                # chamar a check_pipeline_date pra verificar a data da pipeline
                 self.pipelines_ids.append(pipelines[i]["id"])
                 # print(self.pipelines_ids, file=sys.stderr)
                 number_of_pipelines = number_of_pipelines + 1 #total
@@ -220,6 +227,34 @@ class Report():
             self.repo_json["pipelines"]["percent_succeded"] = percent_success
             self.repo_json["pipelines"]["current_pipeline_id"] = pipelines[0]["id"]
             self.repo_json["pipelines"]["current_pipeline_name"] = pipelines[0]["ref"]
+
+    def check_pipeline_date(self, project_owner, project_name, pipeline_id):
+        '''Busca a data da pipeline referida em pipeline_id e verifica se ela \
+           é da ultima semana ou do ultimo mes. Retorna true, se a pipeline \
+           for do ultimo mes ou da ultima semana, false caso contrario'''
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        project_id = self.get_project_id(project_owner, project_name)
+        try:
+            response = requests.get("https://gitlab.com/api/v4/projects/\
+                                {project_id}/pipelines/{pipeline_id}".format\
+                                (project_id=project_id["id"]), \
+                                 pipeline_id=pipeline_id, headers=headers)
+            pipeline = response.json()
+            response.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
+        else:
+            # checar a data da pipeline em pipeline["created_at"] e comparar
+            # com a data atual
+            # saber a data atual:
+            todays_date = date.today()
+            formated_date = today.strftime("%Y-%m-%d")
+            # saber qual o ultimo mes e qual a ultima semana
+            pass
 
     def get_current_pipeline(self, project_owner, project_name):
         headers = {
@@ -298,6 +333,17 @@ class Report():
         self.repo_json["pipelines_times"]["higher"] = pipelines_higher_time
         self.repo_json["pipelines_times"]["lower"] = pipelines_lower_time
         # print(pipelines_higher_time, file=sys.stderr)
+        # graph
+        #x = []
+        #for i in self.pipelines_ids:
+        #    x.append(i)
+        #y = []
+        #for i in pipelines_durations:
+        #    y.append(i)
+        #matplot.plot(x, y)
+        #matplot.xlabel("Pipeline id")
+        #matplot.ylabel("Time(s)")
+        #graph = matplot.show()
 
     def repo_informations(self, project_owner, project_name):
 
