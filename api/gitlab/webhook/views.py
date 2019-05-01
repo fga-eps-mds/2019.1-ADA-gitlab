@@ -35,14 +35,11 @@ def register_user():
         webhook.register_user(user_data)
     except HTTPError as error:
         dict_message = json.loads(str(error))
-        return jsonify(dict_message), 203
+        return jsonify(dict_message), 400
     else:
         return jsonify({
             "status": "OK"
         }), 200
-    return jsonify({
-        "status": "OK"
-    }), 200
 
 
 @webhook_blueprint.route("/webhooks/repo", methods=["POST"])
@@ -51,9 +48,12 @@ def register_repository():
     try:
         webhook = Webhook()
         webhook.register_repo(repo_data)
-    except HTTPError as error:
-        dict_message = json.loads(str(error))
-        return jsonify(dict_message), 203
+    except HTTPError as http_error:
+        dict_message = json.loads(str(http_error))
+        return jsonify(dict_message), 400
+    except AttributeError as attribute_error:
+        dict_message = json.loads(str(attribute_error))
+        return jsonify(dict_message), 400
     else:
         return jsonify({
             "status": "OK"

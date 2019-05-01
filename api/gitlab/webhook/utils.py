@@ -15,15 +15,22 @@ class Webhook():
         project_id = repo_data["project_id"]
 
         user = User.objects(chat_id=chat_id).first()
-        if user.project:
+        try:
+            if user.project:
+                dict_error = {"message":
+                            "Eu vi aqui que você já tem um projeto cadastrado. "
+                            "Sinto muito, mas no momento não é possível "
+                            "cadastrar um projeto novo ou alterá-lo."}
+                raise HTTPError(json.dumps(dict_error))
+            project = Project()
+            project.save_webhook_infos(user, project_name, project_id)
+            user.save_gitlab_repo_data(user, project)
+        except AttributeError:
             dict_error = {"message":
-                          "Eu vi aqui que você já tem um projeto cadastrado. "
-                          "Sinto muito, mas no momento não é possível "
-                          "cadastrar um projeto novo ou alterá-lo."}
-            raise HTTPError(json.dumps(dict_error))
-        project = Project()
-        project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(user, project)
+                            "Tive um erro tentando cadastrar seu repositório. "                            
+                            "Mais tarde você tenta. Ok?"}
+            raise AttributeError(json.dumps(dict_error))
+        
     
     def register_user(self, user_data):
         user = User()

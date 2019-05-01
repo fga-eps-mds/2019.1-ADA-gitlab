@@ -10,20 +10,19 @@ class Build():
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
 
-    def get_project_build(self, project_owner, project_name):
+    def get_project_build(self, project_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             pipeline = Pipeline(self.GITLAB_API_TOKEN)
-            pipeline_id = pipeline.get_project_pipeline(
-                project_owner, project_name)
+            pipeline_id = pipeline.get_project_pipeline_by_id(
+                project_id)
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/pipelines/"
                                     "{pipeline_id}/jobs"
-                                    .format(project_id=project_id["id"],
+                                    .format(project_id=project_id,
                                             pipeline_id=pipeline_id["id"]),
                                     headers=headers)
             build_dict = response.json()

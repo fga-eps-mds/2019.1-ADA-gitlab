@@ -5,6 +5,9 @@ from gitlab.pipeline.error_messages import NOT_FOUND, UNAUTHORIZED
 import json
 from requests.exceptions import HTTPError
 import os
+from gitlab.data.user import User
+from gitlab.data.project import Project
+
 
 
 pipeline_blueprint = Blueprint("pipeline", __name__)
@@ -20,13 +23,18 @@ def ping_pong():
     }), 200
 
 
-@pipeline_blueprint.route("/pipeline/<project_owner>/"
-                          "<project_name>", methods=["GET"])
-def get_project_pipeline(project_owner, project_name):
+@pipeline_blueprint.route("/pipeline/<chat_id>", methods=["GET"])
+def get_project_pipeline(chat_id):
     try:
-        pipeline = Pipeline(GITLAB_API_TOKEN)
-        requested_pipeline = pipeline.get_project_pipeline(project_owner,
-                                                           project_name)
+        user = User.objects(chat_id=chat_id).first()
+        project = user.project
+        project = Project.objects(id=project.id).first()
+        if project:
+            pipeline = Pipeline(GITLAB_API_TOKEN)
+            requested_pipeline = pipeline.get_project_pipeline_by_id(project.project_id)
+        else:
+            dict_error = {"status_code": 404}
+            raise HTTPError(json.dumps(dict_error))
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:
