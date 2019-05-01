@@ -87,9 +87,25 @@ class Report():
                           "project": {"description": 0, "name": 0, "web_url": 0},
                           "pipelines": {"number_of_pipelines": 0, "succeded_pipelines": 0,
                                         "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
-                                        "current_pipeline_name": 0}, "current_pipeline":
-                          {"name": 0, "jobs": 0}, "pipelines_times": {"average": 0,
-                                                                      "lower": 0, "higher": 0, "total": 0}}
+                                        "current_pipeline_name": 0, "recents_pipelines": {
+                                            "last_7_days":{
+                                                "number_of_pipelines":0,
+                                                "percent_succeded": 0,
+                                                "percent_failed" : 0, 
+                                                "succeded_pipelines": 0,
+                                                "failed_pipelines": 0
+                                            },
+                                            "last_30_days":{
+                                                "number_of_pipelines":0,
+                                                "percent_succeded": 0,
+                                                "percent_failed" : 0, 
+                                                "succeded_pipelines": 0,
+                                                "failed_pipelines": 0
+                                            }
+                                        }
+                                    }, 
+                            "current_pipeline":{"name": 0, "jobs": 0}, "pipelines_times": 
+                            {"average": 0, "lower": 0, "higher": 0, "total": 0}}
 
     def get_branches(self, project_id):
         headers = {
@@ -210,17 +226,52 @@ class Report():
             number_of_pipelines = 0
             success_pipeline = 0
             failed_pipeline = 0
+
+            last_7_days = [0,0,0,0,0] # total, succeded, failed, percent succ, percent fail
+            last_30_days = [0,0,0,0,0]# total, succeded, failed, percent succ, percent fail 
             for i, item in enumerate(pipelines):
                 # chamar a check_pipeline_date pra verificar a data da pipeline
                 self.pipelines_ids.append(pipelines[i]["id"])
-                self.check_pipeline_date(
+                is_recent = self.check_pipeline_date(
                     project_id, pipelines[i]["id"])
+                if(is_recent[0]):
+                    if(is_recent[1] == 7):
+                        last_7_days[0]+=1
+                        if(pipelines[i]["status"] == "success"):
+                            last_7_days[1]+=1
+                        else:
+                            last_7_days[2]+=1
+                    else:
+                        last_30_days[0]+=1
+                        if(pipelines[i]["status"] == "success"):
+                            last_30_days[1]+=1
+                        else:
+                            last_30_days[2]+=1
+
                 # print(self.pipelines_ids, file=sys.stderr)
                 number_of_pipelines = number_of_pipelines + 1  # total
                 if pipelines[i]["status"] == "success":
                     success_pipeline = success_pipeline + 1
                 else:
                     failed_pipeline = failed_pipeline + 1
+            if(last_30_days[0]):
+                last_30_days[3] = (last_30_days[1]/last_30_days[0])*100.0
+                last_30_days[4] = 100 - last_30_days[3]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_30_days"]["number_of_pipelines"] = last_30_days[0]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_30_days"]["percent_succeded"] = last_30_days[3]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_30_days"]["percent_failed"] = last_30_days[4]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_30_days"]["succeded_pipelines"] = last_30_days[1]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_30_days"]["failed_pipelines"] = last_30_days[2]
+
+            if(last_7_days[0]):
+                last_7_days[3] = (last_7_days[1]/last_7_days[0])*100.0
+                last_7_days[4] = 100 - last_7_days[3]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["number_of_pipelines"] = last_7_days[0]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["percent_succeded"] = last_7_days[3]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["percent_failed"] = last_7_days[4]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["succeded_pipelines"] = last_7_days[1]
+            self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["failed_pipelines"] = last_7_days[2]
+
             percent_success = (success_pipeline / number_of_pipelines) * 100.0
             self.repo_json["pipelines"]["number_of_pipelines"] = number_of_pipelines
             self.repo_json["pipelines"]["succeded_pipelines"] = success_pipeline
@@ -255,10 +306,17 @@ class Report():
             pipeline_date = datetime.strptime(
                 pipeline['created_at'][0:10], "%Y-%m-%d")
             pipeline_date = pipeline_date.date()
+            qntd_days = todays_date-pipeline_date
+
+            if(qntd_days.days <= 7):
+                return [True, 7]
+            elif(qntd_days.days <= 30):
+                return [True, 30]
+            return [False]
+
             # print(todays_date-pipeline_date, file=sys.stderr)
             # todays_date = datetime.strptime(todays_date, "%Y-%m-%d")
             # saber qual o ultimo mes e qual a ultima semana
-            pass
 
     def get_current_pipeline(self, project_id):
         headers = {
@@ -336,16 +394,16 @@ class Report():
         self.repo_json["pipelines_times"]["lower"] = pipelines_lower_time
         # print(pipelines_higher_time, file=sys.stderr)
         # graph
-        #x = []
+        # x = []
         # for i in self.pipelines_ids:
         #    x.append(i)
-        #y = []
+        # y = []
         # for i in pipelines_durations:
         #    y.append(i)
-        #matplot.plot(x, y)
-        #matplot.xlabel("Pipeline id")
+        # matplot.plot(x, y)
+        # matplot.xlabel("Pipeline id")
         # matplot.ylabel("Time(s)")
-        #graph = matplot.show()
+        # graph = matplot.show()
 
     def repo_informations(self, project_owner, project_name):
 
@@ -354,13 +412,13 @@ class Report():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         project_id = self.get_project_id(project_owner, project_name)
-        self.get_branches(project_id)
-        self.get_members(project_id)
-        self.get_commits(project_id)
-        self.get_project(project_id)
+        # self.get_branches(project_id)
+        # self.get_members(project_id)
+        # self.get_commits(project_id)
+        # self.get_project(project_id)
         self.get_pipeline(project_id)
-        self.get_current_pipeline(project_id)
-        self.get_pipelines_times(project_id)
+        # self.get_current_pipeline(project_id)
+        # self.get_pipelines_times(project_id)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
