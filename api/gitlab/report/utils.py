@@ -5,6 +5,7 @@ from flask import jsonify
 import sys
 import matplotlib.pyplot as matplot
 from datetime import date
+from datetime import datetime
 
 
 '''
@@ -74,19 +75,21 @@ Por quanto tempo os pipelines estão rodando?
 *** Info necessaria para pegar essas info: id do project
 '''
 
+
 class Report():
     pipelines_ids = []
+
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
         self.repo_json = {"branches": {"name": 0}, "members": {"name": 0, "username": 0,
-                         "state": 0}, "commits": {"last_commit": {"title": 0, "author_name": 0,
-                         "author_email": 0, "authored_date": 0}, "number_of_commits": 0},
+                                                               "state": 0}, "commits": {"last_commit": {"title": 0, "author_name": 0,
+                                                                                                        "author_email": 0, "authored_date": 0}, "number_of_commits": 0},
                           "project": {"description": 0, "name": 0, "web_url": 0},
-                          "pipelines":{"number_of_pipelines": 0, "succeded_pipelines": 0,
-                          "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
-                          "current_pipeline_name": 0}, "current_pipeline":
+                          "pipelines": {"number_of_pipelines": 0, "succeded_pipelines": 0,
+                                        "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
+                                        "current_pipeline_name": 0}, "current_pipeline":
                           {"name": 0, "jobs": 0}, "pipelines_times": {"average": 0,
-                          "lower": 0, "higher": 0, "total": 0}}
+                                                                      "lower": 0, "higher": 0, "total": 0}}
 
     def get_branches(self, project_owner, project_name):
         headers = {
@@ -118,7 +121,8 @@ class Report():
 
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/members".format(project_id=project_id["id"]), headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/members".format(
+                project_id=project_id["id"]), headers=headers)
             members_json = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
@@ -127,9 +131,9 @@ class Report():
         else:
             data_members = {"name": [], "username": [], "state": []}
             for i, item in enumerate(members_json):
-                 data_members["name"].append(members_json[i]["name"])
-                 data_members["username"].append(members_json[i]["username"])
-                 data_members["state"].append(members_json[i]["state"])
+                data_members["name"].append(members_json[i]["name"])
+                data_members["username"].append(members_json[i]["username"])
+                data_members["state"].append(members_json[i]["state"])
             self.repo_json["members"]["name"] = data_members["name"]
             self.repo_json["members"]["username"] = data_members["username"]
             self.repo_json["members"]["state"] = data_members["state"]
@@ -143,13 +147,13 @@ class Report():
 
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/repository/commits".format(project_id=
-                                     project_id["id"]), headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/repository/commits".format(
+                project_id=project_id["id"]), headers=headers)
             commits_json = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
-                dict_error = {"status_code": http_error.response.status_code}
-                raise HTTPError(json.dumps(dict_error))
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
         else:
             self.repo_json["commits"]["last_commit"]["title"] = commits_json[0]["title"]
             self.repo_json["commits"]["last_commit"]["author_name"] = commits_json[0]["author_name"]
@@ -163,8 +167,7 @@ class Report():
             # print(self.repo_json, file=sys.stderr)
 
     def get_jobs(self, project_id, headers):
-        pass # quantos jobs vamos pegar ?
-
+        pass  # quantos jobs vamos pegar ?
 
     def get_project(self, project_owner, project_name):
 
@@ -175,7 +178,8 @@ class Report():
 
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}".format(project_id=project_id["id"]), headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}".format(
+                project_id=project_id["id"]), headers=headers)
             project_json = response.json()
 
             response.raise_for_status()
@@ -201,7 +205,8 @@ class Report():
         }
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines".format(project_id=project_id["id"]), headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines".format(
+                project_id=project_id["id"]), headers=headers)
             pipelines = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
@@ -214,8 +219,10 @@ class Report():
             for i, item in enumerate(pipelines):
                 # chamar a check_pipeline_date pra verificar a data da pipeline
                 self.pipelines_ids.append(pipelines[i]["id"])
+                self.check_pipeline_date(
+                    project_owner, project_name, pipelines[i]["id"])
                 # print(self.pipelines_ids, file=sys.stderr)
-                number_of_pipelines = number_of_pipelines + 1 #total
+                number_of_pipelines = number_of_pipelines + 1  # total
                 if pipelines[i]["status"] == "success":
                     success_pipeline = success_pipeline + 1
                 else:
@@ -238,10 +245,10 @@ class Report():
         }
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/\
-                                {project_id}/pipelines/{pipeline_id}".format\
-                                (project_id=project_id["id"]), \
-                                 pipeline_id=pipeline_id, headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/"
+                                    "{project_id}/pipelines/{pipeline_id}".format
+                                    (project_id=project_id["id"],
+                                     pipeline_id=pipeline_id), headers=headers)
             pipeline = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
@@ -252,7 +259,11 @@ class Report():
             # com a data atual
             # saber a data atual:
             todays_date = date.today()
-            formated_date = today.strftime("%Y-%m-%d")
+            pipeline_date = datetime.strptime(
+                pipeline['created_at'][0:10], "%Y-%m-%d")
+            pipeline_date = pipeline_date.date()
+            # print(todays_date-pipeline_date, file=sys.stderr)
+            # todays_date = datetime.strptime(todays_date, "%Y-%m-%d")
             # saber qual o ultimo mes e qual a ultima semana
             pass
 
@@ -266,7 +277,8 @@ class Report():
         current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
         project_id = self.get_project_id(project_owner, project_name)
         try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}/jobs".format(project_id=project_id["id"], current_pipeline_id=current_pipeline_id), headers=headers)
+            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}/jobs".format(
+                project_id=project_id["id"], current_pipeline_id=current_pipeline_id), headers=headers)
             current_pipeline = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
@@ -276,10 +288,10 @@ class Report():
             jobs = []
             for i, item in enumerate(current_pipeline):
                 jobs.append({"name": current_pipeline[i]["name"],
-                    "stage": current_pipeline[i]["stage"],
-                    "status": current_pipeline[i]["status"],
-                    "duration": current_pipeline[i]["duration"],
-                    "web_url": current_pipeline[i]["web_url"]})
+                             "stage": current_pipeline[i]["stage"],
+                             "status": current_pipeline[i]["status"],
+                             "duration": current_pipeline[i]["duration"],
+                             "web_url": current_pipeline[i]["web_url"]})
         self.repo_json["current_pipeline"]["name"] = current_pipeline_name
         self.repo_json["current_pipeline"]["jobs"] = jobs
 
@@ -311,7 +323,8 @@ class Report():
         pipelines_durations = []
         for i in self.pipelines_ids:
             try:
-                response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(project_id=project_id["id"], current_pipeline_id=i), headers=headers)
+                response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(
+                    project_id=project_id["id"], current_pipeline_id=i), headers=headers)
                 pipeline = response.json()
                 response.raise_for_status()
             except HTTPError as http_error:
@@ -322,7 +335,8 @@ class Report():
                 pipelines_total_time = pipeline["duration"]
         # print(pipelines_durations, file=sys.stderr)
         # print(pipelines_total_time, file=sys.stderr)
-        pipelines_average_time = pipelines_total_time / (len(self.pipelines_ids))
+        pipelines_average_time = pipelines_total_time / \
+            (len(self.pipelines_ids))
         pipelines_lower_time = min(pipelines_durations)
         pipelines_higher_time = max(pipelines_durations)
         self.repo_json["pipelines_times"]["average"] = pipelines_average_time
@@ -332,14 +346,14 @@ class Report():
         # print(pipelines_higher_time, file=sys.stderr)
         # graph
         #x = []
-        #for i in self.pipelines_ids:
+        # for i in self.pipelines_ids:
         #    x.append(i)
         #y = []
-        #for i in pipelines_durations:
+        # for i in pipelines_durations:
         #    y.append(i)
         #matplot.plot(x, y)
         #matplot.xlabel("Pipeline id")
-        #matplot.ylabel("Time(s)")
+        # matplot.ylabel("Time(s)")
         #graph = matplot.show()
 
     def repo_informations(self, project_owner, project_name):
