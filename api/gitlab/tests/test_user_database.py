@@ -20,7 +20,7 @@ class Test(BaseTestCase):
         user2 = User.objects(username=username).first()
         self.assertEqual(user, user2)
 
-    def test_add_project_user(self):
+    def test_save_gitlab_repo_data(self):
         User.drop_collection()
         user = User()
         username = "teste_User"
@@ -36,7 +36,20 @@ class Test(BaseTestCase):
         project.branches = ["branch1", "branch2"]
         project.save()
 
-        user.add_project_user(project)
+        user.save_gitlab_repo_data(project)
 
         project_user = User.objects(project=project).first()
         self.assertEqual(user, project_user)
+
+    def test_save_gitlab_user_data(self):
+        gitlab_user = 'git_user'
+        chat_id = 'id'
+        gitlab_user_id = 'git_id'
+        username = 'nomeee'
+        user = User()
+        user.username = username
+        user.save()
+        user.save_gitlab_user_data(gitlab_user, chat_id, gitlab_user_id)
+
+        user_db = User.objects(username=username).first()
+        self.assertEqual(user, user_db)

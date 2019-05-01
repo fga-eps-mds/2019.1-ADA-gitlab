@@ -32,7 +32,7 @@ class Pipeline():
                 dict_error = {"status_code": 404}
                 raise HTTPError(json.dumps(dict_error))
             return requested_pipeline[0]
-    
+
     def get_project_id(self, project_owner, project_name):
         headers = {
             "Content-Type": "application/json",

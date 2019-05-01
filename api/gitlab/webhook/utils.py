@@ -27,7 +27,7 @@ class Webhook():
                 raise HTTPError(json.dumps(dict_error))
             project = Project()
             project.save_webhook_infos(user, project_name, project_id)
-            user.save_gitlab_repo_data(user, project)
+            user.save_gitlab_repo_data(project)
         except AttributeError:
             dict_error = {"message":
                           "Tive um erro tentando cadastrar seu repositório. "
@@ -47,7 +47,7 @@ class Webhook():
                           "é possível cadastrar um novo usuário do GitLab "
                           "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
-        user.save_gitlab_user_data(user, gitlab_user, chat_id, gitlab_user_id)
+        user.save_gitlab_user_data(gitlab_user, chat_id, gitlab_user_id)
 
     def get_pipeline_infos(self, project_id, pipeline_id):
         headers = {"Content-Type": "application/json",
@@ -102,3 +102,23 @@ class Webhook():
                                   stage=job_build[0]['stage'])
         return {"jobs_message": jobs_message,
                 "summary_message": summary_message}
+
+    def build_status_message(self, content, jobs):
+        if content["object_attributes"]["status"] == "success":
+            status_message = "Muito bem! Um novo pipeline (de id #{id} "\
+                             "da branch {branch}) terminou com sucesso. "\
+                             "Se você quiser conferí-lo, "\
+                             "o link é {link}".format(
+                                id=content["object_attributes"]["id"],
+                                branch=content["object_attributes"]["ref"],
+                                link=jobs[0]["web_url"])
+        elif content["object_attributes"]["status"] == "failed":
+            status_message = "Poxa.. Um novo pipeline (de {id} e "\
+                             "{branch}) falhou. Se você "\
+                             "quiser conferí-lo, o link é {link}".format(
+                                id=content["object_attributes"]["id"],
+                                branch=content["object_attributes"]["ref"],
+                                link=jobs[0]["web_url"])
+        else:
+            return 'OK'
+        return status_message

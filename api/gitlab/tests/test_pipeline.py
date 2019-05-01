@@ -39,7 +39,7 @@ class TestPipeline(BaseTestCase):
         project_name = 'ada-gitlab'
         project_id = '11789629'
         project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(user, project)
+        user.save_gitlab_repo_data(project)
         response = self.client.get("/pipeline/{chat_id}"
                                    .format(chat_id=user.chat_id))
         data = json.loads(response.data.decode())
