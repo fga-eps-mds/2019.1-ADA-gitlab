@@ -26,7 +26,7 @@ unit test:
     FLASK_ENV: development
     FLASK_APP: gitlab/__init__.py
     APP_SETTINGS: gitlab.config.DevelopmentConfig  
-  before_script:    
+  before_script:
     - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
     - pip install -r docker/requirements.txt    
     - cd api/

@@ -38,7 +38,7 @@ class TestBuild(BaseTestCase):
         project_name = 'ada-gitlab'
         project_id = '11789629'
         project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(user, project)
+        user.save_gitlab_repo_data(project)
         response = self.client.get("/build/{chat_id}"
                                    .format(chat_id=user.chat_id))
         data = json.loads(response.data.decode())
@@ -73,7 +73,7 @@ class TestBuild(BaseTestCase):
         project_name = 'ada-gitlab'
         project_id = '11789629'
         project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(user, project)
+        user.save_gitlab_repo_data(project)
         build = Build(GITLAB_API_TOKEN)
         requested_build = build.get_project_build(project.project_id)
         validate(requested_build, valid_schema)
@@ -91,7 +91,7 @@ class TestBuild(BaseTestCase):
         project_name = 'ada-gitlab'
         project_id = '11789629'
         project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(user, project)
+        user.save_gitlab_repo_data(project)
         with self.assertRaises(AttributeError) as context:
             build.get_project_build(project.project_id)
         unauthorized_json = json.loads(str(context.exception))

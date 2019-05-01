@@ -20,24 +20,15 @@ class User(mongoengine.Document):
         self.save()
         return self
 
-    def get_user(self, username: str):
-        user = User.objects(username=username).first()
-        return user
-
-    def save_gitlab_user_data(self, user, gitlab_user,
+    def save_gitlab_user_data(self, gitlab_user,
                               chat_id, gitlab_user_id):
-        user.gitlab_user = gitlab_user
-        user.chat_id = chat_id
-        user.gitlab_user_id = gitlab_user_id
-        user.save()
-        return user
-
-    def save_gitlab_repo_data(self, user, project):
-        user.project = project
-        user.update(project=project)
-        return user
-
-    def add_project_user(self, project):
-        self.project = project
+        self.gitlab_user = gitlab_user
+        self.chat_id = chat_id
+        self.gitlab_user_id = gitlab_user_id
         self.save()
+        return self
+
+    def save_gitlab_repo_data(self, project):
+        self.project = project
+        self.update(project=project)
         return self

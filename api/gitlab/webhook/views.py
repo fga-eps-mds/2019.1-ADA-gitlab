@@ -7,12 +7,12 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import telegram
-import sys
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
+
 
 @webhook_blueprint.route("/webhook/<user_id>/<project_id>",
                          methods=["POST", "GET"])
@@ -22,7 +22,7 @@ def webhook_repository(user_id, project_id):
         if content['object_kind'] == "pipeline":
             webhook = Webhook()
             pipeline_id = content["object_attributes"]["id"]
-            jobs = webhook.get_pipeline_infos(project_id, pipeline_id)            
+            jobs = webhook.get_pipeline_infos(project_id, pipeline_id)
             messages = webhook.build_message(jobs)
             if content["object_attributes"]["status"] == "success":
                 status_message = "Muito bem! Um novo pipeline (de id #{id} "\
@@ -45,8 +45,10 @@ def webhook_repository(user_id, project_id):
             user = User.objects(project=project.id).first()
             bot = telegram.Bot(token=ACCESS_TOKEN)
             bot.send_message(chat_id=user.chat_id, text=status_message)
-            bot.send_message(chat_id=user.chat_id, text=messages["jobs_message"])
-            bot.send_message(chat_id=user.chat_id, text=messages["summary_message"])
+            bot.send_message(chat_id=user.chat_id,
+                             text=messages["jobs_message"])
+            bot.send_message(chat_id=user.chat_id,
+                             text=messages["summary_message"])
             return 'OK'
     else:
         return "OK"
