@@ -2,6 +2,12 @@ from gitlab.data.user import User
 from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
+import os
+import requests
+
+
+GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 
 class Webhook():
@@ -42,3 +48,57 @@ class Webhook():
                           "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
         user.save_gitlab_user_data(user, gitlab_user, chat_id, gitlab_user_id)
+
+    def get_pipeline_infos(self, project_id, pipeline_id):
+        headers = {"Content-Type": "application/json",
+                   "Authorization": "Bearer " + GITLAB_API_TOKEN}
+        response = requests.get("https://gitlab.com/api/"
+                                "v4/projects/{project_id}/pipelines/"
+                                "{pipeline_id}/jobs".format(
+                                        project_id=project_id,
+                                        pipeline_id=pipeline_id),
+                                headers=headers)
+        response.raise_for_status()
+        resp = response.json()
+        requested_build = []
+        for i, item in enumerate(resp):
+            job_data = {"job_id": 0, "branch": 0,
+                        "commit": 0, "stage": 0,
+                        "job_name": 0, "status": 0,
+                        "web_url": 0}
+            job_data["job_id"] = resp[i]["id"]
+            job_data["branch"] = resp[i]["ref"]
+            job_data["commit"] = resp[i]["commit"]["title"]
+            job_data["stage"] = resp[i]["stage"]
+            job_data["job_name"] = resp[i]["name"]
+            job_data["status"] = resp[i]["status"]
+            job_data["web_url"] = resp[i]["web_url"]
+            job_data["pipeline_url"] = resp[i]["pipeline"]["web_url"]
+            requested_build.append(job_data)
+        return requested_build
+
+    def build_message(self, job_build):
+        jobs_message = "Os passos da build são:\n"
+
+        for i, item in enumerate(job_build):
+            if job_build[i]['status'] == "success":
+                status = "✅"
+            elif job_build[i]['status'] == "failed":
+                status = "❌"
+            else:
+                status = "🔄"
+
+            jobs_message += "{status} {job_name}\n"\
+                            .format(status=status,
+                                    job_name=job_build[i]['job_name'])
+
+        summary_message = 'A build #{job_id} '\
+                          'da branch {branch}, '\
+                          'commit "{commit}", '\
+                          'está no estágio de "{stage}".'\
+                          .format(job_id=job_build[0]['job_id'],
+                                  branch=job_build[0]['branch'],
+                                  commit=job_build[0]['commit'],
+                                  stage=job_build[0]['stage'])
+        return {"jobs_message": jobs_message,
+                "summary_message": summary_message}

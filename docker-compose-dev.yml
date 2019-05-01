@@ -18,6 +18,7 @@ services:
       - APP_SETTINGS=gitlab.config.DevelopmentConfig
       - DB_URL=${DB_URL}
       - DB_NAME=${DB_NAME}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
   mongo-gitlab:
     image: mongo
     command: mongod --port 27010
