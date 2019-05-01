@@ -34,7 +34,12 @@ class Test(BaseTestCase):
 
         current_pipeline = CurrentPipeline()
         name = "Test current"
-        pipeline_jobs = [{"Teste": "Testando"}]
+        pipeline_jobs = [{"duration": 9.8,
+                          'date': '03/04/2019',
+                          'name': 'nome',
+                          'stage': 'flake8',
+                          'status': False,
+                          'web_url': 'http://teste.com'}]
         current_pipeline.create_current_pipeline(name, pipeline_jobs, project)
 
         current_pipeline2 = CurrentPipeline.objects(name=name).first()

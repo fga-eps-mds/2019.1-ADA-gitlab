@@ -14,6 +14,28 @@ class CurrentPipeline(mongoengine.Document):
         'collection': 'CurrentPipeline'
     }
 
+    def clean(self):
+        keys = {'duration': 'double',
+                'date': 'str',
+                'name': 'str',
+                'stage': 'str',
+                'status': 'bool',
+                'web_url': 'str'}
+        for job in pipeline_jobs:
+            if list(keys.keys()) == list(job.keys()):
+                # everything is okay is job has all keys
+                pass
+            else:
+                raise ValidationError('O job não possui todas as informações')
+            for key in keys:
+                if '<class \'' + keys[key] + '\'>' == str(type(job[key])):
+                    # everything okay
+                    pass
+                else:
+                    raise ValidationError('Os dados salvos são '
+                                          + 'incompatíveis com a estrutura')
+
+
     def create_current_pipeline(self, name: str, jobs: list, project: Project):
         self.name = name
         self.jobs = jobs
