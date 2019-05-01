@@ -29,7 +29,8 @@ class GeneralInformationPipelines(mongoengine.Document):
         general_information_pipeline = GeneralInformationPipelines.objects(
             project=project).first()
         return general_information_pipeline
-
+"""
+Due to changes on the architecture, it is only gonna be used and fixed on the next release 
     def add_pipeline(self, pipeline, project: Project):
         general_information_pipeline = self.\
                                     get_general_information_pipeline(project)
@@ -48,3 +49,4 @@ class GeneralInformationPipelines(mongoengine.Document):
             # do nothing, if pipeline fails,
             #  only the number of pipelines increases
             pass
+"""
