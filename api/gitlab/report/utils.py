@@ -91,12 +91,11 @@ class Report():
                           {"name": 0, "jobs": 0}, "pipelines_times": {"average": 0,
                                                                       "lower": 0, "higher": 0, "total": 0}}
 
-    def get_branches(self, project_owner, project_name):
+    def get_branches(self, project_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/repository/branches"
@@ -113,13 +112,12 @@ class Report():
                 branch_name["name"].append(branches_json[i]["name"])
             self.repo_json["branches"]["name"] = branch_name["name"]
 
-    def get_members(self, project_owner, project_name):
+    def get_members(self, project_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
 
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/members".format(
                 project_id=project_id["id"]), headers=headers)
@@ -138,14 +136,13 @@ class Report():
             self.repo_json["members"]["username"] = data_members["username"]
             self.repo_json["members"]["state"] = data_members["state"]
 
-    def get_commits(self, project_owner, project_name):
+    def get_commits(self, project_id):
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
 
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/repository/commits".format(
                 project_id=project_id["id"]), headers=headers)
@@ -169,14 +166,12 @@ class Report():
     def get_jobs(self, project_id, headers):
         pass  # quantos jobs vamos pegar ?
 
-    def get_project(self, project_owner, project_name):
+    def get_project(self, project_id):
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}".format(
                 project_id=project_id["id"]), headers=headers)
@@ -193,7 +188,7 @@ class Report():
 
             # print(self.repo_json, file=sys.stderr)
 
-    def get_pipeline(self, project_owner, project_name):
+    def get_pipeline(self, project_id):
         '''Busca o numero de pipelines, quantas falharam, quantas passaram\
            e busca as pipelines da ultima semana e do ultimo mes, via \
            check_pipeline_date(), para montar um grafico'''
@@ -203,7 +198,6 @@ class Report():
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines".format(
                 project_id=project_id["id"]), headers=headers)
@@ -220,7 +214,7 @@ class Report():
                 # chamar a check_pipeline_date pra verificar a data da pipeline
                 self.pipelines_ids.append(pipelines[i]["id"])
                 self.check_pipeline_date(
-                    project_owner, project_name, pipelines[i]["id"])
+                    project_id, pipelines[i]["id"])
                 # print(self.pipelines_ids, file=sys.stderr)
                 number_of_pipelines = number_of_pipelines + 1  # total
                 if pipelines[i]["status"] == "success":
@@ -235,7 +229,7 @@ class Report():
             self.repo_json["pipelines"]["current_pipeline_id"] = pipelines[0]["id"]
             self.repo_json["pipelines"]["current_pipeline_name"] = pipelines[0]["ref"]
 
-    def check_pipeline_date(self, project_owner, project_name, pipeline_id):
+    def check_pipeline_date(self, project_id, pipeline_id):
         '''Busca a data da pipeline referida em pipeline_id e verifica se ela \
            é da ultima semana ou do ultimo mes. Retorna true, se a pipeline \
            for do ultimo mes ou da ultima semana, false caso contrario'''
@@ -243,7 +237,6 @@ class Report():
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/"
                                     "{project_id}/pipelines/{pipeline_id}".format
@@ -267,7 +260,7 @@ class Report():
             # saber qual o ultimo mes e qual a ultima semana
             pass
 
-    def get_current_pipeline(self, project_owner, project_name):
+    def get_current_pipeline(self, project_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
@@ -275,7 +268,6 @@ class Report():
         # saber qual e a pipeline atual
         current_pipeline_name = self.repo_json["pipelines"]["current_pipeline_name"]
         current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
-        project_id = self.get_project_id(project_owner, project_name)
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}/jobs".format(
                 project_id=project_id["id"], current_pipeline_id=current_pipeline_id), headers=headers)
@@ -314,12 +306,11 @@ class Report():
             requested_id = response.json()
             return requested_id
 
-    def get_pipelines_times(self, project_owner, project_name):
+    def get_pipelines_times(self, project_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
         pipelines_durations = []
         for i in self.pipelines_ids:
             try:
@@ -358,13 +349,18 @@ class Report():
 
     def repo_informations(self, project_owner, project_name):
 
-        self.get_branches(project_owner, project_name)
-        self.get_members(project_owner, project_name)
-        self.get_commits(project_owner, project_name)
-        self.get_project(project_owner, project_name)
-        self.get_pipeline(project_owner, project_name)
-        self.get_current_pipeline(project_owner, project_name)
-        self.get_pipelines_times(project_owner, project_name)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+        }
+        project_id = self.get_project_id(project_owner, project_name)
+        self.get_branches(project_id)
+        self.get_members(project_id)
+        self.get_commits(project_id)
+        self.get_project(project_id)
+        self.get_pipeline(project_id)
+        self.get_current_pipeline(project_id)
+        self.get_pipelines_times(project_id)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
