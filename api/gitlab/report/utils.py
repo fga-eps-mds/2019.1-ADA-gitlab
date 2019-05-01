@@ -91,20 +91,20 @@ class Report():
                                             "last_7_days":{
                                                 "number_of_pipelines":0,
                                                 "percent_succeded": 0,
-                                                "percent_failed" : 0, 
+                                                "percent_failed" : 0,
                                                 "succeded_pipelines": 0,
                                                 "failed_pipelines": 0
                                             },
                                             "last_30_days":{
                                                 "number_of_pipelines":0,
                                                 "percent_succeded": 0,
-                                                "percent_failed" : 0, 
+                                                "percent_failed" : 0,
                                                 "succeded_pipelines": 0,
                                                 "failed_pipelines": 0
                                             }
                                         }
-                                    }, 
-                            "current_pipeline":{"name": 0, "jobs": 0}, "pipelines_times": 
+                                    },
+                            "current_pipeline":{"name": 0, "jobs": 0}, "pipelines_times":
                             {"average": 0, "lower": 0, "higher": 0, "total": 0}}
 
     def get_branches(self, project_id):
@@ -228,7 +228,7 @@ class Report():
             failed_pipeline = 0
 
             last_7_days = [0,0,0,0,0] # total, succeded, failed, percent succ, percent fail
-            last_30_days = [0,0,0,0,0]# total, succeded, failed, percent succ, percent fail 
+            last_30_days = [0,0,0,0,0]# total, succeded, failed, percent succ, percent fail
             for i, item in enumerate(pipelines):
                 # chamar a check_pipeline_date pra verificar a data da pipeline
                 self.pipelines_ids.append(pipelines[i]["id"])
@@ -386,7 +386,7 @@ class Report():
         # print(pipelines_total_time, file=sys.stderr)
         pipelines_average_time = pipelines_total_time / \
             (len(self.pipelines_ids))
-        try:    
+        try:
             pipelines_lower_time = min(pipelines_durations)
             pipelines_higher_time = max(pipelines_durations)
         except TypeError:
