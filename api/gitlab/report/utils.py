@@ -386,8 +386,12 @@ class Report():
         # print(pipelines_total_time, file=sys.stderr)
         pipelines_average_time = pipelines_total_time / \
             (len(self.pipelines_ids))
-        pipelines_lower_time = min(pipelines_durations)
-        pipelines_higher_time = max(pipelines_durations)
+        try:    
+            pipelines_lower_time = min(pipelines_durations)
+            pipelines_higher_time = max(pipelines_durations)
+        except TypeError:
+            pipelines_lower_time = '{?}'
+            pipelines_higher_time= '{?}'
         self.repo_json["pipelines_times"]["average"] = pipelines_average_time
         self.repo_json["pipelines_times"]["total"] = pipelines_total_time
         self.repo_json["pipelines_times"]["higher"] = pipelines_higher_time
@@ -412,13 +416,13 @@ class Report():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         project_id = self.get_project_id(project_owner, project_name)
-        # self.get_branches(project_id)
-        # self.get_members(project_id)
-        # self.get_commits(project_id)
-        # self.get_project(project_id)
+        self.get_branches(project_id)
+        self.get_members(project_id)
+        self.get_commits(project_id)
+        self.get_project(project_id)
         self.get_pipeline(project_id)
-        # self.get_current_pipeline(project_id)
-        # self.get_pipelines_times(project_id)
+        self.get_current_pipeline(project_id)
+        self.get_pipelines_times(project_id)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report
