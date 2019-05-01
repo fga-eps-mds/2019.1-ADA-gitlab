@@ -21,7 +21,7 @@ class Webhook():
                 raise HTTPError(json.dumps(dict_error))
             project = Project()
             project.save_webhook_infos(user, project_name, project_id)
-            user.save_gitlab_repo_data(user, project)
+            user.save_gitlab_repo_data(project)
         except AttributeError:
             dict_error = {"message":
                           "Tive um erro tentando cadastrar seu repositório. "
@@ -41,4 +41,4 @@ class Webhook():
                           "é possível cadastrar um novo usuário do GitLab "
                           "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
-        user.save_gitlab_user_data(user, gitlab_user, chat_id, gitlab_user_id)
+        user.save_gitlab_user_data(gitlab_user, chat_id, gitlab_user_id)
