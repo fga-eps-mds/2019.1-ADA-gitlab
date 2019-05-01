@@ -7,7 +7,6 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import os
-import sys
 
 build_blueprint = Blueprint("build", __name__)
 CORS(build_blueprint)
@@ -40,6 +39,8 @@ def get_project_build(chat_id):
             return jsonify(UNAUTHORIZED), 401
         else:
             return jsonify(NOT_FOUND), 404
+    except AttributeError:
+        return jsonify(NOT_FOUND), 404
     else:
         return jsonify(
             requested_build

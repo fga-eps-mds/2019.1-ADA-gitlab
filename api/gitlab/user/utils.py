@@ -3,7 +3,7 @@
 import requests
 from requests.exceptions import HTTPError
 import json
-import sys
+
 
 class User():
     def __init__(self, GITLAB_API_TOKEN):
@@ -57,4 +57,3 @@ class User():
         else:
             requested_id = response.json()
             return requested_id[0]["id"]
-

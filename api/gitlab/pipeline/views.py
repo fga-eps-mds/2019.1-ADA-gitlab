@@ -8,8 +8,6 @@ import os
 from gitlab.data.user import User
 from gitlab.data.project import Project
 
-
-
 pipeline_blueprint = Blueprint("pipeline", __name__)
 CORS(pipeline_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
@@ -31,7 +29,7 @@ def get_project_pipeline(chat_id):
         project = Project.objects(id=project.id).first()
         if project:
             pipeline = Pipeline(GITLAB_API_TOKEN)
-            requested_pipeline = pipeline.get_project_pipeline_by_id(project.project_id)
+            pipe = pipeline.get_project_pipeline(project.project_id)
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
@@ -41,8 +39,10 @@ def get_project_pipeline(chat_id):
             return jsonify(UNAUTHORIZED), 401
         else:
             return jsonify(NOT_FOUND), 404
+    except AttributeError:
+        return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
-            "status": requested_pipeline["status"],
-            "web_url": requested_pipeline["web_url"]
+            "status": pipe["status"],
+            "web_url": pipe["web_url"]
         }), 200

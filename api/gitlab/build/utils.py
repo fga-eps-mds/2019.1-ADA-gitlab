@@ -17,35 +17,47 @@ class Build():
         }
         try:
             pipeline = Pipeline(self.GITLAB_API_TOKEN)
-            pipeline_id = pipeline.get_project_pipeline_by_id(
-                project_id)
-            response = requests.get("https://gitlab.com/api/"
-                                    "v4/projects/{project_id}/pipelines/"
-                                    "{pipeline_id}/jobs"
-                                    .format(project_id=project_id,
-                                            pipeline_id=pipeline_id["id"]),
-                                    headers=headers)
-            build_dict = response.json()
-            requested_build = []
-            for i, item in enumerate(build_dict):
-                job_data = {"job_id": 0, "branch": 0,
-                            "commit": 0, "stage": 0,
-                            "job_name": 0, "status": 0,
-                            "web_url": 0}
-                job_data["job_id"] = build_dict[i]["id"]
-                job_data["branch"] = build_dict[i]["ref"]
-                job_data["commit"] = build_dict[i]["commit"]["title"]
-                job_data["stage"] = build_dict[i]["stage"]
-                job_data["job_name"] = build_dict[i]["name"]
-                job_data["status"] = build_dict[i]["status"]
-                job_data["web_url"] = build_dict[i]["web_url"]
-                job_data["pipeline_url"] = build_dict[i]["pipeline"]["web_url"]
-                requested_build.append(job_data)
-            response.raise_for_status()
+            try:
+                pipeline_id = pipeline.get_project_pipeline(
+                    project_id)
+            except HTTPError as http_error:
+                dict_error = {"status_code":
+                              http_error.response.status_code}
+                raise HTTPError(json.dumps(dict_error))
+            except AttributeError:
+                dict_error = {"status_code": 404}
+                raise AttributeError(json.dumps(dict_error))
+            else:
+                response = requests.get("https://gitlab.com/api/"
+                                        "v4/projects/{project_id}/pipelines/"
+                                        "{pipeline_id}/jobs"
+                                        .format(project_id=project_id,
+                                                pipeline_id=pipeline_id["id"]),
+                                        headers=headers)
+                response.raise_for_status()
+                resp = response.json()
+                requested_build = []
+                for i, item in enumerate(resp):
+                    job_data = {"job_id": 0, "branch": 0,
+                                "commit": 0, "stage": 0,
+                                "job_name": 0, "status": 0,
+                                "web_url": 0}
+                    job_data["job_id"] = resp[i]["id"]
+                    job_data["branch"] = resp[i]["ref"]
+                    job_data["commit"] = resp[i]["commit"]["title"]
+                    job_data["stage"] = resp[i]["stage"]
+                    job_data["job_name"] = resp[i]["name"]
+                    job_data["status"] = resp[i]["status"]
+                    job_data["web_url"] = resp[i]["web_url"]
+                    job_data["pipeline_url"] = resp[i]["pipeline"]["web_url"]
+                    requested_build.append(job_data)
         except HTTPError as http_error:
             dict_error = {"status_code":
                           http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
+        except AttributeError:
+            dict_error = {"status_code": 404}
+            raise AttributeError(json.dumps(dict_error))
         else:
             return requested_build
 
@@ -65,6 +77,9 @@ class Build():
             dict_error = {"status_code":
                           http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
+        except AttributeError:
+            dict_error = {"status_code": 404}
+            raise AttributeError(json.dumps(dict_error))
         else:
             requested_id = response.json()
             return requested_id

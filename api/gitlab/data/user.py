@@ -10,8 +10,6 @@ class User(mongoengine.Document):
     gitlab_user = mongoengine.StringField(max_length=100)
     chat_id = mongoengine.StringField(max_length=100)
     gitlab_user_id = mongoengine.StringField(max_length=100)
-
-
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'User'
@@ -26,7 +24,8 @@ class User(mongoengine.Document):
         user = User.objects(username=username).first()
         return user
 
-    def save_gitlab_user_data(self, user, gitlab_user, chat_id, gitlab_user_id):
+    def save_gitlab_user_data(self, user, gitlab_user,
+                              chat_id, gitlab_user_id):
         user.gitlab_user = gitlab_user
         user.chat_id = chat_id
         user.gitlab_user_id = gitlab_user_id
@@ -37,7 +36,7 @@ class User(mongoengine.Document):
         user.project = project
         user.update(project=project)
         return user
-    
+
     def add_project_user(self, project):
         self.project = project
         self.save()

@@ -3,13 +3,12 @@ import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.user.schemas import\
     ping_schema, valid_schema, unauthorized_schema,\
-    invalid_project_schema, user_valid_schema,\
+    user_valid_schema,\
     user_invalid_schema
 from jsonschema import validate
 from gitlab.user.utils import User
 from requests.exceptions import HTTPError
 import os
-import sys
 
 
 class TestUser(BaseTestCase):
@@ -62,7 +61,6 @@ class TestUser(BaseTestCase):
         project_owner = "wrong_project"
         with self.assertRaises(IndexError) as context:
             user.get_project_user(project_owner)
-        
         self.assertTrue(str(context.exception), "list index out of range")
 
 

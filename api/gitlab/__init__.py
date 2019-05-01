@@ -5,7 +5,6 @@ from gitlab.build.views import build_blueprint
 from gitlab.webhook.views import webhook_blueprint
 from gitlab.user.views import user_blueprint
 from flask_cors import CORS
-import sys
 
 cors = CORS()
 

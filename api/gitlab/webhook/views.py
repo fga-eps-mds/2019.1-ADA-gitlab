@@ -2,8 +2,6 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 import os
 import sys
-from gitlab.data.user import User
-from gitlab.data.project import Project
 from gitlab.webhook.utils import Webhook
 import json
 from requests.exceptions import HTTPError
@@ -19,12 +17,15 @@ GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 def webhook_repository(userid, projectid):
     if request.is_json:
         content = request.get_json()
+        print('#'*30, file=sys.stderr)
+        print(content, file=sys.stderr)
+        print('#'*30, file=sys.stderr)
         if content['object_kind'] == "pipeline":
             print('Chegou um pipeline', file=sys.stderr)
             print(content, file=sys.stderr)
             return 'OK'
     else:
-        return "JSON Only"
+        return "OK"
 
 
 @webhook_blueprint.route("/webhooks/user", methods=["POST"])

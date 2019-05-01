@@ -23,6 +23,7 @@ class Test(unittest.TestCase):
         user.username = "User test create project"
         user.save()
 
-        project.create_project(user, description, name, web_url, branches, project_id)
+        project.create_project(user, description, name, web_url,
+                               branches, project_id)
         project_db = Project.objects(name=name).first()
         self.assertEqual(project, project_db)
