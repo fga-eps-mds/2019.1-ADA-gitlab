@@ -3,7 +3,6 @@ from requests.exceptions import HTTPError
 import json
 from flask import jsonify
 import sys
-import matplotlib.pyplot as matplot
 from datetime import date
 from datetime import datetime
 
@@ -81,10 +80,9 @@ class Report():
 
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
-        self.repo_json = {"branches": {"name": 0}, "members": {"name": 0, "username": 0,
-                                                               "state": 0}, "commits": {"last_commit": {"title": 0, "author_name": 0,
+        self.repo_json = {"branches": {"name": 0}, "commits": {"last_commit": {"title": 0, "author_name": 0,
                                                                                                         "author_email": 0, "authored_date": 0}, "number_of_commits": 0},
-                          "project": {"description": 0, "name": 0, "web_url": 0},
+                          "project": {"name": 0, "web_url": 0},
                           "pipelines": {"number_of_pipelines": 0, "succeded_pipelines": 0,
                                         "failed_pipelines": 0, "percent_succeded": 0, "current_pipeline_id": 0,
                                         "current_pipeline_name": 0, "recents_pipelines": {
@@ -103,8 +101,7 @@ class Report():
                                                 "failed_pipelines": 0
                                             }
                                         }
-                                    },
-                            "current_pipeline":{"name": 0, "jobs": 0}, "pipelines_times":
+                                    }, "pipelines_times":
                             {"average": 0, "lower": 0, "higher": 0, "total": 0}}
 
     def get_branches(self, project_id):
@@ -115,7 +112,7 @@ class Report():
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/projects/{project_id}/repository/branches"
-                                    .format(project_id=project_id["id"]),
+                                    .format(project_id=project_id),
                                     headers=headers)
             branches_json = response.json()
             response.raise_for_status()
@@ -128,30 +125,6 @@ class Report():
                 branch_name["name"].append(branches_json[i]["name"])
             self.repo_json["branches"]["name"] = branch_name["name"]
 
-    def get_members(self, project_id):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
-
-        try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/members".format(
-                project_id=project_id["id"]), headers=headers)
-            members_json = response.json()
-            response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code": http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        else:
-            data_members = {"name": [], "username": [], "state": []}
-            for i, item in enumerate(members_json):
-                data_members["name"].append(members_json[i]["name"])
-                data_members["username"].append(members_json[i]["username"])
-                data_members["state"].append(members_json[i]["state"])
-            self.repo_json["members"]["name"] = data_members["name"]
-            self.repo_json["members"]["username"] = data_members["username"]
-            self.repo_json["members"]["state"] = data_members["state"]
-
     def get_commits(self, project_id):
 
         headers = {
@@ -161,46 +134,25 @@ class Report():
 
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/repository/commits".format(
-                project_id=project_id["id"]), headers=headers)
+                project_id=project_id), headers=headers)
             commits_json = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
+            number_of_commits = len(commits_json)
             self.repo_json["commits"]["last_commit"]["title"] = commits_json[0]["title"]
             self.repo_json["commits"]["last_commit"]["author_name"] = commits_json[0]["author_name"]
             self.repo_json["commits"]["last_commit"]["author_email"] = commits_json[0]["author_email"]
             self.repo_json["commits"]["last_commit"]["authored_date"] = commits_json[0]["authored_date"]
-            number_of_commits = 0
-
-            for i, item in enumerate(commits_json):
-                number_of_commits = number_of_commits + 1
             self.repo_json["commits"]["number_of_commits"] = number_of_commits
-            # print(self.repo_json, file=sys.stderr)
 
-    def get_jobs(self, project_id, headers):
-        pass  # quantos jobs vamos pegar ?
+    def get_project(self, project_owner, project_name):
 
-    def get_project(self, project_id):
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
-        try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}".format(
-                project_id=project_id["id"]), headers=headers)
-            project_json = response.json()
-
-            response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code": http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        else:
-            self.repo_json["project"]["name"] = project_json["name"]
-            self.repo_json["project"]["description"] = project_json["description"]
-            self.repo_json["project"]["web_url"] = project_json["web_url"]
+            self.repo_json["project"]["name"] = project_name
+            url = "https://gitlab.com/"+project_owner+'/'+project_name
+            self.repo_json["project"]["web_url"] = url
 
             # print(self.repo_json, file=sys.stderr)
 
@@ -216,7 +168,7 @@ class Report():
         }
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines".format(
-                project_id=project_id["id"]), headers=headers)
+                project_id=project_id), headers=headers)
             pipelines = response.json()
             response.raise_for_status()
         except HTTPError as http_error:
@@ -248,8 +200,6 @@ class Report():
                         else:
                             last_30_days[2]+=1
 
-                # print(self.pipelines_ids, file=sys.stderr)
-                number_of_pipelines = number_of_pipelines + 1  # total
                 if pipelines[i]["status"] == "success":
                     success_pipeline = success_pipeline + 1
                 else:
@@ -272,6 +222,7 @@ class Report():
             self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["succeded_pipelines"] = last_7_days[1]
             self.repo_json["pipelines"]["recents_pipelines"]["last_7_days"]["failed_pipelines"] = last_7_days[2]
 
+            number_of_pipelines = len(pipelines)
             percent_success = (success_pipeline / number_of_pipelines) * 100.0
             self.repo_json["pipelines"]["number_of_pipelines"] = number_of_pipelines
             self.repo_json["pipelines"]["succeded_pipelines"] = success_pipeline
@@ -291,7 +242,7 @@ class Report():
         try:
             response = requests.get("https://gitlab.com/api/v4/projects/"
                                     "{project_id}/pipelines/{pipeline_id}".format
-                                    (project_id=project_id["id"],
+                                    (project_id=project_id,
                                      pipeline_id=pipeline_id), headers=headers)
             pipeline = response.json()
             response.raise_for_status()
@@ -318,111 +269,66 @@ class Report():
             # todays_date = datetime.strptime(todays_date, "%Y-%m-%d")
             # saber qual o ultimo mes e qual a ultima semana
 
-    def get_current_pipeline(self, project_id):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
-        # saber qual e a pipeline atual
-        current_pipeline_name = self.repo_json["pipelines"]["current_pipeline_name"]
-        current_pipeline_id = self.repo_json["pipelines"]["current_pipeline_id"]
-        try:
-            response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}/jobs".format(
-                project_id=project_id["id"], current_pipeline_id=current_pipeline_id), headers=headers)
-            current_pipeline = response.json()
-            response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code": http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        else:
-            jobs = []
-            for i, item in enumerate(current_pipeline):
-                jobs.append({"name": current_pipeline[i]["name"],
-                             "stage": current_pipeline[i]["stage"],
-                             "status": current_pipeline[i]["status"],
-                             "duration": current_pipeline[i]["duration"],
-                             "web_url": current_pipeline[i]["web_url"]})
-        self.repo_json["current_pipeline"]["name"] = current_pipeline_name
-        self.repo_json["current_pipeline"]["jobs"] = jobs
 
-    def get_project_id(self, project_owner, project_name):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
-        project_url = project_owner + "%2F" + project_name
-        try:
-            response = requests.get("https://gitlab.com/api/"
-                                    "v4/projects/{project_url}"
-                                    .format(project_url=project_url),
-                                    headers=headers)
-            response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code": http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        else:
-            requested_id = response.json()
-            return requested_id
+    # def get_pipelines_times(self, project_id):
+    #     headers = {
+    #         "Content-Type": "application/json",
+    #         "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+    #     }
+    #     pipelines_durations = []
+    #     for i in self.pipelines_ids:
+    #         try:
+    #             response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(
+    #                 project_id=project_id, current_pipeline_id=i), headers=headers)
+    #             pipeline = response.json()
+    #             response.raise_for_status()
+    #         except HTTPError as http_error:
+    #             dict_error = {"status_code": http_error.response.status_code}
+    #             raise HTTPError(json.dumps(dict_error))
+    #         else:
+    #             pipelines_durations.append(pipeline["duration"])
+    #             pipelines_total_time = pipeline["duration"]
+    #     # print(pipelines_durations, file=sys.stderr)
+    #     # print(pipelines_total_time, file=sys.stderr)
+    #     pipelines_average_time = pipelines_total_time / \
+    #         (len(self.pipelines_ids))
+    #     try:
+    #         pipelines_lower_time = min(pipelines_durations)
+    #         pipelines_higher_time = max(pipelines_durations)
+    #     except TypeError:
+    #         pipelines_lower_time = '{?}'
+    #         pipelines_higher_time= '{?}'
+    #     self.repo_json["pipelines_times"]["average"] = pipelines_average_time
+    #     self.repo_json["pipelines_times"]["total"] = pipelines_total_time
+    #     self.repo_json["pipelines_times"]["higher"] = pipelines_higher_time
+    #     self.repo_json["pipelines_times"]["lower"] = pipelines_lower_time
+    #     # print(pipelines_higher_time, file=sys.stderr)
+    #     # graph
+    #     # x = []
+    #     # for i in self.pipelines_ids:
+    #     #    x.append(i)
+    #     # y = []
+    #     # for i in pipelines_durations:
+    #     #    y.append(i)
+    #     # matplot.plot(x, y)
+    #     # matplot.xlabel("Pipeline id")
+    #     # matplot.ylabel("Time(s)")
+    #     # graph = matplot.show()
 
-    def get_pipelines_times(self, project_id):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + self.GITLAB_API_TOKEN
-        }
-        pipelines_durations = []
-        for i in self.pipelines_ids:
-            try:
-                response = requests.get("https://gitlab.com/api/v4/projects/{project_id}/pipelines/{current_pipeline_id}".format(
-                    project_id=project_id["id"], current_pipeline_id=i), headers=headers)
-                pipeline = response.json()
-                response.raise_for_status()
-            except HTTPError as http_error:
-                dict_error = {"status_code": http_error.response.status_code}
-                raise HTTPError(json.dumps(dict_error))
-            else:
-                pipelines_durations.append(pipeline["duration"])
-                pipelines_total_time = pipeline["duration"]
-        # print(pipelines_durations, file=sys.stderr)
-        # print(pipelines_total_time, file=sys.stderr)
-        pipelines_average_time = pipelines_total_time / \
-            (len(self.pipelines_ids))
-        try:
-            pipelines_lower_time = min(pipelines_durations)
-            pipelines_higher_time = max(pipelines_durations)
-        except TypeError:
-            pipelines_lower_time = '{?}'
-            pipelines_higher_time= '{?}'
-        self.repo_json["pipelines_times"]["average"] = pipelines_average_time
-        self.repo_json["pipelines_times"]["total"] = pipelines_total_time
-        self.repo_json["pipelines_times"]["higher"] = pipelines_higher_time
-        self.repo_json["pipelines_times"]["lower"] = pipelines_lower_time
-        # print(pipelines_higher_time, file=sys.stderr)
-        # graph
-        # x = []
-        # for i in self.pipelines_ids:
-        #    x.append(i)
-        # y = []
-        # for i in pipelines_durations:
-        #    y.append(i)
-        # matplot.plot(x, y)
-        # matplot.xlabel("Pipeline id")
-        # matplot.ylabel("Time(s)")
-        # graph = matplot.show()
-
-    def repo_informations(self, project_owner, project_name):
+    def repo_informations(self, user, project):
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
-        project_id = self.get_project_id(project_owner, project_name)
+        project_id = int(project.project_id)
+        project_name = project.name
+        project_owner = user.gitlab_user
         self.get_branches(project_id)
-        self.get_members(project_id)
         self.get_commits(project_id)
-        self.get_project(project_id)
+        self.get_project(project_owner, project_name)
         self.get_pipeline(project_id)
-        self.get_current_pipeline(project_id)
-        self.get_pipelines_times(project_id)
+        # self.get_pipelines_times(project_id)
         generated_report = []
         generated_report.append(self.repo_json)
         return generated_report

@@ -5,8 +5,9 @@ from gitlab.report.error_messages import *
 import json
 from requests.exceptions import HTTPError
 import os
-from data.user import User
-from data.project import Project
+import sys
+from gitlab.data.user import User
+from gitlab.data.project import Project
 
 
 report_blueprint = Blueprint("report", __name__)
@@ -29,7 +30,7 @@ def generate_report(chat_id):
         user_has_project = Project.objects(id=project.id)
         if user_has_project:
             report = Report(GITLAB_API_TOKEN)
-            generated_report = report.repo_informations(user, project)
+            generated_report = report.repo_informations(user,project)
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
