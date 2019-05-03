@@ -5,16 +5,13 @@ import os
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    DB_URL = os.environ.get("DB_URL", "")
-    DB_NAME = os.environ.get("DB_NAME", "")
     MONGODB_SETTINGS = {
-        "db": DB_NAME,
-        "host": DB_URL
+        "db": os.environ.get("DB_NAME", ""),
+        "host": os.environ.get("DB_URL", "")
     }
 
 

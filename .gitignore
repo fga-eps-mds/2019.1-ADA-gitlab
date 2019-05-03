@@ -63,6 +63,7 @@ venv.bak/
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
+export.sh
 
 export.sh
 # End of https://www.gitignore.io/api/macos,python,visualstudiocode

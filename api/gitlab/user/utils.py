@@ -15,20 +15,24 @@ class User():
             "Authorization": "Bearer " + self.GITLAB_API_TOKEN
         }
         user_id = self.get_user_id(project_owner)
-        if len(user_id) == 0:
+        if not user_id:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
         try:
             response = requests.get("https://gitlab.com/api/"
                                     "v4/users/{user_id}/projects"
                                     .format(
-                                        user_id=user_id[0]["id"]
+                                        user_id=user_id
                                     ),
                                     headers=headers)
             response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
+        except IndexError as index_error:
+            dict_error = {"status_code": 404}
+            index_error.message = json.dumps(dict_error)
+            raise IndexError(index_error)
         else:
             requested_user = response.json()
             return requested_user
@@ -47,6 +51,9 @@ class User():
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
+        except IndexError:
+            dict_error = {"status_code": 404}
+            raise IndexError(json.dumps(dict_error))
         else:
             requested_id = response.json()
-            return requested_id
+            return requested_id[0]["id"]
