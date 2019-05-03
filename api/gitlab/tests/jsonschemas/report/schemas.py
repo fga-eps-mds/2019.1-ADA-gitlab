@@ -67,10 +67,10 @@ report_invalid_schema = {
 
 report_invalid_project_id_schema = {
        "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "User response schema",
-    "type": "object",
-    "properties": {
-        "status_code": {"type": "integer"}
-    },
-    "required": ["status_code"]
+       "title": "User response schema",
+       "type": "object",
+       "properties": {
+            "status_code": {"type": "integer"}
+        },
+       "required": ["status_code"]
 }

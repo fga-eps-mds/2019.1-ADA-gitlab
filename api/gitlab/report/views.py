@@ -1,13 +1,12 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
 from gitlab.report.utils import Report
-from gitlab.report.error_messages import *
 import json
 from requests.exceptions import HTTPError
 import os
-import sys
 from gitlab.data.user import User
 from gitlab.data.project import Project
+from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
 
 
 report_blueprint = Blueprint("report", __name__)
@@ -22,6 +21,7 @@ def ping_pong():
         "message": "pong!"
     }), 200
 
+
 @report_blueprint.route("/report/<chat_id>", methods=["GET"])
 def generate_report(chat_id):
     try:
@@ -30,7 +30,8 @@ def generate_report(chat_id):
         user_has_project = Project.objects(id=project.id)
         if user_has_project:
             report = Report(GITLAB_API_TOKEN)
-            generated_report = report.repo_informations(user,project)
+            generated_report = report.repo_informations(
+                                                        user, project)
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
@@ -43,7 +44,6 @@ def generate_report(chat_id):
             return jsonify(NOT_FOUND), 404
     except AttributeError:
         return jsonify(NOT_FOUND), 404
-        
     else:
         return jsonify(
             generated_report
