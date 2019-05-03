@@ -20,14 +20,17 @@ services:
   - mongo:latest
 
 unit test:
-  image: python:3.6-alpine
+  image: python:3.6-slim
   stage: test
   variables:
     FLASK_ENV: development
     FLASK_APP: gitlab/__init__.py
     APP_SETTINGS: gitlab.config.DevelopmentConfig  
-  before_script:    
+  before_script:
     - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
+    - export DB_NAME=$DB_NAME
+    - export DB_URL=$DB_URL
+    - export ACCESS_TOKEN=$ACCESS_TOKEN
     - pip install -r docker/requirements.txt    
     - cd api/
   script:

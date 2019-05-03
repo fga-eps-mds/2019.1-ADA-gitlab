@@ -1,19 +1,20 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
-from gitlab.build.utils import Build
-from gitlab.build.error_messages import NOT_FOUND, UNAUTHORIZED
-from gitlab.data.user import User
-from gitlab.data.project import Project
+from gitlab.report.utils import Report
 import json
 from requests.exceptions import HTTPError
 import os
+from gitlab.data.user import User
+from gitlab.data.project import Project
+from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
 
-build_blueprint = Blueprint("build", __name__)
-CORS(build_blueprint)
+
+report_blueprint = Blueprint("report", __name__)
+CORS(report_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
-@build_blueprint.route("/build/ping", methods=["GET"])
+@report_blueprint.route("/report/ping", methods=["GET"])
 def ping_pong():
     return jsonify({
         "status": "success",
@@ -21,18 +22,20 @@ def ping_pong():
     }), 200
 
 
-@build_blueprint.route("/build/<chat_id>", methods=["GET"])
-def get_project_build(chat_id):
+@report_blueprint.route("/report/<chat_id>", methods=["GET"])
+def generate_report(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
         project = user.project
-        project = Project.objects(id=project.id).first()
-        if project:
-            build = Build(GITLAB_API_TOKEN)
-            requested_build = build.get_project_build(project.project_id)
+        user_has_project = Project.objects(id=project.id)
+        if user_has_project:
+            report = Report(GITLAB_API_TOKEN)
+            generated_report = report.repo_informations(
+                                                        user, project)
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
+
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:
@@ -43,5 +46,5 @@ def get_project_build(chat_id):
         return jsonify(NOT_FOUND), 404
     else:
         return jsonify(
-            requested_build
+            generated_report
         ), 200
