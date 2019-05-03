@@ -102,3 +102,23 @@ class Webhook():
                                   stage=job_build[0]['stage'])
         return {"jobs_message": jobs_message,
                 "summary_message": summary_message}
+
+    def build_status_message(self, content, jobs):
+        if content["object_attributes"]["status"] == "success":
+            status_message = "Muito bem! Um novo pipeline (de id #{id} "\
+                             "da branch {branch}) terminou com sucesso. "\
+                             "Se você quiser conferí-lo, "\
+                             "o link é {link}".format(
+                                id=content["object_attributes"]["id"],
+                                branch=content["object_attributes"]["ref"],
+                                link=jobs[0]["web_url"])
+        elif content["object_attributes"]["status"] == "failed":
+            status_message = "Poxa.. Um novo pipeline (de {id} e "\
+                             "{branch}) falhou. Se você "\
+                             "quiser conferí-lo, o link é {link}".format(
+                                id=content["object_attributes"]["id"],
+                                branch=content["object_attributes"]["ref"],
+                                link=jobs[0]["web_url"])
+        else:
+            return 'OK'
+        return status_message

@@ -42,6 +42,7 @@ class Build():
                                 "commit": 0, "stage": 0,
                                 "job_name": 0, "status": 0,
                                 "web_url": 0}
+                    job_data["pipeline_status"] = resp[i]["status"]
                     job_data["job_id"] = resp[i]["id"]
                     job_data["branch"] = resp[i]["ref"]
                     job_data["commit"] = resp[i]["commit"]["title"]

@@ -24,23 +24,8 @@ def webhook_repository(user_id, project_id):
             pipeline_id = content["object_attributes"]["id"]
             jobs = webhook.get_pipeline_infos(project_id, pipeline_id)
             messages = webhook.build_message(jobs)
-            if content["object_attributes"]["status"] == "success":
-                status_message = "Muito bem! Um novo pipeline (de id #{id} "\
-                                 "da branch {branch}) terminou com sucesso. "\
-                                 "Se você quiser conferí-lo, "\
-                                 "o link é {link}".format(
-                                    id=content["object_attributes"]["id"],
-                                    branch=content["object_attributes"]["ref"],
-                                    link=jobs[0]["web_url"])
-            elif content["object_attributes"]["status"] == "failed":
-                status_message = "Poxa.. Um novo pipeline (de {id} e "\
-                                 "{branch}) falhou. Se você "\
-                                 "quiser conferí-lo, o link é {link}".format(
-                                  id=content["object_attributes"]["id"],
-                                  branch=content["object_attributes"]["ref"],
-                                  link=jobs[0]["web_url"])
-            else:
-                return 'OK'
+            status_message = webhook.build_status_message(content,
+                                                          jobs)
             project = Project.objects(project_id=project_id).first()
             user = User.objects(project=project.id).first()
             bot = telegram.Bot(token=ACCESS_TOKEN)
