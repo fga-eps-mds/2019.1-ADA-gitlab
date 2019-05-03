@@ -20,7 +20,7 @@ services:
   - mongo:latest
 
 unit test:
-  image: python:3.6.8-alpine3.8
+  image: python:3.6-slim
   stage: test
   variables:
     FLASK_ENV: development
@@ -28,6 +28,9 @@ unit test:
     APP_SETTINGS: gitlab.config.DevelopmentConfig  
   before_script:
     - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
+    - export DB_NAME=$DB_NAME
+    - export DB_URL=$DB_URL
+    - export ACCESS_TOKEN=$ACCESS_TOKEN
     - pip install -r docker/requirements.txt    
     - cd api/
   script:
@@ -48,7 +51,7 @@ build ada-gitlab-homolog:
     - docker login -u $DOCKER_USER -p $DOCKER_PASS
     - docker push $ADA_GITLAB_IMAGE:homolog
   only:
-    - /117-Webhook/
+    - /devel/
 
 #############################################################
 ################## BUILD PROD ###############################
@@ -82,7 +85,7 @@ deploy ada-gitlab-homolog:
             --stack $RANCHER_HOMOLOG_STACK
             --service ada-gitlab-homolog"
   only:
-    - /117-Webhook/
+    - /devel/
 
 #############################################################
 ################## DEPLOY PROD ##############################
