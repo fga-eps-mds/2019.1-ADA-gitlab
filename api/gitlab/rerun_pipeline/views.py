@@ -24,18 +24,40 @@ def ping_pong():
 
 
 @report_blueprint.route("/rerun_pipeline/<chat_id>", methods=["GET"])
-def generate_report(chat_id):
+def get_pipelines(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
         project = user.project
         user_has_project = Project.objects(id=project.id)
         if user_has_project:
-            restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN)
-            # TODO HERE
+            restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN, project)
+            pipelines = restarted_pipeline.get_pipelines()
 
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
+
+    except HTTPError as http_error:
+        dict_message = json.loads(str(http_error))
+        if dict_message["status_code"] == 401:
+            return jsonify(UNAUTHORIZED), 401
+        else:
+            return jsonify(NOT_FOUND), 404
+    except AttributeError:
+        return jsonify(NOT_FOUND), 404
+    else:
+        return jsonify(
+            pipelines
+        ), 200
+
+@report_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
+                         methods=["GET"])
+def rerun_pipeline(chat_id, pipeline_id):
+    try:
+        user = User.objects(chat_id=chat_id).first()
+        project = user.project
+        restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN, project)
+        # TODO HERE
 
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
