@@ -7,6 +7,7 @@ import os
 from gitlab.data.user import User
 from gitlab.data.project import Project
 from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
+import sys
 
 
 rerun_pipeline_blueprint = Blueprint("rerun_pipeline", __name__)
@@ -14,7 +15,7 @@ CORS(rerun_pipeline_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
-@report_blueprint.route("/rerun_pipeline/ping", methods=["GET"])
+@rerun_pipeline_blueprint.route("/rerun_pipeline/ping", methods=["GET"])
 def ping_pong():
     return jsonify({
         "status": "success",
@@ -23,15 +24,16 @@ def ping_pong():
     }), 200
 
 
-@report_blueprint.route("/rerun_pipeline/<chat_id>", methods=["GET"])
+@rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>", methods=["GET"])
 def get_pipelines(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
         project = user.project
+        print(project.project_id, file=sys.stderr)
         user_has_project = Project.objects(id=project.id)
         if user_has_project:
-            restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN, project)
-            pipelines = restarted_pipeline.get_pipelines()
+            restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN)
+            pipelines = restarted_pipeline.get_pipelines(project.project_id)
 
         else:
             dict_error = {"status_code": 404}
@@ -50,15 +52,15 @@ def get_pipelines(chat_id):
             pipelines
         ), 200
 
-@report_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
-                         methods=["GET"])
+@rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
+                                methods=["GET"])
 def rerun_pipeline(chat_id, pipeline_id):
     try:
         user = User.objects(chat_id=chat_id).first()
         project = user.project
-        restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN, project)
-        # TODO HERE
-
+        rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
+        restarted_pipeline = rerunpipeline.rerun_pipeline(project.project_id,
+                                                          pipeline_id)
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:
@@ -69,5 +71,5 @@ def rerun_pipeline(chat_id, pipeline_id):
         return jsonify(NOT_FOUND), 404
     else:
         return jsonify(
-            "TODO": "todo"
+            restarted_pipeline
         ), 200
