@@ -35,11 +35,13 @@ def webhook_repository(user_id, project_id):
                              text=messages["jobs_message"])
             bot.send_message(chat_id=user.chat_id,
                              text=messages["summary_message"])
-            if content["object_attributes"]["status"] == "failed" :
+            if content["object_attributes"]["status"] == "failed":
                 rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
-                botoes = rerunpipeline.build_buttons(pipeline_id)
+                buttons = rerunpipeline.build_buttons(pipeline_id)
+                reply_markup = telegram.InlineKeyboardMarkup(buttons)
                 bot.send_message(chat_id=user.chat_id,
-                                  text=botoes)
+                                 text="Você quer reininiciar este pipeline?",
+                                 reply_markup=reply_markup)
             return 'OK'
     else:
         return "OK"
