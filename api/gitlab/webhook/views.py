@@ -7,6 +7,7 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import telegram
+from gitlab.rerun_pipeline.utils import RerunPipeline
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
@@ -34,6 +35,11 @@ def webhook_repository(user_id, project_id):
                              text=messages["jobs_message"])
             bot.send_message(chat_id=user.chat_id,
                              text=messages["summary_message"])
+            if content["object_attributes"]["status"] == "failed" :
+                rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
+                botoes = rerunpipeline.build_buttons(pipeline_id)
+                bot.send_message(chat_id=user.chat_id,
+                                  text=botoes)
             return 'OK'
     else:
         return "OK"
