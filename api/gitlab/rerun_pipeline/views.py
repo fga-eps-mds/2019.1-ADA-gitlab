@@ -17,40 +17,13 @@ GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 @rerun_pipeline_blueprint.route("/rerun_pipeline/ping", methods=["GET"])
 def ping_pong():
+    rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
+    sla = rerunpipeline.build_buttons(1234)
     return jsonify({
         "status": "success",
         "message": "pong!",
         "route": "rerun_pipeline"
     }), 200
-
-
-@rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>", methods=["GET"])
-def get_pipelines(chat_id):
-    try:
-        user = User.objects(chat_id=chat_id).first()
-        project = user.project
-        print(project.project_id, file=sys.stderr)
-        user_has_project = Project.objects(id=project.id)
-        if user_has_project:
-            restarted_pipeline = RerunPipeline(GITLAB_API_TOKEN)
-            pipelines = restarted_pipeline.get_pipelines(project.project_id)
-
-        else:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
-
-    except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
-    except AttributeError:
-        return jsonify(NOT_FOUND), 404
-    else:
-        return jsonify(
-            pipelines
-        ), 200
 
 @rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
                                 methods=["GET"])
