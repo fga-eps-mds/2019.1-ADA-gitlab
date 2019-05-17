@@ -7,6 +7,7 @@ from gitlab.data.user import User
 import json
 from requests.exceptions import HTTPError
 import os
+import telegram
 import requests
 import sys
 
@@ -108,6 +109,7 @@ def get_access_token():
                          data=data)
     post_json = post.json()
     GITLAB_TOKEN = post_json['access_token']
+    print(GITLAB_TOKEN, file=sys.stderr)
     user = UserUtils(GITLAB_TOKEN)
     user_infos = user.get_user()
 
@@ -119,5 +121,15 @@ def get_access_token():
     db_user.save()
     user.send_message(ACCESS_TOKEN, chat_id)
 
+
+
     redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
+    bot = telegram.Bot(token=ACCESS_TOKEN)
+    repo_names = user.select_repos_by_buttons(user_infos["gitlab_username"], header)
+    reply_markup = telegram.InlineKeyboardMarkup(repo_names)
+    bot.send_message(chat_id=chat_id,
+                         text="Encontrei esses repositórios na sua "
+                         "conta do GitLab. Qual você quer que eu "
+                         "monitore? Clica nele!",
+                         reply_markup=reply_markup)
     return redirect(redirect_uri, code=302)
