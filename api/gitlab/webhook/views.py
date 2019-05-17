@@ -20,7 +20,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 def webhook_repository(user_id, project_id):
     if request.is_json:
         content = request.get_json()
-        if content['object_kind'] == "pipeline":
+        if content["object_kind"] == "pipeline":
             webhook = Webhook()
             pipeline_id = content["object_attributes"]["id"]
             jobs = webhook.get_pipeline_infos(project_id, pipeline_id)
@@ -42,7 +42,7 @@ def webhook_repository(user_id, project_id):
                 bot.send_message(chat_id=user.chat_id,
                                  text="Você quer reininiciar este pipeline?",
                                  reply_markup=reply_markup)
-            return 'OK'
+            return "OK"
     else:
         return "OK"
 
