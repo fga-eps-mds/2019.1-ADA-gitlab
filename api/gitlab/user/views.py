@@ -109,20 +109,26 @@ def get_access_token():
                          data=data)
     post_json = post.json()
     GITLAB_TOKEN = post_json['access_token']
-    print(GITLAB_TOKEN, file=sys.stderr)
+    
+    existing_user = User.objects(chat_id=chat_id).first()
+
     user = UserUtils(GITLAB_TOKEN)
     user_infos = user.get_user()
-
-    db_user = User()
-    db_user.access_token = GITLAB_TOKEN
-    db_user.gitlab_user = user_infos["gitlab_username"]
-    db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
-    db_user.chat_id = str(chat_id)
-    db_user.save()
+    if not existing_user:
+        db_user = User()
+        db_user.access_token = GITLAB_TOKEN
+        db_user.chat_id = str(chat_id)
+        user = UserUtils(GITLAB_TOKEN)
+        user_infos = user.get_user()
+        db_user.gitlab_user = user_infos["gitlab_username"]
+        db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
+        db_user.save()
+    else:
+        existing_user.update(access_token=GITLAB_TOKEN)
+        user = UserUtils(GITLAB_TOKEN)
+        user_infos = user.get_user()
+    
     user.send_message(ACCESS_TOKEN, chat_id)
-
-
-
     redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
     bot = telegram.Bot(token=ACCESS_TOKEN)
     repo_names = user.select_repos_by_buttons(user_infos["gitlab_username"], header)
