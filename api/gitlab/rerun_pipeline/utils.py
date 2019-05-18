@@ -21,12 +21,12 @@ class RerunPipeline():
         try:
             response = requests.post(url="{url}".format(url=url),
                                      headers=headers)
+            response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
-            restart_status = response.json()
-            return restart_status
+            return {"status": "Pipeline Restarted"}
 
     def build_buttons(self, pipeline_id):
         buttons = []
