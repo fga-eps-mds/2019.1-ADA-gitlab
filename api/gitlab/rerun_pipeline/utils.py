@@ -31,12 +31,8 @@ class RerunPipeline():
     def build_buttons(self, pipeline_id):
         buttons = []
         buttons.append(telegram.InlineKeyboardButton(
-                text="Sim",
+                text="Reiniciar pipeline",
                 callback_data="quero reiniciar a pipeline " + str(pipeline_id))
                       )
-
-        buttons.append(telegram.InlineKeyboardButton(
-                text="Não",
-                callback_data="não"))
         button_array = [buttons]
         return button_array
