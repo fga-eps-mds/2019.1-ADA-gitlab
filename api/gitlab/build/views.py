@@ -1,6 +1,7 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
 from gitlab.build.utils import Build
+from gitlab.utils.utils import GitlabUtils
 from gitlab.build.error_messages import NOT_FOUND, UNAUTHORIZED
 from gitlab.data.user import User
 from gitlab.data.project import Project
@@ -25,14 +26,9 @@ def ping_pong():
 def get_project_build(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
-        project = user.project
-        project = Project.objects(id=project.id).first()
-        if project:
-            build = Build(GITLAB_API_TOKEN)
-            requested_build = build.get_project_build(project.project_id)
-        else:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
+        project = user.get_user_project()
+        build = Build(GITLAB_API_TOKEN)
+        requested_build = build.get_requested_build(project)
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:

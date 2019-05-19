@@ -27,7 +27,7 @@ def ping_pong():
 def rerun_pipeline(chat_id, pipeline_id):
     try:
         user = User.objects(chat_id=chat_id).first()
-        project = user.project
+        project = user.get_user_project()
         rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
         restarted_pipeline = rerunpipeline.rerun_pipeline(project.project_id,
                                                           pipeline_id)

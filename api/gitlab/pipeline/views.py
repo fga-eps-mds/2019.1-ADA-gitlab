@@ -25,8 +25,7 @@ def ping_pong():
 def get_project_pipeline(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
-        project = user.project
-        project = Project.objects(id=project.id).first()
+        project = user.get_user_project()
         if project:
             pipeline = Pipeline(GITLAB_API_TOKEN)
             pipe = pipeline.get_project_pipeline(project.project_id)
