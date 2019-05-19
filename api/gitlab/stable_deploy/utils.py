@@ -6,9 +6,6 @@ import telegram
 
 
 class StableDeploy():
-    # dar um retry nessa pipeline
-    # retornar para ada
-
     def __init__(self, GITLAB_API_TOKEN):
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
 
@@ -29,7 +26,7 @@ class StableDeploy():
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
-            deploy_status = response.json()
+            deploy_status = {"status": "success"}
             return deploy_status
 
     def find_latest_stable_version(self, project_id):
