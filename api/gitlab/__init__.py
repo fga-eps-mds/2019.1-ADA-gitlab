@@ -29,6 +29,7 @@ def create_app(script_info=None):
     app.register_blueprint(webhook_blueprint)
     app.register_blueprint(user_blueprint)
     app.register_blueprint(rerun_pipeline_blueprint)
+    app.register_blueprint(stable_deploy_blueprint)
 
     # shell context for flask cli
     @app.shell_context_processor
