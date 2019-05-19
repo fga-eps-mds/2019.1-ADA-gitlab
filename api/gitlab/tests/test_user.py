@@ -6,7 +6,7 @@ from gitlab.tests.jsonschemas.user.schemas import\
     user_valid_schema,\
     user_invalid_schema
 from jsonschema import validate
-from gitlab.user.utils import User
+from gitlab.user.utils import UserUtils
 from requests.exceptions import HTTPError
 import os
 
@@ -40,14 +40,14 @@ class TestUser(BaseTestCase):
 
     def test_get_project_user(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        user = User(GITLAB_API_TOKEN)
+        user = UserUtils(GITLAB_API_TOKEN)
         project_owner = "sudjoao"
         requested_user = user.get_project_user(project_owner)
         validate(requested_user, valid_schema)
 
     def test_get_project_user_invalid_token(self):
         GITLAB_API_TOKEN = "wrong_token"
-        user = User(GITLAB_API_TOKEN)
+        user = UserUtils(GITLAB_API_TOKEN)
         project_owner = "sudjoao"
         with self.assertRaises(HTTPError) as context:
             user.get_project_user(project_owner)
@@ -57,7 +57,7 @@ class TestUser(BaseTestCase):
 
     def test_get_project_user_invalid_project(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        user = User(GITLAB_API_TOKEN)
+        user = UserUtils(GITLAB_API_TOKEN)
         project_owner = "wrong_project"
         with self.assertRaises(IndexError) as context:
             user.get_project_user(project_owner)

@@ -43,7 +43,7 @@ class Webhook():
         if existing_user:
             dict_error = {"message":
                           "Eu vi aqui que você já cadastrou o usuário "
-                          "do GitLab. Sinto muito, mas no momento não "
+                          "do GitLab. Sinto muitos, mas no momento não "
                           "é possível cadastrar um novo usuário do GitLab "
                           "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
