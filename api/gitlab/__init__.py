@@ -6,6 +6,7 @@ from gitlab.build.views import build_blueprint
 from gitlab.webhook.views import webhook_blueprint
 from gitlab.user.views import user_blueprint
 from gitlab.rerun_pipeline.views import rerun_pipeline_blueprint
+from gitlab.stable_deploy.views import stable_deploy_blueprint
 from flask_cors import CORS
 
 cors = CORS()

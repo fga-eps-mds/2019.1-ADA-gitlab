@@ -6,19 +6,16 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.data.user import User
 from gitlab.data.project import Project
-from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
-import sys
+from gitlab.stable_deploy.error_messages import UNAUTHORIZED, NOT_FOUND
 
 
-rerun_pipeline_blueprint = Blueprint("stable_deploy", __name__)
+stable_deploy_blueprint = Blueprint("stable_deploy", __name__)
 CORS(stable_deploy_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
 @stable_deploy_blueprint.route("/stable_deploy/ping", methods=["GET"])
 def ping_pong():
-    rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
-    sla = rerunpipeline.build_buttons(1234)
     return jsonify({
         "status": "success",
         "message": "pong!",
