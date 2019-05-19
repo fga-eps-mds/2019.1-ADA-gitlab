@@ -5,7 +5,9 @@ import json
 from requests.exceptions import HTTPError
 import os
 from gitlab.data.user import User
+from gitlab.data.project import Project
 from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
+import sys
 
 
 rerun_pipeline_blueprint = Blueprint("rerun_pipeline", __name__)
@@ -15,12 +17,13 @@ GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 @rerun_pipeline_blueprint.route("/rerun_pipeline/ping", methods=["GET"])
 def ping_pong():
+    rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
+    sla = rerunpipeline.build_buttons(1234)
     return jsonify({
         "status": "success",
         "message": "pong!",
         "route": "rerun_pipeline"
     }), 200
-
 
 @rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
                                 methods=["GET"])
