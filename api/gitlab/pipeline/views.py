@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
-from gitlab.pipeline.utils import Pipeline
+from gitlab.pipeline.pipeline_utils import Pipeline
 from gitlab.pipeline.error_messages import NOT_FOUND, UNAUTHORIZED
 import json
 from requests.exceptions import HTTPError
@@ -25,19 +25,12 @@ def ping_pong():
 def get_project_pipeline(chat_id):
     try:
         user = User.objects(chat_id=chat_id).first()
-        project = user.get_user_project()
-        if project:
-            pipeline = Pipeline(GITLAB_API_TOKEN)
-            pipe = pipeline.get_project_pipeline(project.project_id)
-        else:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
+        pipeline = Pipeline(user.access_token)
+        pipe = pipeline.return_project(chat_id,
+                                        pipeline.check_project_exists,
+                                        True)
     except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
+        pipe.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

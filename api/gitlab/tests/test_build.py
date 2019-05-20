@@ -6,7 +6,7 @@ from gitlab.tests.jsonschemas.build.schemas import\
     invalid_project_schema, build_valid_schema,\
     build_invalid_schema
 from jsonschema import validate
-from gitlab.build.utils import Build
+from gitlab.build.build_utils import Build
 from gitlab.data.user import User
 from gitlab.data import init_db
 from gitlab.data.project import Project
