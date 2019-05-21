@@ -7,6 +7,7 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.data.user import User
 from gitlab.data.project import Project
+import sys
 
 pipeline_blueprint = Blueprint("pipeline", __name__)
 CORS(pipeline_blueprint)

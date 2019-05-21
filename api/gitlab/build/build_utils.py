@@ -18,28 +18,18 @@ class Build(GitlabUtils):
     def __init__(self, GITLAB_API_TOKEN):
         super().__init__(GITLAB_API_TOKEN)
         
-    def get_project_build(self, project_id):
-        try:
-            pipeline = Pipeline(self.GITLAB_API_TOKEN)
-            pipeline_id = pipeline.get_project_pipeline(
-                                             project_id)
-            resp = requests.get(self.GITLAB_API_URL +
-                                "projects/{project_id}/pipelines/"
-                                "{pipeline_id}/jobs"
-                                .format(project_id=project_id,
-                                        pipeline_id=pipeline_id["id"]),
-                                headers=self.headers)
-            resp.raise_for_status()
-            requested_build = self.build_requested_build(resp.json())
-        except HTTPError as http_error:
-            dict_error = {"status_code":
-                          http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        except AttributeError:
-            dict_error = {"status_code": 404}
-            raise AttributeError(json.dumps(dict_error))
-        else:
-            return requested_build
+    def get_project_build(self, project_id):        
+        pipeline = Pipeline(self.GITLAB_API_TOKEN)
+        pipeline_id = pipeline.get_project_pipeline(
+                                            project_id)
+        url = self.GITLAB_API_URL +\
+              "projects/{project_id}/pipelines/"\
+              "{pipeline_id}/jobs"\
+              .format(project_id=project_id,
+                    pipeline_id=pipeline_id["id"])
+        resp_json = self.get_request(url)
+        project_build = self.build_requested_build(resp_json)
+        return project_build
     
     def update_job_data(self, job_dict, resp, count):
         job_dict["pipeline_status"] = resp[count]["status"]

@@ -12,7 +12,6 @@ import sys
 
 build_blueprint = Blueprint("build", __name__)
 CORS(build_blueprint)
-# GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
 @build_blueprint.route("/build/ping", methods=["GET"])

@@ -16,7 +16,7 @@ class GitlabUtils:
         self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
         self.headers = {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + self.GITLAB_API_TOKEN
+                "Authorization": "Bearer " + str(self.GITLAB_API_TOKEN)
             }
         self.GITLAB_API_URL = "https://gitlab.com/api/v4/"
 
@@ -24,25 +24,13 @@ class GitlabUtils:
         user = User.objects(chat_id=chat_id).first()
         return user.access_token
 
-
     def get_project_id(self, project_owner, project_name):
         project_url = project_owner + "%2F" + project_name
-        try:
-            response = requests.get("https://gitlab.com/api/"
-                                    "v4/projects/{project_url}"
-                                    .format(project_url=project_url),
-                                    headers=self.headers)
-            response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code":
-                          http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        except AttributeError:
-            dict_error = {"status_code": 404}
-            raise AttributeError(json.dumps(dict_error))
-        else:
-            requested_id = response.json()
-            return requested_id    
+        url = self.GITLAB_API_URL +\
+              "projects/{project_url}"\
+              .format(project_url=project_url)
+        project_id = self.get_request(url)
+        return project_id["id"]
 
     def error_message(self, http_error):
         dict_message = json.loads(str(http_error))
@@ -57,12 +45,9 @@ class GitlabUtils:
         try:
             util = self.check_project_exists(project, pipeline)
         except HTTPError as http_error:
-            dict_error = {"status_code":
-                          http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
-        except AttributeError:
-            dict_error = {"status_code": 404}
-            raise AttributeError(json.dumps(dict_error))
+            raise HTTPError(self.exception_json(http_error.
+                                                response.
+                                                status_code))
         else:
             return util
 
@@ -71,13 +56,29 @@ class GitlabUtils:
             if project:
                 util = self.get_project_pipeline(project.project_id)
             else:
-                dict_error = {"status_code": 404}
-                raise HTTPError(json.dumps(dict_error))
+                raise HTTPError(self.exception_json(404))
             return util
         else:
             if project:
                 util = self.get_project_build(project.project_id)
             else:
-                dict_error = {"status_code": 404}
-                raise HTTPError(json.dumps(dict_error))
+                raise HTTPError(self.exception_json(404))
             return util
+
+    def get_request(self, url):
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+        except HTTPError as http_error:
+            raise HTTPError(self.exception_json(http_error.
+                                             response.
+                                             status_code))
+        except AttributeError:
+            raise AttributeError(self.exception_json(404))
+        else:
+            resp_json = response.json()
+            return resp_json
+    
+    def exception_json(self, message):
+        error_dict = {"status_code": message}
+        return json.dumps(error_dict)
