@@ -75,6 +75,8 @@ class GitlabUtils:
                                              status_code))
         except AttributeError:
             raise AttributeError(self.exception_json(404))
+        except IndexError:
+            raise IndexError(self.exception_json(404))
         else:
             resp_json = response.json()
             return resp_json

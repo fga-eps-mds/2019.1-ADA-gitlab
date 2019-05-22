@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
-from gitlab.report.utils import Report
+from gitlab.report.report_utils import Report
 import json
 from requests.exceptions import HTTPError
 import os
@@ -35,7 +35,6 @@ def generate_report(chat_id):
         else:
             dict_error = {"status_code": 404}
             raise HTTPError(json.dumps(dict_error))
-
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
         if dict_message["status_code"] == 401:
