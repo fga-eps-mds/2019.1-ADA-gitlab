@@ -13,15 +13,6 @@ import sys
 build_blueprint = Blueprint("build", __name__)
 CORS(build_blueprint)
 
-
-@build_blueprint.route("/build/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
-
 @build_blueprint.route("/build/<chat_id>", methods=["GET"])
 def get_project_build(chat_id):
     try:
@@ -29,7 +20,7 @@ def get_project_build(chat_id):
         build = Build(user.access_token)
         user_build = build.return_project(chat_id,
                                           build.check_project_exists,
-                                          False)
+                                          build)
     except HTTPError as http_error:
         build.error_message(http_error)
     except AttributeError:

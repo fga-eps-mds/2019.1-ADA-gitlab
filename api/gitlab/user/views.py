@@ -20,13 +20,6 @@ GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 BOT_NAME = os.getenv("BOT_NAME", "")
 
-@user_blueprint.route("/user/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
 
 @user_blueprint.route("/user/<project_owner>", methods=["GET"])
 def get_project_user(project_owner):

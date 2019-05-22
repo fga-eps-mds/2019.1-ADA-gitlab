@@ -14,14 +14,6 @@ CORS(report_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
-@report_blueprint.route("/report/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
-
 @report_blueprint.route("/report/<chat_id>", methods=["GET"])
 def generate_report(chat_id):
     try:

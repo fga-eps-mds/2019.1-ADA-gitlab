@@ -8,19 +8,11 @@ import os
 from gitlab.data.user import User
 from gitlab.data.project import Project
 import sys
+import re
 
 pipeline_blueprint = Blueprint("pipeline", __name__)
 CORS(pipeline_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-
-
-@pipeline_blueprint.route("/pipeline/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
 
 @pipeline_blueprint.route("/pipeline/<chat_id>", methods=["GET"])
 def get_project_pipeline(chat_id):
@@ -28,8 +20,8 @@ def get_project_pipeline(chat_id):
         user = User.objects(chat_id=chat_id).first()
         pipeline = Pipeline(user.access_token)
         pipe = pipeline.return_project(chat_id,
-                                        pipeline.check_project_exists,
-                                        True)
+                                       pipeline.check_project_exists,
+                                       pipeline)
     except HTTPError as http_error:
         pipe.error_message(http_error)
     except AttributeError:

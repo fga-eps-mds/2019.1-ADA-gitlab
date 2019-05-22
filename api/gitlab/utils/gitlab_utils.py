@@ -9,6 +9,7 @@ from gitlab.utils.error_messages import UNAUTHORIZED,\
 from gitlab.data.user import User
 import requests
 import sys
+import re
 
 
 class GitlabUtils:
@@ -39,11 +40,11 @@ class GitlabUtils:
         else:
             return jsonify(NOT_FOUND), 404
 
-    def return_project(self, chat_id, check_project_exists, pipeline=True):
+    def return_project(self, chat_id, check_project_exists, object_type):
         user = User.objects(chat_id=chat_id).first()
         project = user.get_user_project()
         try:
-            util = self.check_project_exists(project, pipeline)
+            util = self.check_project_exists(project, object_type)
         except HTTPError as http_error:
             raise HTTPError(self.exception_json(http_error.
                                                 response.
@@ -51,19 +52,24 @@ class GitlabUtils:
         else:
             return util
 
-    def check_project_exists(self, project, pipeline=True):
-        if pipeline:
+    def check_project_exists(self, project, object_type):
+        if self.get_class_type(object_type) == "Pipeline":
             if project:
                 util = self.get_project_pipeline(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
             return util
-        else:
+        elif self.get_class_type(object_type) == "Build":
             if project:
                 util = self.get_project_build(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
             return util
+
+    def get_class_type(self, object):
+        raw_class_name = str(type(object)).split('.')[-1]
+        class_name = re.sub('[^a-zA-Z]+', '', raw_class_name)
+        return class_name
 
     def get_request(self, url):
         try:

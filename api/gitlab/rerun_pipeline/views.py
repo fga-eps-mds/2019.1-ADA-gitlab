@@ -13,15 +13,6 @@ CORS(rerun_pipeline_blueprint)
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
-@rerun_pipeline_blueprint.route("/rerun_pipeline/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!",
-        "route": "rerun_pipeline"
-    }), 200
-
-
 @rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
                                 methods=["GET"])
 def rerun_pipeline(chat_id, pipeline_id):

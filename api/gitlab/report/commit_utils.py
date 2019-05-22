@@ -12,8 +12,6 @@ class ReportCommits(GitlabUtils):
     def __init__(self, GITLAB_API_TOKEN):
         super().__init__(GITLAB_API_TOKEN)
         self.repo = report_dict
-    
-    pipelines_ids = []    
 
     def get_commits(self, project_id):
         url = self.GITLAB_API_URL +\
@@ -22,17 +20,11 @@ class ReportCommits(GitlabUtils):
               .format(project_id=project_id)
         repo_commits = self.get_request(url)
         number_of_commits = len(repo_commits)
+        self.update_commits_data(repo_commits, number_of_commits)
+    
+    def update_commits_data(self, repo_commits, number_of_commits):
+        commit_statistics = self.repo["commits"]["last_commit"]
+        for key in self.repo["commits"]["last_commit"]:
+            commit_statistics[key] = repo_commits[0][key]
         (self.repo["commits"]
-                    ["last_commit"]
-                    ["title"]) = repo_commits[0]["title"]
-        (self.repo["commits"]
-                    ["last_commit"]
-                    ["author_name"]) = repo_commits[0]["author_name"]
-        (self.repo["commits"]
-                    ["last_commit"]
-                    ["author_email"]) = repo_commits[0]["author_email"]
-        (self.repo["commits"]
-                    ["last_commit"]
-                    ["authored_date"]) = repo_commits[0]["authored_date"]
-        (self.repo["commits"]
-                    ["number_of_commits"]) = number_of_commits
+                  ["number_of_commits"]) = number_of_commits
