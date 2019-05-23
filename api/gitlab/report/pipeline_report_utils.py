@@ -13,21 +13,7 @@ class ReportPipelines(GitlabUtils):
         super().__init__(chat_id)
         self.repo = report_dict    
         self.pipelines_ids = []
-
-    def get_pipeline(self, project_id):
-        url = self.GITLAB_API_URL +\
-              "projects/{project_id}/"\
-              "pipelines"\
-              .format(project_id=project_id)
-
-
-        pipelines = self.get_request(url)
-        
-        number_of_pipelines = 0
-        success_pipeline = 0
-        failed_pipeline = 0
-
-        pipeline_days = {
+        self.pipeline_days = {
             "last_7_days": {
                 "number_of_pipelines": 0,
                 "percent_succeded": 0,
@@ -36,73 +22,80 @@ class ReportPipelines(GitlabUtils):
                 "failed_pipelines": 0
             },
              "last_30_days": {}
-            }
-        pipeline_days['last_30_days'].update(pipeline_days['last_7_days'])
+        }
+        self.pipeline_status = {
+            "success_pipeline": 0,
+            "failed_pipeline": 0,
+        }
 
-        for i, item in enumerate(pipelines):
-            self.pipelines_ids.append(pipelines[i]["id"])
-            is_recent = self.check_pipeline_date(
-                project_id, pipelines[i]["id"])
-            if is_recent["last_7_days"]:
-                pipeline_days["last_7_days"]["number_of_pipelines"] += 1
-                if pipelines[i]["status"] == "success":
-                    pipeline_days["last_7_days"]["succeded_pipelines"] += 1
-                    success_pipeline = success_pipeline + 1
-                else:
-                    pipeline_days["last_7_days"]["failed_pipelines"] += 1
-                    failed_pipeline = failed_pipeline + 1
-            elif is_recent["last_30_days"]:
-                pipeline_days["last_30_days"]["number_of_pipelines"] += 1
-                if pipelines[i]["status"] == "success":
-                    pipeline_days["last_30_days"]["succeded_pipelines"] += 1
-                    success_pipeline = success_pipeline + 1
-                else:
-                    pipeline_days["last_30_days"]["failed_pipelines"] += 1
-                    failed_pipeline = failed_pipeline + 1
-            elif pipelines[i]["status"] == "success":
-                success_pipeline = success_pipeline + 1
-            else:
-                failed_pipeline = failed_pipeline + 1
-
-        if pipeline_days["last_30_days"]["number_of_pipelines"]:
-            pipeline_days["last_30_days"]["percent_succeded"] = (pipeline_days["last_30_days"]["succeded_pipelines"]/
-                                                            pipeline_days["last_30_days"]["number_of_pipelines"]) * 100.0
-            pipeline_days["last_30_days"]["percent_failed"] = 100 - pipeline_days["last_30_days"]["percent_succeded"]
+    def get_pipeline(self, project_id):
+        url = self.GITLAB_API_URL +\
+              "projects/{project_id}/"\
+              "pipelines"\
+              .format(project_id=project_id)
+        pipelines = self.get_request(url)        
+        self.pipeline_days['last_30_days'].update(self.pipeline_days['last_7_days'])
         
-        self.update_report_dict(pipeline_days, False)
-
-        if pipeline_days["last_7_days"]["number_of_pipelines"]:
-                pipeline_days["last_7_days"]["percent_succeded"] = (pipeline_days["last_7_days"]["succeded_pipelines"]/
-                                                                pipeline_days["last_7_days"]["number_of_pipelines"]) * 100.0
-                pipeline_days["last_7_days"]["percent_failed"] = 100 - pipeline_days["last_7_days"]["percent_succeded"]
-        
-        self.update_report_dict(pipeline_days, True)
+        self.build_report(pipelines, project_id)
+        self.build_pipeline_statistics("last_30_days")
+        self.update_report_dict("last_30_days")
+        self.build_pipeline_statistics("last_7_days")
+        self.update_report_dict("last_7_days")
 
         number_of_pipelines = len(pipelines)
-        percent_success = (success_pipeline / number_of_pipelines) * 100.0
+        percent_success = (self.pipeline_status["success_pipeline"] / number_of_pipelines) * 100.0
         statistics_dict = {
             "number_of_pipelines": number_of_pipelines,
-            "succeded_pipelines": success_pipeline,
-            "failed_pipelines": failed_pipeline,
+            "succeded_pipelines": self.pipeline_status["success_pipeline"],
+            "failed_pipelines": self.pipeline_status["failed_pipeline"],
             "percent_succeded": percent_success,
             "current_pipeline_id": pipelines[0]["id"],
             "current_pipeline_name": pipelines[0]["ref"]
             }
         self.update_report_statistics(statistics_dict)
     
-    def update_report_dict(self, pipeline_days, seven_days=True):
-        if seven_days:
-            days_key = "last_7_days"
-        else:
-            days_key = "last_30_days"
+    def update_report_dict(self, days_key):
         update_days = self.repo["pipelines"]["recents_pipelines"][days_key]
-        for key in pipeline_days[days_key]:
-            update_days[key] = pipeline_days[days_key][key]
+        for key in self.pipeline_days[days_key]:
+            update_days[key] = self.pipeline_days[days_key][key]
 
     def update_report_statistics(self, statistics_dict):
         pipelines_statistics = self.repo["pipelines"]
         for key in statistics_dict:
             pipelines_statistics[key] = statistics_dict[key]
+
+    def build_pipeline_dict(self, pipelines, i,
+                            days_key):
+        self.pipeline_days[days_key]["number_of_pipelines"] += 1
+        if pipelines[i]["status"] == "success":
+            self.pipeline_days[days_key]["succeded_pipelines"] += 1
+            self.pipeline_status["success_pipeline"] =\
+                 self.pipeline_status["success_pipeline"] + 1
+        else:
+            self.pipeline_days[days_key]["failed_pipelines"] += 1
+            self.pipeline_status["failed_pipeline"] =\
+                 self.pipeline_status["failed_pipeline"] + 1
+    
+    def build_pipeline_statistics(self, days_key):
+        if self.pipeline_days[days_key]["number_of_pipelines"]:
+            self.pipeline_days[days_key]["percent_succeded"] = (self.pipeline_days[days_key]["succeded_pipelines"]/
+                                                            self.pipeline_days[days_key]["number_of_pipelines"]) * 100.0
+            self.pipeline_days[days_key]["percent_failed"] = 100 - self.pipeline_days[days_key]["percent_succeded"]
+
+    def build_report(self, pipelines, project_id):
+        for i, item in enumerate(pipelines):
+            self.pipelines_ids.append(pipelines[i]["id"])
+            recent_pipelines = self.check_pipeline_date(
+                project_id, pipelines[i]["id"])
+            if recent_pipelines["last_7_days"]:
+                self.build_pipeline_dict(pipelines, i, "last_7_days")
+            elif recent_pipelines["last_30_days"]:
+                self.build_pipeline_dict(pipelines, i, "last_30_days")
+            elif pipelines[i]["status"] == "success":
+                self.pipeline_status["success_pipeline"] = self.pipeline_status["success_pipeline"] + 1
+            else:
+                self.pipeline_status["failed_pipeline"] = self.pipeline_status["failed_pipeline"] + 1
+    
 
     def check_pipeline_date(self, project_id, pipeline_id):
         url = self.GITLAB_API_URL +\
