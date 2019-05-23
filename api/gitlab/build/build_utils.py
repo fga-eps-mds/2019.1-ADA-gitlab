@@ -17,9 +17,10 @@ from flask import jsonify
 class Build(GitlabUtils):
     def __init__(self, GITLAB_API_TOKEN):
         super().__init__(GITLAB_API_TOKEN)
+        self.chat_id = GITLAB_API_TOKEN
         
-    def get_project_build(self, project_id):        
-        pipeline = Pipeline(self.GITLAB_API_TOKEN)
+    def get_project_build(self, project_id):
+        pipeline = Pipeline(self.chat_id)
         pipeline_id = pipeline.get_project_pipeline(
                                             project_id)
         url = self.GITLAB_API_URL +\

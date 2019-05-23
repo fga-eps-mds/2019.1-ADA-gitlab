@@ -16,8 +16,7 @@ CORS(build_blueprint)
 @build_blueprint.route("/build/<chat_id>", methods=["GET"])
 def get_project_build(chat_id):
     try:
-        user = User.objects(chat_id=chat_id).first()
-        build = Build(user.access_token)
+        build = Build(chat_id)
         user_build = build.return_project(chat_id,
                                           build.check_project_exists,
                                           build)

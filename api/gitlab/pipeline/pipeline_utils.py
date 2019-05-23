@@ -11,6 +11,7 @@ from gitlab.data.user import User
 class Pipeline(GitlabUtils):
     def __init__(self, GITLAB_API_TOKEN):
         super().__init__(GITLAB_API_TOKEN)
+        self.chat_id = GITLAB_API_TOKEN
 
     def get_project_pipeline(self, project_id):
         url = self.GITLAB_API_URL +\

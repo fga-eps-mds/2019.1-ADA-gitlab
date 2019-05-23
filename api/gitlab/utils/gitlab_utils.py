@@ -14,7 +14,8 @@ import re
 
 class GitlabUtils:
     def __init__(self, GITLAB_API_TOKEN):
-        self.GITLAB_API_TOKEN = GITLAB_API_TOKEN
+        self.chat_id = GITLAB_API_TOKEN
+        self.GITLAB_API_TOKEN = self.get_access_token(self.chat_id)
         self.headers = {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + str(self.GITLAB_API_TOKEN)
