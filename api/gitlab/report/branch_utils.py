@@ -9,8 +9,8 @@ import sys
 
 
 class ReportBranches(GitlabUtils):
-    def __init__(self, GITLAB_API_TOKEN):
-        super().__init__(GITLAB_API_TOKEN)
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
         self.repo = report_dict
     
     pipelines_ids = []    

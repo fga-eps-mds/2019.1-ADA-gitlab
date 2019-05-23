@@ -17,22 +17,12 @@ GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 @report_blueprint.route("/report/<chat_id>", methods=["GET"])
 def generate_report(chat_id):
     try:
-        user = User.objects(chat_id=chat_id).first()
-        project = user.project
-        user_has_project = Project.objects(id=project.id)
-        if user_has_project:
-            report = Report(GITLAB_API_TOKEN)
-            generated_report = report.repo_informations(
-                                                        user, project)
-        else:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
+        report = Report(chat_id)
+        generated_report = report.return_project(chat_id, 
+                                                report.check_project_exists,
+                                                report)
     except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
+        report.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

@@ -13,8 +13,8 @@ import re
 
 
 class GitlabUtils:
-    def __init__(self, GITLAB_API_TOKEN):
-        self.chat_id = GITLAB_API_TOKEN
+    def __init__(self, chat_id):
+        self.chat_id = chat_id
         self.GITLAB_API_TOKEN = self.get_access_token(self.chat_id)
         self.headers = {
                 "Content-Type": "application/json",
@@ -41,11 +41,20 @@ class GitlabUtils:
         else:
             return jsonify(NOT_FOUND), 404
 
-    def return_project(self, chat_id, check_project_exists, object_type):
+    def return_project(self, chat_id,
+                       check_project_exists,
+                       object_type):
         user = User.objects(chat_id=chat_id).first()
         project = user.get_user_project()
         try:
-            util = self.check_project_exists(project, object_type)
+            if self.get_class_type(object_type) == "Report":
+                util = self.check_project_exists(project,
+                                                 object_type,
+                                                 user)
+            else:
+                util = self.check_project_exists(project,
+                                                 object_type,
+                                                 None)
         except HTTPError as http_error:
             raise HTTPError(self.exception_json(http_error.
                                                 response.
@@ -53,7 +62,7 @@ class GitlabUtils:
         else:
             return util
 
-    def check_project_exists(self, project, object_type):
+    def check_project_exists(self, project, object_type, user=None):
         if self.get_class_type(object_type) == "Pipeline":
             if project:
                 util = self.get_project_pipeline(project.project_id)
@@ -65,7 +74,12 @@ class GitlabUtils:
                 util = self.get_project_build(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
-            return util
+        elif self.get_class_type(object_type) == "Report":
+            if project:
+                util = self.repo_informations(user, project)
+            else:
+                raise HTTPError(self.exception_json(404))
+        return util
 
     def get_class_type(self, object):
         raw_class_name = str(type(object)).split('.')[-1]

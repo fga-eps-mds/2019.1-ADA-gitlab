@@ -9,9 +9,8 @@ from gitlab.data.user import User
 
 
 class Pipeline(GitlabUtils):
-    def __init__(self, GITLAB_API_TOKEN):
-        super().__init__(GITLAB_API_TOKEN)
-        self.chat_id = GITLAB_API_TOKEN
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
 
     def get_project_pipeline(self, project_id):
         url = self.GITLAB_API_URL +\

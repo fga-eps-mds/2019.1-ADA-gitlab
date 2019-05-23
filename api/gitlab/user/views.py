@@ -23,10 +23,10 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 BOT_NAME = os.getenv("BOT_NAME", "")
 
 
-@user_blueprint.route("/user/<project_owner>", methods=["GET"])
-def get_user_project(project_owner):
+@user_blueprint.route("/user/<chat_id>/<project_owner>", methods=["GET"])
+def get_user_project(chat_id, project_owner):
     try:
-        user = UserUtils(GITLAB_API_TOKEN)
+        user = UserUtils(chat_id)
         user_repos = user.get_user_project(project_owner)
         if len(user_repos) == 0:
             return jsonify(NOT_FOUND), 404
@@ -43,10 +43,10 @@ def get_user_project(project_owner):
         }), 200
 
 
-@user_blueprint.route("/user/id/<project_owner>", methods=["GET"])
-def get_user_id(project_owner):
+@user_blueprint.route("/user/id/<chat_id>/<project_owner>", methods=["GET"])
+def get_user_id(chat_id, project_owner):
     try:
-        user = UserUtils(GITLAB_API_TOKEN)
+        user = UserUtils(chat_id)
         user_id = user.get_user_id(project_owner)
     except HTTPError as http_error:
         user.error_message(http_error)
@@ -56,12 +56,12 @@ def get_user_id(project_owner):
         }), 200
 
 
-@user_blueprint.route("/user/repo/<project_owner>/"
+@user_blueprint.route("/user/repo/<chat_id>/<project_owner>/"
                       "<project_name>",
                       methods=["GET"])
-def get_project_id(project_owner, project_name):
+def get_project_id(chat_id, project_owner, project_name):
     try:
-        repo = Pipeline(GITLAB_API_TOKEN)
+        repo = Pipeline(chat_id)
         repo_id = repo.get_project_id(project_owner, project_name)
     except HTTPError as http_error:
         repo.error_message(http_error)
@@ -82,7 +82,8 @@ def get_access_token():
         db_user = User()
         db_user.access_token = GITLAB_TOKEN
         db_user.chat_id = str(chat_id)
-        user = UserUtils(GITLAB_TOKEN)
+        db_user.save()
+        user = UserUtils(chat_id)
         user_infos = user.get_own_user_data()
         db_user.gitlab_user = user_infos["gitlab_username"]
         db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])

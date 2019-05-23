@@ -8,16 +8,15 @@ import telegram
 import sys
 from gitlab.utils.gitlab_utils import GitlabUtils
 
-
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
 GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 class UserUtils(GitlabUtils):
-    def __init__(self, GITLAB_API_TOKEN):
-        super().__init__(GITLAB_API_TOKEN)
-        self.headers = self.headers = {
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
+        self.headers = {
                 "Content-Type": "application/json"
             }
 

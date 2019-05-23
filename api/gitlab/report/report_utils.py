@@ -12,8 +12,8 @@ from gitlab.report.pipeline_report_utils \
 import sys
 
 class Report(GitlabUtils):
-    def __init__(self, GITLAB_API_TOKEN):
-        super().__init__(GITLAB_API_TOKEN)
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
         self.repo = report_dict    
 
     def get_project(self, project_owner, project_name):
@@ -25,9 +25,9 @@ class Report(GitlabUtils):
         project_id = int(project.project_id)
         project_name = project.name
         project_owner = user.gitlab_user
-        branches = ReportBranches(self.GITLAB_API_TOKEN)
-        commits = ReportCommits(self.GITLAB_API_TOKEN)
-        pipelines = ReportPipelines(self.GITLAB_API_TOKEN)
+        branches = ReportBranches(self.chat_id)
+        commits = ReportCommits(self.chat_id)
+        pipelines = ReportPipelines(self.chat_id)
         branches.get_branches(project_id) 
         commits.get_commits(project_id)
         self.get_project(project_owner, project_name)
