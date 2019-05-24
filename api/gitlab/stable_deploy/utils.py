@@ -48,8 +48,8 @@ class StableDeploy():
         else:
             pipelines = response.json()
             pipeline_id = 0
-            for i, item in enumerate(pipelines):
-                if i["status"] == "success":
-                    pipeline_id = i["id"]
+            for item in pipelines:
+                if item["status"] == "success":
+                    pipeline_id = item["id"]
                     break
             return pipeline_id

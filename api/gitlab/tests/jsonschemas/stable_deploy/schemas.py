@@ -32,7 +32,8 @@ unauthorized_schema = {
 stable_deploy_schema = {
     "properties": {
         "status": {"type": "string"}
-    }
+    },
+    "required": ["status"]
 }
 
 invalid_project_schema = {
