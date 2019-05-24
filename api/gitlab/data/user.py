@@ -34,7 +34,7 @@ class User(mongoengine.Document):
         self.project = project
         self.update(project=project)
         return self
-    
+
     def get_user_project(self):
         project = self.project
         project = Project.objects(id=project.id).first()

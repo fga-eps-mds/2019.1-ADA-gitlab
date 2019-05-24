@@ -1,17 +1,12 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
 from gitlab.build.build_utils import Build
-from gitlab.utils.gitlab_utils import GitlabUtils
-from gitlab.build.error_messages import NOT_FOUND, UNAUTHORIZED
-from gitlab.data.user import User
-from gitlab.data.project import Project
-import json
+from gitlab.build.error_messages import NOT_FOUND
 from requests.exceptions import HTTPError
-import os
-import sys
 
 build_blueprint = Blueprint("build", __name__)
 CORS(build_blueprint)
+
 
 @build_blueprint.route("/build/<chat_id>", methods=["GET"])
 def get_project_build(chat_id):

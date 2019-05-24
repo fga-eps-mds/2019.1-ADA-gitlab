@@ -1,6 +1,5 @@
 # api/gitlab/__init__.py
 
-import requests
 from requests.exceptions import HTTPError
 import json
 from flask import jsonify
@@ -8,7 +7,6 @@ from gitlab.utils.error_messages import UNAUTHORIZED,\
                                         NOT_FOUND
 from gitlab.data.user import User
 import requests
-import sys
 import re
 
 
@@ -28,9 +26,8 @@ class GitlabUtils:
 
     def get_project_id(self, project_owner, project_name):
         project_url = project_owner + "%2F" + project_name
-        url = self.GITLAB_API_URL +\
-              "projects/{project_url}"\
-              .format(project_url=project_url)
+        url = self.GITLAB_API_URL + "projects/{project_url}".format(
+              project_url=project_url)
         project_id = self.get_request(url)
         return project_id["id"]
 
@@ -92,8 +89,8 @@ class GitlabUtils:
             response.raise_for_status()
         except HTTPError as http_error:
             raise HTTPError(self.exception_json(http_error.
-                                             response.
-                                             status_code))
+                                                response.
+                                                status_code))
         except AttributeError:
             raise AttributeError(self.exception_json(404))
         except IndexError:
@@ -101,7 +98,7 @@ class GitlabUtils:
         else:
             resp_json = response.json()
             return resp_json
-    
+
     def exception_json(self, message):
         error_dict = {"status_code": message}
         return json.dumps(error_dict)

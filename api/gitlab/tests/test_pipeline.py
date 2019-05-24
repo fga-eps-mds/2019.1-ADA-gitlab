@@ -6,7 +6,8 @@ from gitlab.tests.jsonschemas.pipeline.schemas import\
      invalid_project_schema, pipeline_valid_schema,\
      pipeline_invalid_schema
 from jsonschema import validate
-from gitlab.pipeline.pipeline_utils import Pipelinefrom requests.exceptions import HTTPError
+from gitlab.pipeline.pipeline_utils import Pipeline
+from requests.exceptions import HTTPError
 from gitlab.data.user import User
 from gitlab.data import init_db
 from gitlab.data.project import Project

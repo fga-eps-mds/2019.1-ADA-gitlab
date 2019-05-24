@@ -1,19 +1,13 @@
-import requests
-from requests.exceptions import HTTPError
-import json
-from datetime import date
-from datetime import datetime
 from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
-import sys
 
 
 class ReportBranches(GitlabUtils):
     def __init__(self, chat_id):
         super().__init__(chat_id)
         self.repo = report_dict
-    
-    pipelines_ids = []    
+
+    pipelines_ids = []
 
     def get_branches(self, project_id):
         url = self.GITLAB_API_URL +\

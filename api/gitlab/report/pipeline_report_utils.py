@@ -1,17 +1,13 @@
-import requests
-from requests.exceptions import HTTPError
-import json
-from datetime import date
-from datetime import datetime
 from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
-import sys
+import datetime
+import date
 
 
 class ReportPipelines(GitlabUtils):
     def __init__(self, chat_id):
         super().__init__(chat_id)
-        self.repo = report_dict    
+        self.repo = report_dict
         self.pipelines_ids = []
         self.pipeline_days = {
             "last_7_days": {
@@ -21,7 +17,7 @@ class ReportPipelines(GitlabUtils):
                 "succeded_pipelines": 0,
                 "failed_pipelines": 0
             },
-             "last_30_days": {}
+            "last_30_days": {}
         }
         self.pipeline_status = {
             "success_pipeline": 0,
@@ -33,9 +29,10 @@ class ReportPipelines(GitlabUtils):
               "projects/{project_id}/"\
               "pipelines"\
               .format(project_id=project_id)
-        pipelines = self.get_request(url)        
-        self.pipeline_days['last_30_days'].update(self.pipeline_days['last_7_days'])
-        
+        pipelines = self.get_request(url)
+        self.pipeline_days['last_30_days'].update(
+                                           self.pipeline_days['last_7_days'])
+
         self.build_report(pipelines, project_id)
         self.build_pipeline_statistics("last_30_days")
         self.update_report_dict("last_30_days")
@@ -43,7 +40,8 @@ class ReportPipelines(GitlabUtils):
         self.update_report_dict("last_7_days")
 
         number_of_pipelines = len(pipelines)
-        percent_success = (self.pipeline_status["success_pipeline"] / number_of_pipelines) * 100.0
+        percent_success = (self.pipeline_status["success_pipeline"]
+                           / number_of_pipelines) * 100.0
         statistics_dict = {
             "number_of_pipelines": number_of_pipelines,
             "succeded_pipelines": self.pipeline_status["success_pipeline"],
@@ -53,7 +51,7 @@ class ReportPipelines(GitlabUtils):
             "current_pipeline_name": pipelines[0]["ref"]
             }
         self.update_report_statistics(statistics_dict)
-    
+
     def update_report_dict(self, days_key):
         update_days = self.repo["pipelines"]["recents_pipelines"][days_key]
         for key in self.pipeline_days[days_key]:
@@ -69,18 +67,34 @@ class ReportPipelines(GitlabUtils):
         self.pipeline_days[days_key]["number_of_pipelines"] += 1
         if pipelines[i]["status"] == "success":
             self.pipeline_days[days_key]["succeded_pipelines"] += 1
-            self.pipeline_status["success_pipeline"] =\
-                 self.pipeline_status["success_pipeline"] + 1
+            self.pipeline_status["success_pipeline"] = (self.
+                                                        pipeline_status
+                                                        ["success_pipeline"]
+                                                        + 1)
         else:
             self.pipeline_days[days_key]["failed_pipelines"] += 1
-            self.pipeline_status["failed_pipeline"] =\
-                 self.pipeline_status["failed_pipeline"] + 1
-    
+            self.pipeline_status["failed_pipeline"] = (self.
+                                                       pipeline_status
+                                                       ["failed_pipeline"]
+                                                       + 1)
+
     def build_pipeline_statistics(self, days_key):
         if self.pipeline_days[days_key]["number_of_pipelines"]:
-            self.pipeline_days[days_key]["percent_succeded"] = (self.pipeline_days[days_key]["succeded_pipelines"]/
-                                                            self.pipeline_days[days_key]["number_of_pipelines"]) * 100.0
-            self.pipeline_days[days_key]["percent_failed"] = 100 - self.pipeline_days[days_key]["percent_succeded"]
+            (self.pipeline_days[days_key]
+                               ["percent_succeded"]) = ((self.
+                                                         pipeline_days
+                                                         [days_key]
+                                                         ["succeded"
+                                                          "_pipelines"] /
+                                                         self.pipeline_days
+                                                         [days_key]
+                                                         ["number_of_"
+                                                          "pipelines"]) * 100)
+            (self.pipeline_days[days_key]
+                               ["percent_failed"]) = (100 - self.
+                                                      pipeline_days
+                                                      [days_key]
+                                                      ["percent_succeded"])
 
     def build_report(self, pipelines, project_id):
         for i, item in enumerate(pipelines):
@@ -92,10 +106,15 @@ class ReportPipelines(GitlabUtils):
             elif recent_pipelines["last_30_days"]:
                 self.build_pipeline_dict(pipelines, i, "last_30_days")
             elif pipelines[i]["status"] == "success":
-                self.pipeline_status["success_pipeline"] = self.pipeline_status["success_pipeline"] + 1
+                self.pipeline_status["success_pipeline"] = (self.
+                                                            pipeline_status
+                                                            ["success_"
+                                                             "pipeline"] + 1)
             else:
-                self.pipeline_status["failed_pipeline"] = self.pipeline_status["failed_pipeline"] + 1
-    
+                self.pipeline_status["failed_pipeline"] = (self.
+                                                           pipeline_status
+                                                           ["failed_"
+                                                            "pipeline"] + 1)
 
     def check_pipeline_date(self, project_id, pipeline_id):
         url = self.GITLAB_API_URL +\
@@ -116,8 +135,8 @@ class ReportPipelines(GitlabUtils):
 
         if qntd_days.days <= 7:
             pipeline_qnt["last_7_days"] = True
-            
+
         elif qntd_days.days <= 30:
             pipeline_qnt["last_30_days"] = True
-            
+
         return pipeline_qnt

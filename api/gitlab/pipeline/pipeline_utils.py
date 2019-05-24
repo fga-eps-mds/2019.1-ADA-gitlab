@@ -1,11 +1,8 @@
 # api/gitlab/__init__.py
 
-import requests
 from requests.exceptions import HTTPError
 import json
 from gitlab.utils.gitlab_utils import GitlabUtils
-from gitlab.data.user import User
-
 
 
 class Pipeline(GitlabUtils):

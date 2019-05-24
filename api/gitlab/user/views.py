@@ -3,15 +3,11 @@ from flask_cors import CORS
 from gitlab.user.utils import UserUtils,\
                               authenticate_access_token,\
                               send_message
-from gitlab.user.error_messages import NOT_FOUND, UNAUTHORIZED
+from gitlab.user.error_messages import NOT_FOUND
 from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
-import json
 from requests.exceptions import HTTPError
 import os
-import telegram
-import requests
-import sys
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
@@ -87,9 +83,8 @@ def get_access_token():
         user_infos = user.get_own_user_data()
         db_user.gitlab_user = user_infos["gitlab_username"]
         db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
-        db_user.save()    
+        db_user.save()
         user.send_button_message(user_infos, chat_id)
-    
-    redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)    
 
+    redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
     return redirect(redirect_uri, code=302)
