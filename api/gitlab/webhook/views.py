@@ -7,6 +7,7 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import telegram
+from gitlab.rerun_pipeline.utils import RerunPipeline
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
@@ -19,7 +20,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 def webhook_repository(user_id, project_id):
     if request.is_json:
         content = request.get_json()
-        if content['object_kind'] == "pipeline":
+        if content["object_kind"] == "pipeline":
             webhook = Webhook()
             pipeline_id = content["object_attributes"]["id"]
             jobs = webhook.get_pipeline_infos(project_id, pipeline_id)
@@ -34,7 +35,15 @@ def webhook_repository(user_id, project_id):
                              text=messages["jobs_message"])
             bot.send_message(chat_id=user.chat_id,
                              text=messages["summary_message"])
-            return 'OK'
+            if content["object_attributes"]["status"] == "failed":
+                rerunpipeline = RerunPipeline(GITLAB_API_TOKEN)
+                buttons = rerunpipeline.build_buttons(pipeline_id)
+                reply_markup = telegram.InlineKeyboardMarkup(buttons)
+                bot.send_message(chat_id=user.chat_id,
+                                 text="Se você quiser reiniciar essa pipeline, \
+                                       é só clicar nesse botão",
+                                 reply_markup=reply_markup)
+            return "OK"
     else:
         return "OK"
 

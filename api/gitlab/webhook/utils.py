@@ -81,25 +81,25 @@ class Webhook():
         jobs_message = "Os passos da build são:\n"
 
         for i, item in enumerate(job_build):
-            if job_build[i]['status'] == "success":
+            if job_build[i]["status"] == "success":
                 status = "✅"
-            elif job_build[i]['status'] == "failed":
+            elif job_build[i]["status"] == "failed":
                 status = "❌"
             else:
                 status = "🔄"
 
             jobs_message += "{status} {job_name}\n"\
                             .format(status=status,
-                                    job_name=job_build[i]['job_name'])
+                                    job_name=job_build[i]["job_name"])
 
-        summary_message = 'A build #{job_id} '\
-                          'da branch {branch}, '\
-                          'commit "{commit}", '\
-                          'está no estágio de "{stage}".'\
-                          .format(job_id=job_build[0]['job_id'],
-                                  branch=job_build[0]['branch'],
-                                  commit=job_build[0]['commit'],
-                                  stage=job_build[0]['stage'])
+        summary_message = "A build #{job_id} "\
+                          "da branch {branch}, "\
+                          "commit {commit}, "\
+                          "está no estágio de {stage}."\
+                          .format(job_id=job_build[0]["job_id"],
+                                  branch=job_build[0]["branch"],
+                                  commit=job_build[0]["commit"],
+                                  stage=job_build[0]["stage"])
         return {"jobs_message": jobs_message,
                 "summary_message": summary_message}
 
@@ -120,5 +120,5 @@ class Webhook():
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
         else:
-            return 'OK'
+            return "OK"
         return status_message
