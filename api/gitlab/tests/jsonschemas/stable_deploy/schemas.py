@@ -30,6 +30,19 @@ unauthorized_schema = {
 }
 
 stable_deploy_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "status": {"type": "string"}
+    },
+    "required": ["status"]
+}
+
+pipeline_id_scheema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
     "properties": {
         "status": {"type": "string"}
     },
