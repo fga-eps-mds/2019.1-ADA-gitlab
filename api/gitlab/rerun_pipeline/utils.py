@@ -1,7 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 import json
-import sys
 import telegram
 
 
@@ -22,21 +21,18 @@ class RerunPipeline():
         try:
             response = requests.post(url="{url}".format(url=url),
                                      headers=headers)
+            response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         else:
-            restart_status = response.json()
-            return restart_status
+            return {"status": "Pipeline Restarted"}
 
     def build_buttons(self, pipeline_id):
         buttons = []
         buttons.append(telegram.InlineKeyboardButton(
-                text= "Sim",
-                callback_data="quero reiniciar a pipeline " + str(pipeline_id)))
-
-        buttons.append(telegram.InlineKeyboardButton(
-                text= "Não",
-                callback_data="não"))
+                text="Reiniciar pipeline",
+                callback_data="quero reiniciar a pipeline " + str(pipeline_id))
+                      )
         button_array = [buttons]
         return button_array
