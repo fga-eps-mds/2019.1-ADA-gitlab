@@ -35,14 +35,8 @@ def get_project_user(project_owner):
         requested_user = user.get_project_user(project_owner)
         if len(requested_user) == 0:
             return jsonify(NOT_FOUND), 404
-    except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
-    except IndexError:
-        return jsonify(NOT_FOUND), 404
+    except IndexError as index_error:
+     return jsonify(NOT_FOUND), 404
     else:
         repositories_names = []
 
@@ -58,12 +52,8 @@ def get_user_id(project_owner):
     try:
         user = UserUtils(GITLAB_API_TOKEN)
         requested_user_id = user.get_user_id(project_owner)
-    except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
+    except IndexError as index_error:
+     return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
             "user_id": requested_user_id
@@ -79,10 +69,9 @@ def get_project_id(project_owner, project_name):
         requested_repo_id = repo.get_project_id(project_owner, project_name)
     except HTTPError as http_error:
         dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
+        return jsonify(NOT_FOUND), 404
+    except IndexError as index_error:
+        return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
             "project_id": requested_repo_id["id"]
@@ -102,40 +91,45 @@ def get_access_token():
         "grant_type": "authorization_code",
         "redirect_uri": redirect_uri
     }
+
     url = "https://gitlab.com/oauth/token"
     data = json.dumps(data)
-    post = requests.post(url=url,
-                         headers=header,
-                         data=data)
-    post_json = post.json()
-    GITLAB_TOKEN = post_json['access_token']
-    
-    existing_user = User.objects(chat_id=chat_id).first()
 
-    user = UserUtils(GITLAB_TOKEN)
-    user_infos = user.get_user()
-    if not existing_user:
-        db_user = User()
-        db_user.access_token = GITLAB_TOKEN
-        db_user.chat_id = str(chat_id)
+    try:    
+        post = requests.post(url=url,
+                            headers=header,
+                            data=data)
+        post_json = post.json()
+        GITLAB_TOKEN = post_json['access_token']
+        
+        existing_user = User.objects(chat_id=chat_id).first()
+
         user = UserUtils(GITLAB_TOKEN)
         user_infos = user.get_user()
-        db_user.gitlab_user = user_infos["gitlab_username"]
-        db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
-        db_user.save()
-    else:
-        existing_user.update(access_token=GITLAB_TOKEN)
-        user = UserUtils(GITLAB_TOKEN)
-        user_infos = user.get_user()
-    
-    user.send_message(ACCESS_TOKEN, chat_id)
-    redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
-    bot = telegram.Bot(token=ACCESS_TOKEN)
-    repo_names = user.select_repos_by_buttons(user_infos["gitlab_username"], header)
-    reply_markup = telegram.InlineKeyboardMarkup(repo_names)
-    bot.send_message(chat_id=chat_id,
-                         text="Encontrei esses repositórios na sua "
-                         "conta do GitLab. Qual você quer que eu "
-                         "monitore? Clica nele!",
-                         reply_markup=reply_markup)
+        if not existing_user:
+            db_user = User()
+            db_user.access_token = GITLAB_TOKEN
+            db_user.chat_id = str(chat_id)
+            user = UserUtils(GITLAB_TOKEN)
+            user_infos = user.get_user()
+            db_user.gitlab_user = user_infos["gitlab_username"]
+            db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
+            db_user.save()
+        else:
+            existing_user.update(access_token=GITLAB_TOKEN)
+            user = UserUtils(GITLAB_TOKEN)
+            user_infos = user.get_user()
+        
+        user.send_message(ACCESS_TOKEN, chat_id)
+        redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
+        bot = telegram.Bot(token=ACCESS_TOKEN)
+        repo_names = user.select_repos_by_buttons(user_infos["gitlab_username"], header)
+        reply_markup = telegram.InlineKeyboardMarkup(repo_names)
+        bot.send_message(chat_id=chat_id,
+                            text="Encontrei esses repositórios na sua "
+                            "conta do GitLab. Qual você quer que eu "
+                            "monitore? Clica nele!",
+                            reply_markup=reply_markup)
+    except:
+        redirect_uri = "https://t.me/"
     return redirect(redirect_uri, code=302)

@@ -45,6 +45,7 @@ class Pipeline():
                                     .format(project_url=project_url),
                                     headers=headers)
             response.raise_for_status()
+            
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))

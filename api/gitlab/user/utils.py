@@ -28,13 +28,9 @@ class UserUtils():
                                     ),
                                     headers=headers)
             response.raise_for_status()
-        except HTTPError as http_error:
-            dict_error = {"status_code": http_error.response.status_code}
-            raise HTTPError(json.dumps(dict_error))
         except IndexError as index_error:
             dict_error = {"status_code": 404}
             index_error.message = json.dumps(dict_error)
-            raise IndexError(index_error)
         else:
             requested_user = response.json()
             return requested_user
@@ -54,8 +50,11 @@ class UserUtils():
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         except IndexError:
+            print("#"*60, file = sys.stderr)
+            print(index_error, file = sys.stderr)
             dict_error = {"status_code": 404}
             raise IndexError(json.dumps(dict_error))
+            
         else:
             requested_id = response.json()
             return requested_id[0]["id"]
@@ -73,7 +72,6 @@ class UserUtils():
                        "gitlab_username": requested_user["username"],
                        "gitlab_user_id": requested_user["id"]
                       }
-        print(gitlab_data, file=sys.stderr)
         return gitlab_data
 
     def send_message(self, token, chat_id):
@@ -92,7 +90,6 @@ class UserUtils():
             url=get_repository, headers=headers)
 
         received_repositories = response.json()
-        print(received_repositories, file=sys.stderr)
         buttons = []
         for repositorio in received_repositories["repositories"]:
             project_name = repositorio.split('/')
