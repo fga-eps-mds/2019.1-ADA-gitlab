@@ -1,8 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 import json
-import sys
-import telegram
 
 
 class StableDeploy():
@@ -39,8 +37,8 @@ class StableDeploy():
         url = ("https://gitlab.com/api/v4/projects/"
                "{project_id}/pipelines/".format(project_id=project_id))
         try:
-            response = requests.post(url="{url}".format(url=url),
-                                     headers=headers)
+            response = requests.get(url="{url}".format(url=url),
+                                    headers=headers)
             response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
