@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint, request, redirect
 from flask_cors import CORS
 from gitlab.user.utils import UserUtils
-from gitlab.user.error_messages import NOT_FOUND, UNAUTHORIZED
+from gitlab.user.error_messages import NOT_FOUND
 from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
 import json
@@ -9,7 +9,6 @@ from requests.exceptions import HTTPError
 import os
 import telegram
 import requests
-import sys
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
@@ -19,6 +18,7 @@ APP_SECRET = os.getenv("APP_SECRET", "")
 GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 BOT_NAME = os.getenv("BOT_NAME", "")
+
 
 @user_blueprint.route("/user/ping", methods=["GET"])
 def ping_pong():
@@ -35,8 +35,8 @@ def get_project_user(project_owner):
         requested_user = user.get_project_user(project_owner)
         if len(requested_user) == 0:
             return jsonify(NOT_FOUND), 404
-    except IndexError as index_error:
-     return jsonify(NOT_FOUND), 404
+    except IndexError:
+        return jsonify(NOT_FOUND), 404
     else:
         repositories_names = []
 
@@ -52,8 +52,8 @@ def get_user_id(project_owner):
     try:
         user = UserUtils(GITLAB_API_TOKEN)
         requested_user_id = user.get_user_id(project_owner)
-    except IndexError as index_error:
-     return jsonify(NOT_FOUND), 404
+    except IndexError:
+        return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
             "user_id": requested_user_id
@@ -68,9 +68,9 @@ def get_project_id(project_owner, project_name):
         repo = Pipeline(GITLAB_API_TOKEN)
         requested_repo_id = repo.get_project_id(project_owner, project_name)
     except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
+        json.loads(str(http_error))
         return jsonify(NOT_FOUND), 404
-    except IndexError as index_error:
+    except IndexError:
         return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
@@ -95,13 +95,12 @@ def get_access_token():
     url = "https://gitlab.com/oauth/token"
     data = json.dumps(data)
 
-    try:    
+    try:
         post = requests.post(url=url,
-                            headers=header,
-                            data=data)
+                             headers=header,
+                             data=data)
         post_json = post.json()
         GITLAB_TOKEN = post_json['access_token']
-        
         existing_user = User.objects(chat_id=chat_id).first()
 
         user = UserUtils(GITLAB_TOKEN)
@@ -119,17 +118,18 @@ def get_access_token():
             existing_user.update(access_token=GITLAB_TOKEN)
             user = UserUtils(GITLAB_TOKEN)
             user_infos = user.get_user()
-        
         user.send_message(ACCESS_TOKEN, chat_id)
         redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
         bot = telegram.Bot(token=ACCESS_TOKEN)
-        repo_names = user.select_repos_by_buttons(user_infos["gitlab_username"], header)
+        repo_names = user.select_repos_by_buttons(user_infos
+                                                  ["gitlab_username"],
+                                                  header)
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
         bot.send_message(chat_id=chat_id,
-                            text="Encontrei esses repositórios na sua "
-                            "conta do GitLab. Qual você quer que eu "
-                            "monitore? Clica nele!",
-                            reply_markup=reply_markup)
-    except:
+                         text="Encontrei esses repositórios na sua "
+                         "conta do GitLab. Qual você quer que eu "
+                         "monitore? Clica nele!",
+                         reply_markup=reply_markup)
+    except Exception:
         redirect_uri = "https://t.me/"
     return redirect(redirect_uri, code=302)

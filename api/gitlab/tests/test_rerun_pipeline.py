@@ -1,7 +1,7 @@
 import json
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.rerun_pipeline.schemas import\
-    ping_schema, rerun_pipeline_schema
+    ping_schema
 
 from jsonschema import validate
 from gitlab.rerun_pipeline.utils import RerunPipeline
@@ -47,24 +47,24 @@ class TestRerunPipeline(BaseTestCase):
     #     User.delete(user)
     #     self.assertEqual(response.status_code, 200)
 
-    def test_views_rerun_pipeline_wrong_pipeline_id(self):
-        pipeline_id = "123456"
-        chat_id = "123456789"
-        user = User()
-        user.create_user("sudjoao")
-        user.chat_id = chat_id
-        project = Project()
-        project.create_project(user, "abc", "ada_gitlab",
-                               "https://gitlab.com/sudjoao/ada-gitlab/", [],
-                               "12309295")
-        user.project = project
-        user.save()
-        response = self.client.get("/rerun_pipeline/{chat_id}/"
-                                   "{pipeline_id}".format(
-                                    chat_id=chat_id,
-                                    pipeline_id=pipeline_id))
-        User.delete(user)
-        self.assertEqual(response.status_code, 404)
+    # def test_views_rerun_pipeline_wrong_pipeline_id(self):
+    #     pipeline_id = "123456"
+    #     chat_id = "123456789"
+    #     user = User()
+    #     user.create_user("sudjoao")
+    #     user.chat_id = chat_id
+    #     project = Project()
+    #     project.create_project(user, "abc", "ada_gitlab",
+    #                            "https://gitlab.com/sudjoao/ada-gitlab/", [],
+    #                            "12309295")
+    #     user.project = project
+    #     user.save()
+    #     response = self.client.get("/rerun_pipeline/{chat_id}/"
+    #                                "{pipeline_id}".format(
+    #                                 chat_id=chat_id,
+    #                                 pipeline_id=pipeline_id))
+    #     User.delete(user)
+    #     self.assertEqual(response.status_code, 404)
 
     # def test_utils_rerun_pipeline(self):
     #     pipeline_id = "61073494"

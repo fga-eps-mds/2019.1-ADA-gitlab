@@ -84,8 +84,6 @@ test_view_get_user_id_schema = {
     "required": ["user_id"]
 }
 
-
-
 test_view_get_project_id_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User response schema",

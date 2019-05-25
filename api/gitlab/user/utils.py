@@ -5,7 +5,7 @@ from requests.exceptions import HTTPError
 import json
 import os
 import telegram
-import sys
+
 
 class UserUtils():
     def __init__(self, GITLAB_API_TOKEN):
@@ -50,11 +50,9 @@ class UserUtils():
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))
         except IndexError:
-            print("#"*60, file = sys.stderr)
-            print(index_error, file = sys.stderr)
             dict_error = {"status_code": 404}
             raise IndexError(json.dumps(dict_error))
-            
+
         else:
             requested_id = response.json()
             return requested_id[0]["id"]
