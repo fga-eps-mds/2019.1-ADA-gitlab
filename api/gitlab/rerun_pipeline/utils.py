@@ -1,7 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 import json
-import sys
 import telegram
 
 
@@ -32,11 +31,12 @@ class RerunPipeline():
     def build_buttons(self, pipeline_id):
         buttons = []
         buttons.append(telegram.InlineKeyboardButton(
-                text= "Sim",
-                callback_data="quero reiniciar a pipeline " + str(pipeline_id)))
+                text="Sim",
+                callback_data="quero reiniciar a pipeline " +
+                str(pipeline_id)))
 
         buttons.append(telegram.InlineKeyboardButton(
-                text= "Não",
+                text="Não",
                 callback_data="não"))
         button_array = [buttons]
         return button_array
