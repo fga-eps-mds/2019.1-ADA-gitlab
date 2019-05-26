@@ -21,8 +21,8 @@ class TestStableDeploy(BaseTestCase):
 
     def test_utils_run_stable_deploy(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        pipeline_id = "62005041"
-        project_id = "11789629"
+        pipeline_id = "63226442"
+        project_id = "12532279"
         stable_deploy = StableDeploy(GITLAB_API_TOKEN)
         deploy_status = stable_deploy.run_stable_deploy(project_id,
                                                         pipeline_id)
@@ -30,7 +30,7 @@ class TestStableDeploy(BaseTestCase):
 
     def test_utils_run_stable_deploy_wrong_project_id(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        pipeline_id = "62005041"
+        pipeline_id = "63226442"
         project_id = "abcedfg"
         stable_deploy = StableDeploy(GITLAB_API_TOKEN)
         with self.assertRaises(HTTPError) as context:
@@ -42,7 +42,7 @@ class TestStableDeploy(BaseTestCase):
 
     def test_utils_find_latest_stable_version(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        project_id = "11789629"
+        project_id = "12532279"
         stable_deploy = StableDeploy(GITLAB_API_TOKEN)
         pipeline_id = stable_deploy.find_latest_stable_version(project_id)
         self.assertIsInstance(pipeline_id, int)
@@ -71,7 +71,7 @@ class TestStableDeploy(BaseTestCase):
         user.chat_id = "00000"
         user.save()
         project = Project()
-        project.project_id = "11789629"
+        project.project_id = "12532279"
         project.user_id = user.id
         project.save()
         user.project = project
@@ -111,7 +111,7 @@ class TestStableDeploy(BaseTestCase):
         user.chat_id = "00000"
         user.save()
         project = Project()
-        project.project_id = "11789629"
+        project.project_id = "12532279"
         project.user_id = user.id
         project.save()
         user.project = project
