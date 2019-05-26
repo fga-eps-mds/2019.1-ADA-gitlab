@@ -28,15 +28,15 @@ class TestRerunPipeline(BaseTestCase):
         validate(data, ping_json)
 
     def test_views_rerun_pipeline(self):
-        pipeline_id = "61073494"
+        pipeline_id = "63218612"
         chat_id = "123456789"
         user = User()
-        user.create_user("sudjoao")
+        user.create_user("adatestbot")
         user.chat_id = chat_id
         project = Project()
         project.create_project(user, "abc", "ada_gitlab",
-                               "https://gitlab.com/sudjoao/ada-gitlab/", [],
-                               "12309295")
+                               "https://gitlab.com/adatestbot/ada-gitlab/", [],
+                               "12532279")
         user.project = project
         user.save()
         # Testar
@@ -55,8 +55,8 @@ class TestRerunPipeline(BaseTestCase):
         user.chat_id = chat_id
         project = Project()
         project.create_project(user, "abc", "ada_gitlab",
-                               "https://gitlab.com/sudjoao/ada-gitlab/", [],
-                               "12309295")
+                               "https://gitlab.com/adatestbot/ada-gitlab/", [],
+                               "12532279")
         user.project = project
         user.save()
         response = self.client.get("/rerun_pipeline/{chat_id}/"
@@ -67,8 +67,8 @@ class TestRerunPipeline(BaseTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_utils_rerun_pipeline(self):
-        pipeline_id = "61073494"
-        project_id = "12309295"
+        pipeline_id = "63218612"
+        project_id = "12532279"
         rerunpipeline = RerunPipeline(self.GITLAB_API_TOKEN)
         response = rerunpipeline.rerun_pipeline(project_id,
                                                 pipeline_id)
