@@ -30,7 +30,7 @@ class TestReport(BaseTestCase):
         report = Report(GITLAB_API_TOKEN)
         project_id = "11754240"
         report.get_branches(project_id)
-        self.assertNotEqual(0, report.repo_json['branches']
+        self.assertNotEqual(0, report.repo['branches']
                             ['name'])
 
     def test_get_branch_invalid_id(self):
@@ -48,8 +48,8 @@ class TestReport(BaseTestCase):
         report = Report(GITLAB_API_TOKEN)
         project_id = "11754240"
         report.get_commits(project_id)
-        self.assertNotEqual(0, report.repo_json["commits"]
-                                               ["last_commit"]["title"])
+        self.assertNotEqual(0, report.repo["commits"]
+                                          ["last_commit"]["title"])
 
     def test_get_commit_invalid_id(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
@@ -67,15 +67,15 @@ class TestReport(BaseTestCase):
         project_owner = "adabot"
         project_name = "ada-gitlab"
         report.get_project(project_owner, project_name)
-        self.assertNotEqual(0, report.repo_json["project"]["name"])
+        self.assertNotEqual(0, report.repo["project"]["name"])
 
     def test_get_pipeline(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
         report = Report(GITLAB_API_TOKEN)
         project_id = "11754240"
         report.get_pipeline(project_id)
-        self.assertNotEqual(0, report.repo_json["pipelines"]
-                                               ["number_of_pipelines"])
+        self.assertNotEqual(0, report.repo["pipelines"]
+                                          ["number_of_pipelines"])
 
     def test_get_pipeline_invalid_project_id(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
@@ -92,8 +92,8 @@ class TestReport(BaseTestCase):
         report = Report(GITLAB_API_TOKEN)
         project_id = "11754240"
         report.get_pipeline(project_id)
-        self.assertNotEqual(0, report.repo_json["pipelines"]
-                                               ["number_of_pipelines"])
+        self.assertNotEqual(0, report.repo["pipelines"]
+                                          ["number_of_pipelines"])
 
     def test_repo_information(self):
         GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
@@ -104,5 +104,5 @@ class TestReport(BaseTestCase):
         project.project_id = "11754240"
         project.name = "ada-gitlab"
         report.repo_informations(user, project)
-        self.assertNotEqual(0, report.repo_json["project"]
-                                               ["name"])
+        self.assertNotEqual(0, report.repo["project"]
+                                          ["name"])
