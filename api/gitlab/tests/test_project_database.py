@@ -7,7 +7,7 @@ from gitlab.data.project import Project
 class Test(unittest.TestCase):
 
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

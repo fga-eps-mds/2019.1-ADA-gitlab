@@ -13,7 +13,7 @@ from requests.exceptions import HTTPError
 
 class TestReport(BaseTestCase):
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

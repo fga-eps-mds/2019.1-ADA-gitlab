@@ -10,7 +10,7 @@ from gitlab.data.current_pipeline import CurrentPipeline
 class Test(BaseTestCase):
 
     def setup(self):
-        init_db()
+        super().setUp()
         CurrentPipeline.drop_collection()
         Project.drop_collection()
         User.drop_collection()

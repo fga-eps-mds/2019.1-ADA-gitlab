@@ -16,7 +16,7 @@ import os
 
 class TestPipeline(BaseTestCase):
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

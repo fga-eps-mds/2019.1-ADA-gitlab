@@ -15,7 +15,7 @@ class TestRerunPipeline(BaseTestCase):
     GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

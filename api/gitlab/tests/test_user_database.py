@@ -7,7 +7,7 @@ from gitlab.tests.base import BaseTestCase
 class Test(BaseTestCase):
 
     def setup(self):
-        init_db()
+        super().setUp()
         User.drop_collection()
         Project.drop_collection()
 

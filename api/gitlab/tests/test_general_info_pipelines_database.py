@@ -10,7 +10,7 @@ from gitlab.data.general_information_pipelines import \
 class TestGeneralInformationPipeline(BaseTestCase):
 
     def setUp(self):
-        init_db()
+        super().setUp()
         GeneralInformationPipelines.drop_collection()
         Project.drop_collection()
         self.user = User()
