@@ -1,0 +1,9 @@
+[run]
+omit =
+      */gitlab/tests/*
+      */gitlab/config.py
+
+[report]
+omit =
+      */gitlab/tests/*
+      */gitlab/config.py
