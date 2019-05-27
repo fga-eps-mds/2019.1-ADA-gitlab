@@ -1,7 +1,6 @@
 import json
 import unittest
 from gitlab.tests.base import BaseTestCase
-from gitlab.data import init_db
 from gitlab.data.user import User
 from gitlab.tests.jsonschemas.user.schemas import\
     ping_schema, valid_schema, unauthorized_schema, \
@@ -18,8 +17,7 @@ GITLAB_API_TOKEN = os.environ.get("GITLAB_API_TOKEN", "")
 
 class TestUser(BaseTestCase):
     def setUp(self):
-        init_db()
-        User.drop_collection()
+        super().setUp()
         self.user = User()
         self.user.access_token = str(GITLAB_API_TOKEN)
         self.user.username = "sudjoao"

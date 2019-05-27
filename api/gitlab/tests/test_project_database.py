@@ -1,5 +1,4 @@
 import unittest
-from gitlab.data import init_db
 from gitlab.data.user import User
 from gitlab.data.project import Project
 
@@ -7,7 +6,7 @@ from gitlab.data.project import Project
 class Test(unittest.TestCase):
 
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

@@ -1,4 +1,3 @@
-from gitlab.data import init_db
 from gitlab.tests.base import BaseTestCase
 from gitlab.data.project import Project
 from gitlab.data.user import User
@@ -10,7 +9,7 @@ from gitlab.data.general_information_pipelines import \
 class TestGeneralInformationPipeline(BaseTestCase):
 
     def setUp(self):
-        init_db()
+        super().setUp()
         GeneralInformationPipelines.drop_collection()
         Project.drop_collection()
         self.user = User()
