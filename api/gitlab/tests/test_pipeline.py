@@ -9,7 +9,6 @@ from jsonschema import validate
 from gitlab.pipeline.utils import Pipeline
 from requests.exceptions import HTTPError
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 import os
 

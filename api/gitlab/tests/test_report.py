@@ -5,7 +5,6 @@ from gitlab.tests.jsonschemas.report.schemas import\
 from jsonschema import validate
 from gitlab.report.utils import Report
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 import os
 from requests.exceptions import HTTPError

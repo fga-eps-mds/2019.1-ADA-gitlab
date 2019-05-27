@@ -19,7 +19,7 @@ lint-flake8:
 services:
   - mongo:latest
 
-unit test:
+unit-test:
   image: python:3.6-slim
   stage: test
   variables:

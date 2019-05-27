@@ -7,7 +7,6 @@ from jsonschema import validate
 from gitlab.rerun_pipeline.utils import RerunPipeline
 import os
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 
 

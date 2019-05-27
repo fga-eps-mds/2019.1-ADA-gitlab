@@ -8,7 +8,6 @@ from gitlab.tests.jsonschemas.build.schemas import\
 from jsonschema import validate
 from gitlab.build.utils import Build
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 import os
 
@@ -25,7 +24,8 @@ class TestBuild(BaseTestCase):
         self.project = Project()
         self.project_name = 'ada-gitlab'
         self.project_id = '11789629'
-        self.project.save_webhook_infos(self.user, self.project_name, self.project_id)
+        self.project.save_webhook_infos(self.user, self.project_name,
+                                        self.project_id)
         self.user.save_gitlab_repo_data(self.project)
         self.GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
         self.build = Build(self.GITLAB_API_TOKEN)

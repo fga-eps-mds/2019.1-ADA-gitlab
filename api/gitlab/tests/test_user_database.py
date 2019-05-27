@@ -1,5 +1,4 @@
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 from gitlab.tests.base import BaseTestCase
 

@@ -1,5 +1,4 @@
 import unittest
-from gitlab.data import init_db
 from gitlab.data.user import User
 from gitlab.data.project import Project
 
