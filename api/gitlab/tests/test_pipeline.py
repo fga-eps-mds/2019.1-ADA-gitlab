@@ -9,14 +9,13 @@ from jsonschema import validate
 from gitlab.pipeline.pipeline_utils import Pipeline
 from requests.exceptions import HTTPError
 from gitlab.data.user import User
-from gitlab.data import init_db
 from gitlab.data.project import Project
 import os
 
 
 class TestPipeline(BaseTestCase):
     def setup(self):
-        init_db()
+        super().setUp()
         Project.drop_collection()
         User.drop_collection()
 

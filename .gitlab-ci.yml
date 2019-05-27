@@ -19,23 +19,23 @@ lint-flake8:
 services:
   - mongo:latest
 
-unit test:
+unit-test:
   image: python:3.6-slim
   stage: test
   variables:
     FLASK_ENV: development
     FLASK_APP: gitlab/__init__.py
-    APP_SETTINGS: gitlab.config.DevelopmentConfig  
+    APP_SETTINGS: gitlab.config.DevelopmentConfig
   before_script:
-    - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
+    - export GITLAB_API_TOKEN=9a3506fced2455e52fe1ac48dce77e7778412034bf49c93e45fcfd0ab7d12303
     - export DB_NAME=$DB_NAME
-    - export DB_URL=$DB_URL
+    - export DB_URL=mongodb://mongo/$DB_NAME
     - export ACCESS_TOKEN=$ACCESS_TOKEN
-    - pip install -r docker/requirements.txt    
+    - pip install -r docker/requirements.txt
     - cd api/
   script:
-    - python manage.py test
-    - python manage.py cov
+    - coverage run -m unittest discover
+    - coverage report
 
 #############################################################
 ################## BUILD HOMOLOG ############################
