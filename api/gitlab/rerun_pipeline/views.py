@@ -1,11 +1,9 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
 from gitlab.rerun_pipeline.utils import RerunPipeline
-import json
 from requests.exceptions import HTTPError
-import os
 from gitlab.data.user import User
-from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
+from gitlab.report.error_messages import NOT_FOUND
 
 
 rerun_pipeline_blueprint = Blueprint("rerun_pipeline", __name__)

@@ -2,17 +2,13 @@ import json
 import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.build.schemas import\
-    ping_schema, valid_schema, unauthorized_schema,\
+    valid_schema, unauthorized_schema,\
     invalid_project_schema, build_valid_schema,\
     build_invalid_schema
 from jsonschema import validate
 from gitlab.build.build_utils import Build
-from gitlab.data.user import User
-from gitlab.data.project import Project
 import os
-import sys
 from requests.exceptions import HTTPError
-
 
 
 class TestBuild(BaseTestCase):
@@ -39,7 +35,7 @@ class TestBuild(BaseTestCase):
         unauthorized_json = json.loads(str(context.exception))
         self.assertTrue(unauthorized_json["status_code"], 404)
         validate(invalid_project_json, build_invalid_schema)
-    
+
     def test_view_get_project_build_invalid_token(self):
         self.user.access_token = "wrong_token"
         self.user.save()
