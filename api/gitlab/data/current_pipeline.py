@@ -14,7 +14,7 @@ class CurrentPipeline(mongoengine.Document):
         'collection': 'CurrentPipeline'
     }
 
-    def create_current_pipeline(self, name: str, jobs: list, project: Project):
+    def create_current_pipeline(self, name, jobs, project):
         self.name = name
         self.jobs = jobs
         self.project = project
@@ -23,7 +23,7 @@ class CurrentPipeline(mongoengine.Document):
         return self
 
     @staticmethod
-    def get_current_pipeline(project: Project):
+    def get_current_pipeline(project):
         current_pipeline = CurrentPipeline.\
             objects(project=project).all()
 

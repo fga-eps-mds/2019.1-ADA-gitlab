@@ -61,3 +61,35 @@ user_invalid_schema = {
     },
     "required": ["message", "status_code"]
 }
+
+
+utils_get_user_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "gitlab_username": {"type": "string"},
+        "gitlab_user_id": {"type": "integer"}
+    },
+    "required": ["gitlab_username", "gitlab_user_id"]
+}
+
+test_view_get_user_id_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "user_id": {"type": "integer"}
+    },
+    "required": ["user_id"]
+}
+
+test_view_get_project_id_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "project_id": {"type": "integer"}
+    },
+    "project_id": ["user_id"]
+}

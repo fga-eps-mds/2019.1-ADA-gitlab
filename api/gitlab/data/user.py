@@ -7,15 +7,17 @@ class User(mongoengine.Document):
     init_db()
     username = mongoengine.StringField(max_length=100)
     project = mongoengine.ReferenceField(Project)
+    access_token = mongoengine.StringField(max_length=100)
     gitlab_user = mongoengine.StringField(max_length=100)
     chat_id = mongoengine.StringField(max_length=100)
     gitlab_user_id = mongoengine.StringField(max_length=100)
+    api_token = mongoengine.StringField(max_length=100)
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'User'
     }
 
-    def create_user(self, username: str):
+    def create_user(self, username):
         self.username = username
         self.save()
         return self
