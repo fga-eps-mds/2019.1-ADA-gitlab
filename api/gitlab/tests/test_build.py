@@ -10,33 +10,15 @@ from gitlab.build.build_utils import Build
 from gitlab.data.user import User
 from gitlab.data.project import Project
 import os
+import sys
+from requests.exceptions import HTTPError
+
 
 
 class TestBuild(BaseTestCase):
     def setUp(self):
         super().setUp()
-        self.user = User()
-        self.user.username = 'joaovitor'
-        self.user.chat_id = '1234'
-        self.user.gitlab_user = 'joaovitor3'
-        self.user.gitlab_user_id = '1195203'
-        self.user.save()
-        self.project = Project()
-        self.project_name = 'ada-gitlab'
-        self.project_id = '11789629'
-        self.project.save_webhook_infos(self.user, self.project_name,
-                                        self.project_id)
-        self.user.save_gitlab_repo_data(self.project)
-        self.GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        self.build = Build(self.GITLAB_API_TOKEN)
-
-    def test_ping_pong(self):
-        response = self.client.get("/build/ping")
-        data = json.loads(response.data.decode())
-        ping_string = json.dumps(ping_schema)
-        ping_json = json.loads(ping_string)
-        self.assertEqual(response.status_code, 200)
-        validate(data, ping_json)
+        self.build = Build(self.user.chat_id)
 
     def test_view_get_project_build(self):
         response = self.client.get("/build/{chat_id}"
@@ -52,29 +34,41 @@ class TestBuild(BaseTestCase):
         response = self.client.get("/build/{chat_id}"
                                    .format(chat_id=chat_id))
         invalid_project_json = json.loads(response.data.decode())
-        with self.assertRaises(AttributeError) as context:
+        with self.assertRaises(HTTPError) as context:
             self.build.get_project_build(chat_id)
         unauthorized_json = json.loads(str(context.exception))
         self.assertTrue(unauthorized_json["status_code"], 404)
         validate(invalid_project_json, build_invalid_schema)
+    
+    def test_view_get_project_build_invalid_token(self):
+        self.user.access_token = "wrong_token"
+        self.user.save()
+        response = self.client.get("/build/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")
+        self.user.save()
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(response.status_code, 401)
+        validate(invalid_project_json, unauthorized_schema)
 
     def test_get_project_build(self):
         requested_build = self.build.get_project_build(self.project.project_id)
         validate(requested_build, valid_schema)
 
     def test_get_project_build_invalid_token(self):
-        GITLAB_API_TOKEN = "wrong_token"
-        build = Build(GITLAB_API_TOKEN)
-        with self.assertRaises(AttributeError) as context:
-            build.get_project_build(self.project.project_id)
+        self.user.access_token = "wrong_token"
+        self.user.save()
+        with self.assertRaises(HTTPError) as context:
+            self.build.get_project_build(self.project.project_id)
         unauthorized_json = json.loads(str(context.exception))
+        self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")
+        self.user.save()
         self.assertTrue(unauthorized_json["status_code"], 401)
         validate(unauthorized_json, unauthorized_schema)
 
     def test_get_project_build_invalid_project(self):
-        project_id = "182"
-        with self.assertRaises(AttributeError) as context:
-            self.build.get_project_build(project_id)
+        with self.assertRaises(HTTPError) as context:
+            self.build.get_project_build("1234")
         invalid_project_json = json.loads(str(context.exception))
         self.assertTrue(invalid_project_json["status_code"], 404)
         validate(invalid_project_json, invalid_project_schema)
