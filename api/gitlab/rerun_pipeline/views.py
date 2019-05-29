@@ -21,7 +21,7 @@ def rerun_pipeline(chat_id, pipeline_id):
         restarted_pipeline = rerunpipeline.rerun_pipeline(project.project_id,
                                                           pipeline_id)
     except HTTPError as http_error:
-        rerun_pipeline.error_messages(http_error)
+        return rerunpipeline.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

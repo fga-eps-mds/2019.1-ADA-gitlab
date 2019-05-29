@@ -1,80 +1,68 @@
 import json
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.rerun_pipeline.schemas import\
-    ping_schema, rerun_pipeline_schema
+     rerun_pipeline_schema, unauthorized_schema
 
 from jsonschema import validate
 from gitlab.rerun_pipeline.utils import RerunPipeline
 import os
-from gitlab.data.user import User
-from gitlab.data.project import Project
+from requests.exceptions import HTTPError
 
 
 class TestRerunPipeline(BaseTestCase):
-    GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
-    def setup(self):
+    def setUp(self):
         super().setUp()
-        Project.drop_collection()
-        User.drop_collection()
+        self.rerun_pipeline = RerunPipeline(self.user.chat_id)
 
-    def test_rerun_pipeline_ping_pong(self):
-        response = self.client.get("/rerun_pipeline/ping")
-        data = json.loads(response.data.decode())
-        ping_string = json.dumps(ping_schema)
-        ping_json = json.loads(ping_string)
-        self.assertEqual(response.status_code, 200)
-        validate(data, ping_json)
-
-    def test_views_rerun_pipeline(self):
+    def test_rerun_pipeline(self):
         pipeline_id = "63218612"
-        chat_id = "123456789"
-        user = User()
-        user.create_user("adatestbot")
-        user.chat_id = chat_id
-        project = Project()
-        project.create_project(user, "abc", "ada_gitlab",
-                               "https://gitlab.com/adatestbot/ada-gitlab/", [],
-                               "12532279")
-        user.project = project
-        user.save()
-        # Testar
-        response = self.client.get("/rerun_pipeline/{chat_id}/"
-                                   "{pipeline_id}".format(
-                                    chat_id=chat_id,
-                                    pipeline_id=pipeline_id))
-        User.delete(user)
-        self.assertEqual(response.status_code, 200)
-
-    def test_views_rerun_pipeline_wrong_pipeline_id(self):
-        pipeline_id = "123456"
-        chat_id = "123456789"
-        user = User()
-        user.create_user("sudjoao")
-        user.chat_id = chat_id
-        project = Project()
-        project.create_project(user, "abc", "ada_gitlab",
-                               "https://gitlab.com/adatestbot/ada-gitlab/", [],
-                               "12532279")
-        user.project = project
-        user.save()
-        response = self.client.get("/rerun_pipeline/{chat_id}/"
-                                   "{pipeline_id}".format(
-                                    chat_id=chat_id,
-                                    pipeline_id=pipeline_id))
-        User.delete(user)
-        self.assertEqual(response.status_code, 404)
-
-    def test_utils_rerun_pipeline(self):
-        pipeline_id = "63218612"
-        project_id = "12532279"
-        rerunpipeline = RerunPipeline(self.GITLAB_API_TOKEN)
-        response = rerunpipeline.rerun_pipeline(project_id,
-                                                pipeline_id)
+        response = self.rerun_pipeline.rerun_pipeline(self.project.project_id,
+                                                      pipeline_id)
         validate(response, rerun_pipeline_schema)
 
-    def test_utils_build_buttons(self):
-        pipeline_id = "12345678"
-        rerun_pipeline = RerunPipeline(self.GITLAB_API_TOKEN)
-        buttons = rerun_pipeline.build_buttons(pipeline_id)
+    def test_rerun_pipeline_wrong_pipeline_id(self):
+        pipeline_id = "6321861241"
+        with self.assertRaises(HTTPError) as context:
+            self.rerun_pipeline.rerun_pipeline(self.project.project_id,
+                                               pipeline_id)
+        unauthorized_json = json.loads(str(context.exception))
+        self.assertTrue(unauthorized_json["status_code"], 404)
+        validate(unauthorized_json, unauthorized_schema)
+
+    def test_rerun_pipeline_invalid_token(self):
+        self.user.access_token = "wrong_token"
+        pipeline_id = "63218612"
+        self.user.save()
+        rerun_pipeline_invalid = RerunPipeline(self.user.chat_id)
+        with self.assertRaises(HTTPError) as context:
+            rerun_pipeline_invalid.rerun_pipeline(self.project.project_id,
+                                                  pipeline_id)
+        self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")
+        self.user.save()
+        unauthorized_json = json.loads(str(context.exception))
+        self.assertTrue(unauthorized_json["status_code"], 401)
+        validate(unauthorized_json, unauthorized_schema)
+
+    def test_build_buttons(self):
+        pipeline_id = "63218612"
+        buttons = self.rerun_pipeline.build_buttons(pipeline_id)
         self.assertIsInstance(buttons, list)
+
+    def test_view_rerun_pipeline(self):
+        pipeline_id = "63218612"
+        response = self.client.get("/rerun_pipeline/{chat_id}/{pipeline_id}"
+                                   .format(chat_id=self.user.chat_id,
+                                           pipeline_id=pipeline_id))
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 200)
+        validate(data, rerun_pipeline_schema)
+
+    def test_view_rerun_pipeline_wrong_pipeline_id(self):
+        pipeline_id = "632186121234"
+        response = self.client.get("/rerun_pipeline/{chat_id}/{pipeline_id}"
+                                   .format(chat_id=self.user.chat_id,
+                                           pipeline_id=pipeline_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, unauthorized_schema)

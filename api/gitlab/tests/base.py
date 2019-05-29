@@ -13,15 +13,15 @@ class BaseTestCase(TestCase):
     def setUp(self):
         self.db = init_db()
         self.user = User()
-        self.user.username = 'joaovitor'
+        self.user.username = 'ada'
         self.user.chat_id = '123456789'
-        self.user.gitlab_user = 'joaovitor3'
-        self.user.gitlab_user_id = '1195203'
+        self.user.gitlab_user = 'adatestbot'
+        self.user.gitlab_user_id = '4047441'
         self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")
         self.user.save()
         self.project = Project()
         self.project_name = 'ada-gitlab'
-        self.project_id = '11789629'
+        self.project_id = '12532279'
         self.project.save_webhook_infos(self.user, self.project_name,
                                         self.project_id)
         self.user.save_gitlab_repo_data(self.project)
