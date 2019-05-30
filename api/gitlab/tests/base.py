@@ -14,7 +14,7 @@ class BaseTestCase(TestCase):
         self.db = init_db()
         self.user = User()
         self.user.username = 'ada'
-        self.user.chat_id = '123456789'
+        self.user.chat_id = '339847919'
         self.user.gitlab_user = 'adatestbot'
         self.user.gitlab_user_id = '4047441'
         self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")

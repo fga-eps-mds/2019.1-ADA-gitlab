@@ -36,7 +36,10 @@ class UserUtils(GitlabUtils):
               "{project_owner}"\
               .format(project_owner=project_owner)
         user_id = super(UserUtils, self).get_request(url)
-        return user_id[0]["id"]
+        try:
+            return user_id[0]["id"]
+        except IndexError:
+            return None
 
     def get_own_user_data(self):
         url = self.GITLAB_API_URL + \

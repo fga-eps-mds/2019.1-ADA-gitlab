@@ -48,10 +48,15 @@ report_valid_schema = {
     "title": "User response schema",
     "type": "object",
     "properties": {
-        "status": {"type": "string"},
-        "web_url": {"type": "string"}
+        "branches": {"name": {
+                        "type": "array"}},
+        "commits":  {"last_commit": {
+                        "type": "array"},
+                     "number_of_commits": {
+                         "type": "integer"}
+                     }
     },
-    "required": ["status", "web_url"]
+    "required": ["branches", "commits"]
 }
 
 report_invalid_schema = {
