@@ -55,6 +55,17 @@ class TestPipeline(BaseTestCase):
         self.assertTrue(invalid_project_json["status_code"], 404)
         validate(invalid_project_json, pipeline_invalid_schema)
 
+    def test_view_get_project_pipeline_invalid_project(self):
+        self.user.project = None
+        self.user.save()
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        self.user.project = self.project
+        self.user.save()
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
     def test_get_project_pipeline(self):
         requested_pipeline = self.pipeline.get_project_pipeline(
                                         self.project.project_id)

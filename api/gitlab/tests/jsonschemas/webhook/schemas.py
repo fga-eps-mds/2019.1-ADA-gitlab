@@ -87,3 +87,13 @@ build_messages_schema = {
     },
     "required": ["jobs_message", "summary_message"]
 }
+
+views_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Pipeline schema",
+    "type": "object",
+    "properties": {
+        "status": {"type": "string"}
+        },
+    "required": ["status"]
+}
