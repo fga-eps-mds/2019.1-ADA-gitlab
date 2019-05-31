@@ -73,9 +73,25 @@ class GitlabUtils:
                 raise HTTPError(self.exception_json(404))
         elif self.get_class_type(object_type) == "Report":
             if project:
-                util = self.repo_informations(user, project)
+                util = self.get_project(user.gitlab_user, project.name)
             else:
                 raise HTTPError(self.exception_json(404))
+        elif self.get_class_type(object_type) == "ReportBranches":
+            if project:
+                util = self.get_branches(project.project_id)
+            else:
+                raise HTTPError(self.exception_json(404))
+        elif self.get_class_type(object_type) == "ReportCommits":
+            if project:
+                util = self.get_commits(project.project_id)
+            else:
+                raise HTTPError(self.exception_json(404))
+        elif self.get_class_type(object_type) == "ReportPipelines":
+            if project:
+                util = self.get_pipeline(project.project_id)
+            else:
+                raise HTTPError(self.exception_json(404))
+
         return util
 
     def get_class_type(self, object):

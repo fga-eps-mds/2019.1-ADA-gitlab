@@ -79,6 +79,7 @@ class UserUtils(GitlabUtils):
                          "conta do GitLab. Qual você quer que eu "
                          "monitore? Clica nele!",
                          reply_markup=reply_markup)
+        return "OK"
 
 
 def authenticate_access_token(code):
@@ -107,3 +108,4 @@ def send_message(token, chat_id):
                      text="Você foi "
                      "cadastrado com "
                      "sucesso no GitLab")
+    return "OK"

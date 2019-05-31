@@ -27,9 +27,7 @@ def get_user_project(chat_id, project_owner):
         if len(user_repos) == 0:
             return jsonify(NOT_FOUND), 404
     except HTTPError as http_error:
-        user.error_message(http_error)
-    except IndexError:
-        return jsonify(NOT_FOUND), 404
+        return user.error_message(http_error)
     else:
         repositories_names = []
         for item in user_repos:
@@ -41,11 +39,10 @@ def get_user_project(chat_id, project_owner):
 
 @user_blueprint.route("/user/id/<chat_id>/<project_owner>", methods=["GET"])
 def get_user_id(chat_id, project_owner):
-    try:
-        user = UserUtils(chat_id)
-        user_id = user.get_user_id(project_owner)
-    except HTTPError as http_error:
-        user.error_message(http_error)
+    user = UserUtils(chat_id)
+    user_id = user.get_user_id(project_owner)
+    if not user_id:
+        return jsonify(NOT_FOUND), 404
     else:
         return jsonify({
             "user_id": user_id
@@ -60,7 +57,7 @@ def get_project_id(chat_id, project_owner, project_name):
         repo = Pipeline(chat_id)
         repo_id = repo.get_project_id(project_owner, project_name)
     except HTTPError as http_error:
-        repo.error_message(http_error)
+        return repo.error_message(http_error)
     else:
         return jsonify({
             "project_id": repo_id
