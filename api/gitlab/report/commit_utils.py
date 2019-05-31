@@ -15,6 +15,8 @@ class ReportCommits(GitlabUtils):
         repo_commits = self.get_request(url)
         number_of_commits = len(repo_commits)
         self.update_commits_data(repo_commits, number_of_commits)
+        commit_data = {"commits": self.repo["commits"]}
+        return commit_data
 
     def update_commits_data(self, repo_commits, number_of_commits):
         commit_statistics = self.repo["commits"]["last_commit"]

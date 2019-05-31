@@ -1,13 +1,9 @@
-from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 
 class ReportBranches(GitlabUtils):
     def __init__(self, chat_id):
         super().__init__(chat_id)
-        self.repo = report_dict
-
-    pipelines_ids = []
 
     def get_branches(self, project_id):
         url = self.GITLAB_API_URL +\
@@ -15,7 +11,9 @@ class ReportBranches(GitlabUtils):
               "repository/branches"\
               .format(project_id=project_id)
         branches_json = self.get_request(url)
-        branch_name = {"name": []}
+        branches_dict = {"branches": []}
         for i, item in enumerate(branches_json):
-            branch_name["name"].append(branches_json[i]["name"])
-        self.repo["branches"]["name"] = branch_name["name"]
+            branches_data = {"name": 0}
+            branches_data["name"] = branches_json[i]["name"]
+            branches_dict["branches"].append(branches_data)
+        return branches_dict

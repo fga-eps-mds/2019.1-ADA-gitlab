@@ -49,7 +49,10 @@ class ReportPipelines(GitlabUtils):
             "current_pipeline_id": pipelines[0]["id"],
             "current_pipeline_name": pipelines[0]["ref"]
             }
-        self.update_report_statistics(statistics_dict)
+        pipeline_dict = {"pipeline": 0}
+        pipeline_data = self.update_report_statistics(statistics_dict)
+        pipeline_dict["pipeline"] = pipeline_data
+        return pipeline_dict
 
     def update_report_dict(self, days_key):
         update_days = self.repo["pipelines"]["recents_pipelines"][days_key]
@@ -60,6 +63,7 @@ class ReportPipelines(GitlabUtils):
         pipelines_statistics = self.repo["pipelines"]
         for key in statistics_dict:
             pipelines_statistics[key] = statistics_dict[key]
+        return pipelines_statistics
 
     def build_pipeline_dict(self, pipelines, i,
                             days_key):
