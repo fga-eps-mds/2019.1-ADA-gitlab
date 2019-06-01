@@ -82,6 +82,5 @@ def get_access_token():
         db_user.gitlab_user_id = str(user_infos["gitlab_user_id"])
         db_user.save()
         user.send_button_message(user_infos, chat_id)
-
     redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
     return redirect(redirect_uri, code=302)
