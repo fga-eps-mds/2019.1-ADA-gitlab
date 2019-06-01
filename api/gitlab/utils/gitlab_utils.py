@@ -60,33 +60,34 @@ class GitlabUtils:
             return util
 
     def check_project_exists(self, project, object_type, user=None):
-        if self.get_class_type(object_type) == "Pipeline":
+        class_type = self.get_class_type(object_type)
+        if class_type == "Pipeline":
             if project:
                 util = self.get_project_pipeline(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
             return util
-        elif self.get_class_type(object_type) == "Build":
+        elif class_type == "Build":
             if project:
                 util = self.get_project_build(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
-        elif self.get_class_type(object_type) == "Report":
+        elif class_type == "Report":
             if project:
                 util = self.get_project(user.gitlab_user, project.name)
             else:
                 raise HTTPError(self.exception_json(404))
-        elif self.get_class_type(object_type) == "ReportBranches":
+        elif class_type == "ReportBranches":
             if project:
                 util = self.get_branches(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
-        elif self.get_class_type(object_type) == "ReportCommits":
+        elif class_type == "ReportCommits":
             if project:
                 util = self.get_commits(project.project_id)
             else:
                 raise HTTPError(self.exception_json(404))
-        elif self.get_class_type(object_type) == "ReportPipelines":
+        elif class_type == "ReportPipelines":
             if project:
                 util = self.get_pipeline(project.project_id)
             else:

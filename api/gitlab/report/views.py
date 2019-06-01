@@ -18,6 +18,7 @@ GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 @report_blueprint.route("/report/branches/<chat_id>", methods=["GET"])
 def get_branches(chat_id):
     try:
+
         branches = ReportBranches(chat_id)
         branches_names = branches.return_project(chat_id,
                                                  branches.check_project_exists,
@@ -53,6 +54,7 @@ def get_commits(chat_id):
 def get_pipelines(chat_id):
     try:
         pipeline = ReportPipelines(chat_id)
+
         pipeline_data = pipeline.return_project(chat_id,
                                                 pipeline.check_project_exists,
                                                 pipeline)
@@ -69,7 +71,9 @@ def get_pipelines(chat_id):
 @report_blueprint.route("/report/project/<chat_id>", methods=["GET"])
 def get_project(chat_id):
     try:
+
         report = Report(chat_id)
+
         report_data = report.return_project(chat_id,
                                             report.check_project_exists,
                                             report)
