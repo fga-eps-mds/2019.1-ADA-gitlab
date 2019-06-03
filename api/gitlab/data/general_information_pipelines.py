@@ -31,10 +31,10 @@ class GeneralInformationPipelines(mongoengine.Document):
         return general_information_pipeline
 
     def add_pipeline(self, pipeline, project):
-        general_information_pipeline = self.\
-                                    get_general_information_pipeline(project)
-        general_information_pipeline.modify(inc__number_of_pipelines=1)
         all_jobs_successful = True
+        general_information_pipeline = self.\
+            get_general_information_pipeline(project)
+        general_information_pipeline.modify(inc__number_of_pipelines=1)
         for job in pipeline.jobs:
             if not job['status']:
                 all_jobs_successful = False
