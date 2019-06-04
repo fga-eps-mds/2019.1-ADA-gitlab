@@ -8,11 +8,8 @@ from gitlab.data.current_pipeline import CurrentPipeline
 
 class Test(BaseTestCase):
 
-    def setup(self):
+    def setUp(self):
         super().setUp()
-        CurrentPipeline.drop_collection()
-        Project.drop_collection()
-        User.drop_collection()
 
     def test_create_current_pipeline(self):
         CurrentPipeline.drop_collection()
