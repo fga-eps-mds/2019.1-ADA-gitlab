@@ -1,4 +1,4 @@
-import requests
+from requests import post
 from requests.exceptions import HTTPError
 import json
 import telegram
@@ -15,7 +15,7 @@ class RerunPipeline(GitlabUtils):
                   "{project_id}/pipelines/{pipeline_id}"\
                   "/retry".format(project_id=project_id,
                                   pipeline_id=pipeline_id)
-            response = requests.post(url=url,
+            response = post(url=url,
                                      headers=self.headers)
             response.raise_for_status()
         except HTTPError as http_error:
