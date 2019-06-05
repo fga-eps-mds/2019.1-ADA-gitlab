@@ -7,7 +7,6 @@ from gitlab.build.build_utils import Build
 from gitlab.utils.gitlab_utils import GitlabUtils
 from gitlab.pipeline.pipeline_utils import Pipeline
 from gitlab.report.report_utils import Report
-from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
 from unittest.mock import patch
 

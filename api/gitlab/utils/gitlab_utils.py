@@ -1,12 +1,12 @@
 # api/gitlab/__init__.py
 
 from requests.exceptions import HTTPError
+from requests import get
 import json
 from flask import jsonify
 from gitlab.utils.error_messages import UNAUTHORIZED,\
                                         NOT_FOUND
 from gitlab.data.user import User
-import requests
 import re
 
 
@@ -102,7 +102,7 @@ class GitlabUtils:
 
     def get_request(self, url):
         try:
-            response = requests.get(url, headers=self.headers)
+            response = get(url, headers=self.headers)
             response.raise_for_status()
         except HTTPError as http_error:
             raise HTTPError(self.exception_json(http_error.
