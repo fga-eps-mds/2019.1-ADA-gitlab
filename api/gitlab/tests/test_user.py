@@ -4,7 +4,8 @@ from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.user.schemas import\
     valid_schema, unauthorized_schema,\
     user_data_valid_schema, project_id_schema,\
-    get_user_project_schema, user_id_schema
+    get_user_project_schema, user_id_schema,\
+    save_user_domain_schema, user_invalid_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
 from requests.exceptions import HTTPError
@@ -122,6 +123,31 @@ class TestUser(BaseTestCase):
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 404)
         validate(data, unauthorized_schema)
+
+    def test_view_save_user_domain(self):
+        url_domain = {"domain": "https://www.google.com.br"}
+        headers = {'Content-Type': 'application/json'}
+        response = self.client.post("/user/domain/{chat_id}"
+                                    .format(chat_id=self.user.chat_id),
+                                    data=json.dumps(url_domain),
+                                    headers=headers
+                                    )
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 200)
+        validate(data, save_user_domain_schema)
+
+    def test_view_save_user_domain_invalid_info(self):
+        chat_id = "Wrong chat id"
+        url_domain = {"domain": "https://www.google.com.br"}
+        headers = {'Content-Type': 'application/json'}
+        response = self.client.post("/user/domain/{chat_id}"
+                                    .format(chat_id=chat_id),
+                                    data=json.dumps(url_domain),
+                                    headers=headers
+                                    )
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 404)
+        validate(data, user_invalid_schema)
 
 
 if __name__ == "__main__":

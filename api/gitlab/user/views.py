@@ -85,13 +85,19 @@ def get_access_token():
     redirect_uri = "https://t.me/{bot_name}".format(bot_name=BOT_NAME)
     return redirect(redirect_uri, code=302)
 
+
 @user_blueprint.route("/user/domain/<chat_id>", methods=["POST"])
 def save_user_domain(chat_id):
-    post_json = request.json
-    domain = post_json["domain"]
-    user = User.objects(chat_id=chat_id).first()
-    user.update(domain=domain)
-
-    return jsonify({
-        "status": "success"
-    }), 200
+    try:
+        post_json = request.json
+        domain = post_json["domain"]
+        user = User.objects(chat_id=chat_id).first()
+        user.update(domain=domain)
+    except HTTPError as http_error:
+        return user.error_message(http_error)
+    except AttributeError:
+        return jsonify(NOT_FOUND), 404
+    else:
+        return jsonify({
+            "status": "success"
+        }), 200
