@@ -23,7 +23,7 @@ BOT_NAME = os.getenv("BOT_NAME", "")
 def get_user_project(chat_id, project_owner):
     try:
         user = UserUtils(chat_id)
-        user_repos = user.get_user_project(project_owner)
+        user_repos = user.get_user_project()
         if len(user_repos) == 0:
             return jsonify(NOT_FOUND), 404
     except HTTPError as http_error:
