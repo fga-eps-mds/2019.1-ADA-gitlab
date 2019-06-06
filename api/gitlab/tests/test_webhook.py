@@ -8,6 +8,7 @@ from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
+from gitlab.data.user import User
 
 
 class TestWebhook(BaseTestCase):
@@ -39,15 +40,26 @@ class TestWebhook(BaseTestCase):
         self.mocked_success_pipeline_response._content = \
             success_pipeline_response_content_in_binary
 
+        self.gitlab_user = "adatestbot"
+        self.gitlab_user_id = "4047441"
+        self.user_data = {"gitlab_user": self.gitlab_user,
+                          "chat_id": "12345689",
+                          "gitlab_user_id": self.gitlab_user_id}
+
     def test_register_repo(self):
-        old_project = self.user.project
-        self.user.project = None
-        self.user.save()
-        repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
-                     "project_id": "12532279"}
+        user = self.user
+        user.project = None
+        user.save()
+        user = User.objects(chat_id=self.user.chat_id).first()
+        self.assertEqual(self.user.project, None)
+        project_name = "ada-gitlab"
+        project_id = "12532279"
+        repo_data = {"project_name": project_name, "chat_id": "339847919",
+                     "project_id": project_id}
         self.webhook.register_repo(repo_data)
-        self.user.project = old_project
-        self.user.save()
+        user = User.objects(chat_id=self.user.chat_id).first()
+        self.assertEqual(user.project.name, project_name)
+        self.assertEqual(user.project.project_id, project_id)
 
     def test_register_repo_http_error(self):
         repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
@@ -58,15 +70,15 @@ class TestWebhook(BaseTestCase):
         validate(message_error, message_error_schema)
 
     def test_register_user(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "12345689",
-                     "gitlab_user_id": "4047441"}
-        self.webhook.register_user(user_data)
+        self.webhook.register_user(self.user_data)
+        user = User.objects(gitlab_user=self.gitlab_user).first()
+        self.assertEqual(user.gitlab_user_id, self.gitlab_user_id)
 
     def test_register_user_again(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "339847919",
-                     "gitlab_user_id": "4047441"}
+        new_user = self.user_data
+        new_user["chat_id"] = "339847919"
         with self.assertRaises(HTTPError) as context:
-            self.webhook.register_user(user_data)
+            self.webhook.register_user(new_user)
         message_error = json.loads(str(context.exception))
         validate(message_error, message_error_schema)
 
@@ -106,20 +118,16 @@ class TestWebhook(BaseTestCase):
         validate(build_messages, build_messages_schema)
 
     def test_view_register_user(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "12345689",
-                     "gitlab_user_id": "4047441"}
         response = self.client.post("/webhooks/user",
-                                    data=json.dumps(user_data),
+                                    data=json.dumps(self.user_data),
                                     headers=self.headers)
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 200)
         validate(data, views_schema)
 
     def test_view_register_repo(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "12345689",
-                     "gitlab_user_id": "4047441"}
         response = self.client.post("/webhooks/user",
-                                    data=json.dumps(user_data),
+                                    data=json.dumps(self.user_data),
                                     headers=self.headers)
         repo_data = {"project_name": "ada-gitlab", "chat_id": "12345689",
                      "project_id": "12532279"}
