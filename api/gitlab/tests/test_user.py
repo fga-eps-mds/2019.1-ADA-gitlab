@@ -17,17 +17,8 @@ class TestUser(BaseTestCase):
         self.user_utils = UserUtils(self.user.chat_id)
 
     def test_get_user_project(self):
-        requested_user = self.user_utils.get_user_project(
-                                self.user.gitlab_user)
+        requested_user = self.user_utils.get_user_project()
         validate(requested_user, valid_schema)
-
-    def test_get_user_project_invalid_user(self):
-        invalid_user = "wrong_user"
-        with self.assertRaises(HTTPError) as context:
-            self.user_utils.get_user_project(invalid_user)
-        unauthorized_json = json.loads(str(context.exception))
-        self.assertTrue(unauthorized_json["status_code"], 404)
-        validate(unauthorized_json, unauthorized_schema)
 
     def test_get_user_id(self):
         user_id = self.user_utils.get_user_id(self.user.gitlab_user)
@@ -60,25 +51,6 @@ class TestUser(BaseTestCase):
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 200)
         validate(data, get_user_project_schema)
-
-    def test_view_get_user_project_blank_project_owner(self):
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=None)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 404)
-        validate(data, unauthorized_schema)
-
-    def test_view_get_user_project_invalid_project_owner(self):
-        project_owner = "wrong_user"
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=project_owner)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 404)
-        validate(data, unauthorized_schema)
 
     def test_view_get_user_id(self):
         response = self.client.get("/user/id/{chat_id}/{project_owner}"
