@@ -7,7 +7,6 @@ from gitlab.tests.jsonschemas.user.schemas import\
     get_user_project_schema, user_id_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
-from requests.exceptions import HTTPError
 
 
 class TestUser(BaseTestCase):
