@@ -18,7 +18,7 @@ class TestRerunPipeline(BaseTestCase):
         self.mocked_valid_response = Response()
         mocked_content = {"id": 63218612,
                           "sha": "ab063122e7dfbf5172f6f75a052d72e1d1fd1af1",
-                          "ref": "WrongFlake8",
+                          "ref": "251-Mock",
                           "status": "running",
                           "web_url": "https://gitlab.com/"}
         content_in_binary = json.dumps(mocked_content).encode('utf-8')
