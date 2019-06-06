@@ -33,6 +33,19 @@ class TestRerunPipeline(BaseTestCase):
                                                       pipeline_id)
         validate(response, rerun_pipeline_schema)
 
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
+    @patch('gitlab.utils.gitlab_utils.json')
+    def test_rerun_pipeline_attribute_error(self, mocked_json, mocked_return_project):
+        mocked_return_project.side_effect = AttributeError
+        mocked_json.loads.return_value = {"status_code": 404}
+        pipeline_id = "63218612"
+        response = self.client.get("/rerun_pipeline/<chat_id>/<pipeline_id>"
+                                   .format(chat_id=self.user.chat_id,
+                                           pipeline_id=pipeline_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, unauthorized_schema)
+
     @patch('gitlab.rerun_pipeline.utils.post')
     def test_rerun_pipeline_wrong_pipeline_id(self, mocked_post):
         pipeline_id = "9999999999"
