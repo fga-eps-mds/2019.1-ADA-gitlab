@@ -41,6 +41,17 @@ class TestPipeline(BaseTestCase):
         self.assertTrue(invalid_project_json["status_code"], 404)
         validate(invalid_project_json, pipeline_invalid_schema)
 
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
+    @patch('gitlab.utils.gitlab_utils.json')
+    def test_pipeline_error_message(self, mocked_json, mocked_return_project):
+        mocked_return_project.side_effect = HTTPError
+        mocked_json.loads.return_value = {"status_code": 404}
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
     @patch('gitlab.utils.gitlab_utils.get')
     @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
     def test_view_get_project_pipeline_invalid_token(self, mocked_access_token,

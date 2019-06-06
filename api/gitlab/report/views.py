@@ -22,7 +22,7 @@ def get_data(kind, chat_id):
                                          report.check_project_exists,
                                          report)
     except HTTPError as http_error:
-        report.error_message(http_error)
+        return report.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

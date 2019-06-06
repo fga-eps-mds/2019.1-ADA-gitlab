@@ -51,6 +51,17 @@ class TestBuild(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         validate(data, build_json)
 
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
+    @patch('gitlab.utils.gitlab_utils.json')
+    def test_build_error_message(self, mocked_json, mocked_return_project):
+        mocked_return_project.side_effect = HTTPError
+        mocked_json.loads.return_value = {"status_code": 404}
+        response = self.client.get("/build/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, invalid_project_schema)
+
     @patch('gitlab.utils.gitlab_utils.get')
     def test_view_get_project_build_invalid_project(self, mocked_get):
         mocked_get.return_value = self.mocked_404_response

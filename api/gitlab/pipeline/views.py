@@ -18,7 +18,7 @@ def get_project_pipeline(chat_id):
                                        pipeline.check_project_exists,
                                        pipeline)
     except HTTPError as http_error:
-        pipe.error_message(http_error)
+        return pipeline.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

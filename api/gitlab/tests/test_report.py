@@ -2,7 +2,8 @@ import json
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.report.schemas import\
     valid_branches_schema, valid_commits_schema,\
-    valid_pipelines_schema, valid_project_schema
+    valid_pipelines_schema, valid_project_schema,\
+    pipeline_invalid_schema
 from jsonschema import validate
 from gitlab.report.branch_utils import ReportBranches
 from gitlab.report.commit_utils import ReportCommits
@@ -11,6 +12,7 @@ from gitlab.report.report_utils import Report
 from unittest.mock import patch
 from requests import Response
 from datetime import date, timedelta
+from requests.exceptions import HTTPError
 
 
 class TestReport(BaseTestCase):
@@ -96,6 +98,17 @@ class TestReport(BaseTestCase):
         project_id = "11754240"
         branch_data = self.report_branch.get_branches(project_id)
         self.assertIsInstance(branch_data["branches"], list)
+
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
+    @patch('gitlab.utils.gitlab_utils.json')
+    def test_report_error_message(self, mocked_json, mocked_return_project):
+        mocked_return_project.side_effect = HTTPError
+        mocked_json.loads.return_value = {"status_code": 404}
+        response = self.client.get("/report/project/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_get_commit(self, mocked_get):
