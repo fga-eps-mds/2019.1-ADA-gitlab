@@ -116,6 +116,23 @@ class GitlabUtils:
             resp_json = response.json()
             return resp_json
 
+    def post_request(self, url, data):
+        try:
+            response = requests.post(url, headers=self.headers,
+                                     data=data)
+            response.raise_for_status()
+        except HTTPError as http_error:
+            raise HTTPError(self.exception_json(http_error.
+                                                response.
+                                                status_code))
+        except AttributeError:
+            raise AttributeError(self.exception_json(404))
+        except IndexError:
+            raise IndexError(self.exception_json(404))
+        else:
+            resp_json = response.json()
+            return resp_json
+
     def exception_json(self, message):
         error_dict = {"status_code": message}
         return json.dumps(error_dict)

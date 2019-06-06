@@ -12,7 +12,7 @@ class TestWebhook(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.webhook = Webhook()
+        self.webhook = Webhook(self.user.chat_id)
         self.headers = {"Content-Type": "application/json",
                         "Authorization": "Bearer " + self.GITLAB_API_TOKEN}
 
@@ -67,23 +67,10 @@ class TestWebhook(BaseTestCase):
         build_messages = self.webhook.build_message(pipeline_info)
         validate(build_messages, build_messages_schema)
 
-    def test_view_register_user(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "12345689",
-                     "gitlab_user_id": "4047441"}
-        response = self.client.post("/webhooks/user",
-                                    data=json.dumps(user_data),
-                                    headers=self.headers)
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 200)
-        validate(data, views_schema)
-
     def test_view_register_repo(self):
-        user_data = {"gitlab_user": "adatestbot", "chat_id": "12345689",
-                     "gitlab_user_id": "4047441"}
-        response = self.client.post("/webhooks/user",
-                                    data=json.dumps(user_data),
-                                    headers=self.headers)
-        repo_data = {"project_name": "ada-gitlab", "chat_id": "12345689",
+        self.user.project = None
+        self.user.save()
+        repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
                      "project_id": "12532279"}
         response = self.client.post("/webhooks/repo",
                                     data=json.dumps(repo_data),

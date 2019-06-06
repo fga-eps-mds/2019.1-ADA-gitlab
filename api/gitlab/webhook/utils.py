@@ -4,19 +4,22 @@ import json
 from requests.exceptions import HTTPError
 import os
 import requests
+from gitlab.utils.gitlab_utils import GitlabUtils
 
 
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 
-class Webhook():
+class Webhook(GitlabUtils):
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
+
     def register_repo(self, repo_data):
         project_name = repo_data["project_name"]
-        chat_id = repo_data["chat_id"]
         project_id = repo_data["project_id"]
 
-        user = User.objects(chat_id=chat_id).first()
+        user = User.objects(chat_id=self.chat_id).first()
         try:
             if user.project:
                 dict_error = {"message":
@@ -122,3 +125,16 @@ class Webhook():
         else:
             return "OK"
         return status_message
+
+    def set_webhook(self, project_id):
+        data = {
+            "id": project_id,
+            "url": "https://gitlab.adachatops.com/{chat_id}/{project_id}"
+                   .format(chat_id=self.chat_id, project_id=project_id),
+            "pipeline_events": True,
+            "enable_ssl_verification": False
+        }
+        url = "https://gitlab.com/api/v4/" +\
+            "projects/{project_id}/hooks"\
+            .format(project_id=project_id)
+        self.post_request(url=url, data=json.dumps(data))

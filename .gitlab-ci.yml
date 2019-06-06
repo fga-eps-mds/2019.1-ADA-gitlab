@@ -51,7 +51,7 @@ build ada-gitlab-homolog:
     - docker login -u $DOCKER_USER -p $DOCKER_PASS
     - docker push $ADA_GITLAB_IMAGE:homolog
   only:
-    - /devel/
+    - /255-AtualizarReadme/
 
 #############################################################
 ################## BUILD PROD ###############################
@@ -85,7 +85,7 @@ deploy ada-gitlab-homolog:
             --stack $RANCHER_HOMOLOG_STACK
             --service ada-gitlab-homolog"
   only:
-    - /devel/
+    - /255-AtualizarReadme/
 
 #############################################################
 ################## DEPLOY PROD ##############################

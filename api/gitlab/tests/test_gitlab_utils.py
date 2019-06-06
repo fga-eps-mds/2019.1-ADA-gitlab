@@ -15,7 +15,7 @@ class TestGitlabUtils(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.webhook = Webhook()
+        self.webhook = Webhook(self.user.chat_id)
         self.build = Build(self.user.chat_id)
         self.pipeline = Pipeline(self.user.chat_id)
         self.report = Report(self.user.chat_id)
