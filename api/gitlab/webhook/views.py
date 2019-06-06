@@ -6,6 +6,7 @@ from gitlab.data.user import User
 from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
+from telegram import Bot
 import telegram
 from gitlab.rerun_pipeline.utils import RerunPipeline
 
@@ -29,7 +30,7 @@ def webhook_repository(user_id, project_id):
                                                           jobs)
             project = Project.objects(project_id=project_id).first()
             user = User.objects(project=project.id).first()
-            bot = telegram.Bot(token=ACCESS_TOKEN)
+            bot = Bot(token=ACCESS_TOKEN)
             bot.send_message(chat_id=user.chat_id, text=status_message)
             bot.send_message(chat_id=user.chat_id,
                              text=messages["jobs_message"])

@@ -6,6 +6,8 @@ from gitlab.tests.jsonschemas.webhook.schemas import\
 from jsonschema import validate
 from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
+from requests import Response
+from unittest.mock import patch, Mock
 
 
 class TestWebhook(BaseTestCase):
@@ -15,6 +17,27 @@ class TestWebhook(BaseTestCase):
         self.webhook = Webhook()
         self.headers = {"Content-Type": "application/json",
                         "Authorization": "Bearer " + self.GITLAB_API_TOKEN}
+        self.mocked_success_pipeline_response = Response()
+        self.mocked_success_pipeline_response.status_code = 200
+        self.success_pipeline_response_content = [{"id": 219564277,
+                                                   "status": "success",
+                                                   "stage": "test",
+                                                   "name": "lint-flake8",
+                                                   "ref": "300-AdaGitTest",
+                                                   "commit": {
+                                                    "short_id": "13a26c72",
+                                                    "title": "#fix flake8 2",
+                                                   },
+                                                   "pipeline": {
+                                                    "web_url":
+                                                    "https://gitlab.com/"},
+                                                   "web_url":
+                                                   "https://gitlab.com/",
+                                                   }]
+        success_pipeline_response_content_in_binary = json.\
+            dumps(self.success_pipeline_response_content).encode('utf-8')
+        self.mocked_success_pipeline_response._content = \
+            success_pipeline_response_content_in_binary
 
     def test_register_repo(self):
         old_project = self.user.project
@@ -47,20 +70,35 @@ class TestWebhook(BaseTestCase):
         message_error = json.loads(str(context.exception))
         validate(message_error, message_error_schema)
 
-    def test_get_pipeline_infos(self):
+    @patch('gitlab.webhook.utils.get')
+    def test_get_pipeline_infos(self, mocked_get):
+        mocked_get.return_value = self.mocked_success_pipeline_response
         pipeline_id = "63218612"
         pipeline_info = self.webhook.get_pipeline_infos(
                     self.project.project_id, pipeline_id)
         validate(pipeline_info[0], pipeline_schema)
 
-    def test_build_messages_passed_pipeline(self):
+    @patch('gitlab.webhook.utils.get')
+    def test_build_messages_passed_pipeline(self, mocked_get):
+        mocked_get.return_value = self.mocked_success_pipeline_response
         pipeline_id = "63226466"
         pipeline_info = self.webhook.get_pipeline_infos(
                     self.project.project_id, pipeline_id)
         build_messages = self.webhook.build_message(pipeline_info)
         validate(build_messages, build_messages_schema)
 
-    def test_build_messages_failed_pipeline(self):
+    @patch('gitlab.webhook.utils.get')
+    def test_build_messages_failed_pipeline(self, mocked_get):
+        mocked_failed_pipeline_response = self.mocked_success_pipeline_response
+        failed_pipeline_response_content = \
+            self.success_pipeline_response_content
+        failed_pipeline_response_content[0]["status"] = "failed"
+        failed_pipeline_response_content_in_binary = json.\
+            dumps(failed_pipeline_response_content).encode('utf-8')
+        mocked_failed_pipeline_response._content = \
+            failed_pipeline_response_content_in_binary
+        mocked_get.return_value = mocked_failed_pipeline_response
+
         pipeline_id = "63218612"
         pipeline_info = self.webhook.get_pipeline_infos(
                     self.project.project_id, pipeline_id)
@@ -92,7 +130,12 @@ class TestWebhook(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         validate(data, views_schema)
 
-    def test_view_webhook_repository(self):
+    @patch('gitlab.webhook.views.Bot')
+    @patch('gitlab.webhook.utils.get')
+    def test_view_webhook_repository(self, mocked_get, mocked_bot):
+        mocked_get.return_value = self.mocked_success_pipeline_response
+        mocked_bot.return_value = Mock()
+        mocked_bot.send_message = Mock()
         content_dict = {"object_kind": "pipeline",
                         "object_attributes":
                         {

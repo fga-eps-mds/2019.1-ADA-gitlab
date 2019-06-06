@@ -3,7 +3,7 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import os
-import requests
+from requests import get
 
 
 GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
@@ -52,12 +52,11 @@ class Webhook():
     def get_pipeline_infos(self, project_id, pipeline_id):
         headers = {"Content-Type": "application/json",
                    "Authorization": "Bearer " + GITLAB_API_TOKEN}
-        response = requests.get("https://gitlab.com/api/"
-                                "v4/projects/{project_id}/pipelines/"
-                                "{pipeline_id}/jobs".format(
-                                        project_id=project_id,
-                                        pipeline_id=pipeline_id),
-                                headers=headers)
+        response = get("https://gitlab.com/api/"
+                       "v4/projects/{project_id}/pipelines/"
+                       "{pipeline_id}/jobs".format(
+                        project_id=project_id,
+                        pipeline_id=pipeline_id), headers=headers)
         response.raise_for_status()
         resp = response.json()
         requested_build = []
