@@ -43,20 +43,20 @@ class TestWebhook(BaseTestCase):
         self.mocked_failed_pipeline_response = Response()
         self.mocked_failed_pipeline_response.status_code = 200
         failed_pipeline_response_content = [{"id": 219564277,
-                                                   "status": "failed",
-                                                   "stage": "test",
-                                                   "name": "lint-flake8",
-                                                   "ref": "300-AdaGitTest",
-                                                   "commit": {
-                                                    "short_id": "13a26c72",
-                                                    "title": "#fix flake8 2",
-                                                   },
-                                                   "pipeline": {
-                                                    "web_url":
-                                                    "https://gitlab.com/"},
-                                                   "web_url":
-                                                   "https://gitlab.com/",
-                                                   }]
+                                             "status": "failed",
+                                             "stage": "test",
+                                             "name": "lint-flake8",
+                                             "ref": "300-AdaGitTest",
+                                             "commit": {
+                                              "short_id": "13a26c72",
+                                              "title": "#fix flake8 2",
+                                              },
+                                             "pipeline": {
+                                              "web_url":
+                                              "https://gitlab.com/"},
+                                             "web_url":
+                                             "https://gitlab.com/",
+                                             }]
         failed_pipeline_response_content = \
             self.success_pipeline_response_content
         failed_pipeline_response_content[0]["status"] = "failed"
@@ -136,7 +136,8 @@ class TestWebhook(BaseTestCase):
 
     @patch('gitlab.webhook.utils.get')
     def test_build_messages_running_pipeline(self, mocked_get):
-        mocked_running_pipeline_response = self.mocked_success_pipeline_response
+        mocked_running_pipeline_response = self.\
+            mocked_success_pipeline_response
         running_pipeline_response_content = \
             self.success_pipeline_response_content
         running_pipeline_response_content[0]["status"] = "running"

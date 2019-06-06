@@ -1,6 +1,6 @@
 # api/gitlab/__init__.py
 
-import requests
+from requests import post
 from requests.exceptions import HTTPError
 import json
 import os
@@ -95,10 +95,10 @@ def authenticate_access_token(code):
     }
     url = "https://gitlab.com/oauth/token"
     data = json.dumps(data)
-    post = requests.post(url=url,
+    post_response = post(url=url,
                          headers=header,
                          data=data)
-    post_json = post.json()
+    post_json = post_response.json()
     GITLAB_TOKEN = post_json['access_token']
     return GITLAB_TOKEN
 

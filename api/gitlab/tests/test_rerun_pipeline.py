@@ -35,7 +35,8 @@ class TestRerunPipeline(BaseTestCase):
 
     @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
     @patch('gitlab.utils.gitlab_utils.json')
-    def test_rerun_pipeline_attribute_error(self, mocked_json, mocked_return_project):
+    def test_rerun_pipeline_attribute_error(self, mocked_json,
+                                            mocked_return_project):
         mocked_return_project.side_effect = AttributeError
         mocked_json.loads.return_value = {"status_code": 404}
         pipeline_id = "63218612"

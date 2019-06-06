@@ -12,7 +12,6 @@ from gitlab.rerun_pipeline.utils import RerunPipeline
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 

@@ -3,11 +3,9 @@ from flask_cors import CORS
 from gitlab.pipeline.pipeline_utils import Pipeline
 from requests.exceptions import HTTPError
 from gitlab.report.error_messages import NOT_FOUND
-import os
 
 pipeline_blueprint = Blueprint("pipeline", __name__)
 CORS(pipeline_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
 @pipeline_blueprint.route("/pipeline/<chat_id>", methods=["GET"])

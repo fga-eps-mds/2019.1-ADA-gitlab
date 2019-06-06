@@ -55,3 +55,10 @@ class TestGitlabUtils(BaseTestCase):
         unauthorized_json = json.loads(str(context.exception))
         self.assertTrue(unauthorized_json["status_code"], 404)
         validate(unauthorized_json, invalid_project_schema)
+
+    def test_error_message_unauthorized(self):
+        http_error = HTTPError('{"status_code": 401}')
+        response = self.gitlab_utils.error_message(http_error)
+        data = json.loads(response[0].data.decode())
+        self.assertTrue(data["status_code"], 401)
+        validate(data, invalid_project_schema)

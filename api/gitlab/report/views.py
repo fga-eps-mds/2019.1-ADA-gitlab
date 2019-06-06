@@ -2,13 +2,11 @@ from flask import jsonify, Blueprint
 from flask_cors import CORS
 from gitlab.report.report_utils import Report
 from requests.exceptions import HTTPError
-import os
 from gitlab.report.error_messages import NOT_FOUND
 
 
 report_blueprint = Blueprint("report", __name__)
 CORS(report_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
 @report_blueprint.route("/report/<kind>/<chat_id>", methods=["GET"])
