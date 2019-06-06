@@ -40,6 +40,31 @@ class TestWebhook(BaseTestCase):
         self.mocked_success_pipeline_response._content = \
             success_pipeline_response_content_in_binary
 
+        self.mocked_failed_pipeline_response = Response()
+        self.mocked_failed_pipeline_response.status_code = 200
+        failed_pipeline_response_content = [{"id": 219564277,
+                                                   "status": "failed",
+                                                   "stage": "test",
+                                                   "name": "lint-flake8",
+                                                   "ref": "300-AdaGitTest",
+                                                   "commit": {
+                                                    "short_id": "13a26c72",
+                                                    "title": "#fix flake8 2",
+                                                   },
+                                                   "pipeline": {
+                                                    "web_url":
+                                                    "https://gitlab.com/"},
+                                                   "web_url":
+                                                   "https://gitlab.com/",
+                                                   }]
+        failed_pipeline_response_content = \
+            self.success_pipeline_response_content
+        failed_pipeline_response_content[0]["status"] = "failed"
+        failed_pipeline_response_content_in_binary = json.\
+            dumps(failed_pipeline_response_content).encode('utf-8')
+        self.mocked_failed_pipeline_response._content = \
+            failed_pipeline_response_content_in_binary
+
         self.gitlab_user = "adatestbot"
         self.gitlab_user_id = "4047441"
         self.user_data = {"gitlab_user": self.gitlab_user,
@@ -101,15 +126,25 @@ class TestWebhook(BaseTestCase):
 
     @patch('gitlab.webhook.utils.get')
     def test_build_messages_failed_pipeline(self, mocked_get):
-        mocked_failed_pipeline_response = self.mocked_success_pipeline_response
-        failed_pipeline_response_content = \
+        mocked_get.return_value = self.mocked_failed_pipeline_response
+
+        pipeline_id = "63218612"
+        pipeline_info = self.webhook.get_pipeline_infos(
+                    self.project.project_id, pipeline_id)
+        build_messages = self.webhook.build_message(pipeline_info)
+        validate(build_messages, build_messages_schema)
+
+    @patch('gitlab.webhook.utils.get')
+    def test_build_messages_running_pipeline(self, mocked_get):
+        mocked_running_pipeline_response = self.mocked_success_pipeline_response
+        running_pipeline_response_content = \
             self.success_pipeline_response_content
-        failed_pipeline_response_content[0]["status"] = "failed"
-        failed_pipeline_response_content_in_binary = json.\
-            dumps(failed_pipeline_response_content).encode('utf-8')
-        mocked_failed_pipeline_response._content = \
-            failed_pipeline_response_content_in_binary
-        mocked_get.return_value = mocked_failed_pipeline_response
+        running_pipeline_response_content[0]["status"] = "running"
+        running_pipeline_response_content_in_binary = json.\
+            dumps(running_pipeline_response_content).encode('utf-8')
+        mocked_running_pipeline_response._content = \
+            running_pipeline_response_content_in_binary
+        mocked_get.return_value = mocked_running_pipeline_response
 
         pipeline_id = "63218612"
         pipeline_info = self.webhook.get_pipeline_infos(
@@ -148,6 +183,28 @@ class TestWebhook(BaseTestCase):
                         "object_attributes":
                         {
                             "status": "success",
+                            "id": "63218612",
+                            "ref": "teste"
+                            }
+                        }
+        content_json = json.dumps(content_dict)
+        response = self.client.post(
+                "/webhook/{chat_id}/{project_id}"
+                .format(chat_id=self.user.chat_id,
+                        project_id=self.project.project_id),
+                data=content_json, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('gitlab.webhook.views.Bot')
+    @patch('gitlab.webhook.utils.get')
+    def test_view_webhook_failed_repository(self, mocked_get, mocked_bot):
+        mocked_get.return_value = self.mocked_failed_pipeline_response
+        mocked_bot.return_value = Mock()
+        mocked_bot.send_message = Mock()
+        content_dict = {"object_kind": "pipeline",
+                        "object_attributes":
+                        {
+                            "status": "failed",
                             "id": "63218612",
                             "ref": "teste"
                             }
