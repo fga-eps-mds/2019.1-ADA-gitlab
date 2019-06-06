@@ -16,7 +16,7 @@ class RerunPipeline(GitlabUtils):
                   "/retry".format(project_id=project_id,
                                   pipeline_id=pipeline_id)
             response = post(url=url,
-                                     headers=self.headers)
+                            headers=self.headers)
             response.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}

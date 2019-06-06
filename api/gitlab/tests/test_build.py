@@ -16,28 +16,26 @@ class TestBuild(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.build = Build(self.user.chat_id)
-        self.mocked_404_response = Response()
-        self.mocked_404_response.status_code = 404
         self.mocked_401_response = Response()
         self.mocked_401_response.status_code = 401
         self.mocked_valid_response = Response()
         mocked_content = [{'id': 222325240,
-                                      'status': 'success',
-                                      'stage': 'test',
-                                      'name': 'unit test',
-                                      'ref': 'master',
-                                      'commit':
-                                      {'title': 'Merge PR',
-                                       'short_id': '717b7ea7'},
-                                      'pipeline':
-                                      {'id': 63936796,
-                                       'ref': 'master',
-                                       'status': 'failed',
-                                       'web_url':
-                                       'https://gitlab.com/'},
-                                      'web_url':
-                                      'https://gitlab.com/',
-                                      }]
+                           'status': 'success',
+                           'stage': 'test',
+                           'name': 'unit test',
+                           'ref': 'master',
+                           'commit':
+                           {'title': 'Merge PR',
+                            'short_id': '717b7ea7'},
+                           'pipeline':
+                           {'id': 63936796,
+                            'ref': 'master',
+                            'status': 'failed',
+                            'web_url':
+                            'https://gitlab.com/'},
+                           'web_url':
+                           'https://gitlab.com/',
+                           }]
         content_in_binary = json.dumps(mocked_content).encode('utf-8')
         self.mocked_valid_response._content = content_in_binary
         self.mocked_valid_response.status_code = 200
@@ -76,7 +74,8 @@ class TestBuild(BaseTestCase):
 
     @patch('gitlab.utils.gitlab_utils.get')
     @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
-    def test_view_get_project_build_invalid_token(self, mocked_access_token, mocked_get):
+    def test_view_get_project_build_invalid_token(self, mocked_access_token,
+                                                  mocked_get):
         mocked_get.return_value = self.mocked_401_response
         mocked_access_token.return_value = "wrong_token"
         response = self.client.get("/build/{chat_id}"
@@ -93,7 +92,8 @@ class TestBuild(BaseTestCase):
 
     @patch('gitlab.utils.gitlab_utils.get')
     @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
-    def test_get_project_build_invalid_token(self, mocked_access_token, mocked_get):
+    def test_get_project_build_invalid_token(self, mocked_access_token,
+                                             mocked_get):
         mocked_get.return_value = self.mocked_401_response
         mocked_access_token.return_value = "wrong_token"
         with self.assertRaises(HTTPError) as context:

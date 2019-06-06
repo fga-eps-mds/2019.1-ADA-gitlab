@@ -5,7 +5,6 @@ from gitlab.tests.jsonschemas.rerun_pipeline.schemas import\
 
 from jsonschema import validate
 from gitlab.rerun_pipeline.utils import RerunPipeline
-import os
 from requests.exceptions import HTTPError
 from unittest.mock import patch
 from requests import Response
@@ -16,14 +15,12 @@ class TestRerunPipeline(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.rerun_pipeline = RerunPipeline(self.user.chat_id)
-        self.mocked_404_response = Response()
-        self.mocked_404_response.status_code = 404
         self.mocked_valid_response = Response()
         mocked_content = {"id": 63218612,
-                           "sha": "ab063122e7dfbf5172f6f75a052d72e1d1fd1af1",
-                           "ref": "WrongFlake8",
-                           "status": "running",
-                           "web_url": "https://gitlab.com/"}
+                          "sha": "ab063122e7dfbf5172f6f75a052d72e1d1fd1af1",
+                          "ref": "WrongFlake8",
+                          "status": "running",
+                          "web_url": "https://gitlab.com/"}
         content_in_binary = json.dumps(mocked_content).encode('utf-8')
         self.mocked_valid_response._content = content_in_binary
         self.mocked_valid_response.status_code = 200
@@ -49,7 +46,8 @@ class TestRerunPipeline(BaseTestCase):
 
     @patch('gitlab.rerun_pipeline.utils.post')
     @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
-    def test_rerun_pipeline_invalid_token(self, mocked_access_token, mocked_post):
+    def test_rerun_pipeline_invalid_token(self, mocked_access_token,
+                                          mocked_post):
         mocked_access_token.return_value = "wrong_token"
         mocked_post.return_value = self.mocked_404_response
         pipeline_id = "63218612"

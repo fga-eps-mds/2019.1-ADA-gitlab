@@ -7,6 +7,7 @@ from gitlab import create_app
 from gitlab.data.user import User
 from gitlab.data.project import Project
 import os
+from requests import Response
 
 
 class BaseTestCase(TestCase):
@@ -26,6 +27,9 @@ class BaseTestCase(TestCase):
                                         self.project_id)
         self.user.save_gitlab_repo_data(self.project)
         self.GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
+
+        self.mocked_404_response = Response()
+        self.mocked_404_response.status_code = 404
 
     def create_app(self):
         app = create_app()
