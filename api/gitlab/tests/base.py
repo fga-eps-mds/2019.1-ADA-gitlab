@@ -6,7 +6,7 @@ from gitlab.data import init_db
 from gitlab import create_app
 from gitlab.data.user import User
 from gitlab.data.project import Project
-import os
+from requests import Response
 
 
 class BaseTestCase(TestCase):
@@ -17,7 +17,7 @@ class BaseTestCase(TestCase):
         self.user.chat_id = '339847919'
         self.user.gitlab_user = 'adatestbot'
         self.user.gitlab_user_id = '4047441'
-        self.user.access_token = os.getenv("GITLAB_API_TOKEN", "")
+        self.user.access_token = "123456"
         self.user.save()
         self.project = Project()
         self.project_name = 'ada-gitlab'
@@ -25,7 +25,10 @@ class BaseTestCase(TestCase):
         self.project.save_webhook_infos(self.user, self.project_name,
                                         self.project_id)
         self.user.save_gitlab_repo_data(self.project)
-        self.GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
+        self.GITLAB_API_TOKEN = "12345"
+
+        self.mocked_404_response = Response()
+        self.mocked_404_response.status_code = 404
 
     def create_app(self):
         app = create_app()

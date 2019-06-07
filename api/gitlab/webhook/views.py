@@ -6,13 +6,13 @@ from gitlab.data.user import User
 from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
+from telegram import Bot
 import telegram
 from gitlab.rerun_pipeline.utils import RerunPipeline
 from gitlab.webhook.error_messages import NOT_FOUND
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 
@@ -30,14 +30,14 @@ def webhook_repository(chat_id, project_id):
                                                           jobs)
             project = Project.objects(project_id=project_id).first()
             user = User.objects(project=project.id).first()
-            bot = telegram.Bot(token=ACCESS_TOKEN)
+            bot = Bot(token=ACCESS_TOKEN)
             bot.send_message(chat_id=user.chat_id, text=status_message)
             bot.send_message(chat_id=user.chat_id,
                              text=messages["jobs_message"])
             bot.send_message(chat_id=user.chat_id,
                              text=messages["summary_message"])
             if content["object_attributes"]["status"] == "failed":
-                rerunpipeline = RerunPipeline(chat_id)
+                rerunpipeline = RerunPipeline(user.chat_id)
                 buttons = rerunpipeline.build_buttons(pipeline_id)
                 reply_markup = telegram.InlineKeyboardMarkup(buttons)
                 bot.send_message(chat_id=user.chat_id,

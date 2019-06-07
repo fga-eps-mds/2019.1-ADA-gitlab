@@ -32,7 +32,7 @@ class User(mongoengine.Document):
 
     def save_gitlab_repo_data(self, project):
         self.project = project
-        self.update(project=project)
+        self.save()
         return self
 
     def get_user_project(self):
