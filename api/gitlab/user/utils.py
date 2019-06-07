@@ -1,9 +1,12 @@
 # api/gitlab/__init__.py
 
 import requests
+from requests import post
+from requests.exceptions import HTTPError
 import json
 import os
 import telegram
+from telegram import Bot
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 APP_ID = os.getenv("APP_ID", "")
@@ -59,7 +62,7 @@ class UserUtils(GitlabUtils):
         return repo_names
 
     def send_button_message(self, user_infos, chat_id):
-        bot = telegram.Bot(token=ACCESS_TOKEN)
+        bot = Bot(token=ACCESS_TOKEN)
         repo_names = self.select_repos_by_buttons(
                      user_infos["gitlab_username"])
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
@@ -83,16 +86,16 @@ def authenticate_access_token(code):
     }
     url = "https://gitlab.com/oauth/token"
     data = json.dumps(data)
-    post = requests.post(url=url,
+    post_response = post(url=url,
                          headers=header,
                          data=data)
-    post_json = post.json()
+    post_json = post_response.json()
     GITLAB_TOKEN = post_json['access_token']
     return GITLAB_TOKEN
 
 
 def send_message(token, chat_id):
-    bot = telegram.Bot(token=ACCESS_TOKEN)
+    bot = Bot(token=ACCESS_TOKEN)
     bot.send_message(chat_id=chat_id,
                      text="Você foi "
                      "cadastrado com "
