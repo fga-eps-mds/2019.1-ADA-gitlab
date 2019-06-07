@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError
 import json
 import os
 import telegram
+from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 APP_ID = os.getenv("APP_ID", "")
@@ -81,6 +82,9 @@ class UserUtils(GitlabUtils):
                          reply_markup=reply_markup)
         return "OK"
 
+    def get_user_domain(self):
+        user = User.objects(chat_id=self.chat_id).first()
+        return user.domain
 
 def authenticate_access_token(code):
     header = {"Content-Type": "application/json"}
