@@ -42,14 +42,6 @@ class TestUser(BaseTestCase):
         status = send_message(self.GITLAB_API_TOKEN, self.user.chat_id)
         self.assertIsInstance(status, str)
 
-    def test_view_get_user_project(self):
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=self.user.gitlab_user)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 200)
-        validate(data, get_user_project_schema)
 
     def test_view_get_user_id(self):
         response = self.client.get("/user/id/{chat_id}/{project_owner}"
