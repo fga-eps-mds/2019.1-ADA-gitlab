@@ -4,10 +4,8 @@ import json
 from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
-from requests import get
+from requests import get, post
 
-
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 
@@ -54,7 +52,7 @@ class Webhook(GitlabUtils):
 
     def get_pipeline_infos(self, project_id, pipeline_id):
         headers = {"Content-Type": "application/json",
-                   "Authorization": "Bearer " + GITLAB_API_TOKEN}
+                   "Authorization": "Bearer " + self.GITLAB_API_TOKEN}
         response = get("https://gitlab.com/api/"
                        "v4/projects/{project_id}/pipelines/"
                        "{pipeline_id}/jobs".format(
@@ -136,4 +134,5 @@ class Webhook(GitlabUtils):
         url = "https://gitlab.com/api/v4/" +\
             "projects/{project_id}/hooks"\
             .format(project_id=project_id)
-        self.post_request(url=url, data=json.dumps(data))
+        r = post(url, headers=self.headers, data=json.dumps(data))
+        r.raise_for_status()

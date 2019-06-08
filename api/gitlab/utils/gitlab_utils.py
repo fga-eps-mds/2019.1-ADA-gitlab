@@ -8,7 +8,6 @@ from gitlab.utils.error_messages import UNAUTHORIZED,\
                                         NOT_FOUND
 from gitlab.data.user import User
 import re
-import requests
 
 
 class GitlabUtils:
@@ -104,23 +103,6 @@ class GitlabUtils:
     def get_request(self, url):
         try:
             response = get(url, headers=self.headers)
-            response.raise_for_status()
-        except HTTPError as http_error:
-            raise HTTPError(self.exception_json(http_error.
-                                                response.
-                                                status_code))
-        except AttributeError:
-            raise AttributeError(self.exception_json(404))
-        except IndexError:
-            raise IndexError(self.exception_json(404))
-        else:
-            resp_json = response.json()
-            return resp_json
-
-    def post_request(self, url, data):
-        try:
-            response = requests.post(url, headers=self.headers,
-                                     data=data)
             response.raise_for_status()
         except HTTPError as http_error:
             raise HTTPError(self.exception_json(http_error.

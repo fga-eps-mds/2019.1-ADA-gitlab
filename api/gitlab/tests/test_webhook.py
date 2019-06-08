@@ -18,8 +18,8 @@ class TestWebhook(BaseTestCase):
         self.webhook = Webhook(self.user.chat_id)
         self.headers = {"Content-Type": "application/json",
                         "Authorization": "Bearer " + self.GITLAB_API_TOKEN}
-        self.mocked_success_pipeline_response = Response()
-        self.mocked_success_pipeline_response.status_code = 200
+        self.mocked_ok_pipeline_response = Response()
+        self.mocked_ok_pipeline_response.status_code = 200
         self.success_pipeline_response_content = [{"id": 219564277,
                                                    "status": "success",
                                                    "stage": "test",
@@ -37,7 +37,7 @@ class TestWebhook(BaseTestCase):
                                                    }]
         success_pipeline_response_content_in_binary = json.\
             dumps(self.success_pipeline_response_content).encode('utf-8')
-        self.mocked_success_pipeline_response._content = \
+        self.mocked_ok_pipeline_response._content = \
             success_pipeline_response_content_in_binary
 
         self.mocked_failed_pipeline_response = Response()
@@ -109,7 +109,7 @@ class TestWebhook(BaseTestCase):
 
     @patch('gitlab.webhook.utils.get')
     def test_get_pipeline_infos(self, mocked_get):
-        mocked_get.return_value = self.mocked_success_pipeline_response
+        mocked_get.return_value = self.mocked_ok_pipeline_response
         pipeline_id = "63218612"
         pipeline_info = self.webhook.get_pipeline_infos(
                     self.project.project_id, pipeline_id)
@@ -117,7 +117,7 @@ class TestWebhook(BaseTestCase):
 
     @patch('gitlab.webhook.utils.get')
     def test_build_messages_passed_pipeline(self, mocked_get):
-        mocked_get.return_value = self.mocked_success_pipeline_response
+        mocked_get.return_value = self.mocked_ok_pipeline_response
         pipeline_id = "63226466"
         pipeline_info = self.webhook.get_pipeline_infos(
                     self.project.project_id, pipeline_id)
@@ -137,7 +137,7 @@ class TestWebhook(BaseTestCase):
     @patch('gitlab.webhook.utils.get')
     def test_build_messages_running_pipeline(self, mocked_get):
         mocked_running_pipeline_response = self.\
-            mocked_success_pipeline_response
+            mocked_ok_pipeline_response
         running_pipeline_response_content = \
             self.success_pipeline_response_content
         running_pipeline_response_content[0]["status"] = "running"
@@ -168,7 +168,7 @@ class TestWebhook(BaseTestCase):
     @patch('gitlab.webhook.views.Bot')
     @patch('gitlab.webhook.utils.get')
     def test_view_webhook_repository(self, mocked_get, mocked_bot):
-        mocked_get.return_value = self.mocked_success_pipeline_response
+        mocked_get.return_value = self.mocked_ok_pipeline_response
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         content_dict = {"object_kind": "pipeline",
@@ -208,3 +208,31 @@ class TestWebhook(BaseTestCase):
                         project_id=self.project.project_id),
                 data=content_json, headers=self.headers)
         self.assertEqual(response.status_code, 200)
+
+    @patch('gitlab.webhook.utils.post')
+    def test_view_set_webhook(self, mocked_post):
+        mocked_post.return_value = self.mocked_ok_pipeline_response.status_code
+        self.webhook.register_user(self.user_data)
+        content_dict = {
+                        "project_id": "9121",
+                        "chat_id": "12345689"
+        }
+        content_json = json.dumps(content_dict)
+        response = self.client.post("/webhook",
+                                    data=content_json,
+                                    headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('gitlab.webhook.utils.post')
+    def test_view_invalid_set_webhook(self, mocked_post):
+        mocked_post.return_value = Response()
+        mocked_post.status_code = 400
+        content_dict = {
+                        "project_id": "9121",
+                        "chat_id": "12345689"
+        }
+        content_json = json.dumps(content_dict)
+        response = self.client.post("/webhook",
+                                    data=content_json,
+                                    headers=self.headers)
+        self.assertEqual(response.status_code, 400)

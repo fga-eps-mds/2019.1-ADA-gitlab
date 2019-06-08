@@ -79,7 +79,7 @@ def set_webhook():
         dict_message = json.loads(str(http_error))
         return jsonify(dict_message), 400
     except AttributeError:
-        dict_message = json.loads(NOT_FOUND)
+        dict_message = json.dumps(NOT_FOUND)
         return jsonify(dict_message), 400
     else:
         return jsonify({
