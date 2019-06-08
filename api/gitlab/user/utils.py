@@ -1,14 +1,11 @@
 # api/gitlab/__init__.py
 
-import requests
 from requests import post
-from requests.exceptions import HTTPError
 import json
 import os
 import telegram
 from telegram import Bot
 from gitlab.utils.gitlab_utils import GitlabUtils
-import sys
 
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
@@ -49,7 +46,6 @@ class UserUtils(GitlabUtils):
 
     def select_repos_by_buttons(self):
         repo_infos = self.get_user_project()
-        print("###"*30 + "\n" + str(repo_infos) + "###"*30 + "\n", file=sys.stderr)
         repositories = []
         for item in repo_infos:
             repositories.append(item["path_with_namespace"])

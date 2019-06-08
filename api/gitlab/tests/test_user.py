@@ -2,12 +2,11 @@ import json
 import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.user.schemas import\
-    valid_schema, unauthorized_schema,\
+    unauthorized_schema,\
     user_data_valid_schema, project_id_schema,\
-    get_user_project_schema, user_id_schema
+    user_id_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
-from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
 from gitlab.user.utils import authenticate_access_token
@@ -64,8 +63,6 @@ class TestUser(BaseTestCase):
         self.mocked_invalid_get_user_id_response._content = \
             invalid_get_user_id_content_in_binary
 
-
-
     @patch('gitlab.utils.gitlab_utils.get')
     def test_get_user_id(self, mocked_get):
         mocked_get.return_value = self.mocked_get_user_id_response
@@ -97,15 +94,13 @@ class TestUser(BaseTestCase):
         status = self.user_utils.send_button_message(user_data,
                                                      self.user.chat_id)
         self.assertIsInstance(status, str)
-    
+
     @patch('gitlab.user.utils.Bot')
     def test_send_message(self, mocked_bot):
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         status = send_message(self.GITLAB_API_TOKEN, self.user.chat_id)
         self.assertEqual(status, "OK")
-
-
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_view_get_user_id(self, mocked_get):

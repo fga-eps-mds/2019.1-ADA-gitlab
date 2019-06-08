@@ -18,6 +18,7 @@ GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 BOT_NAME = os.getenv("BOT_NAME", "")
 
+
 @user_blueprint.route("/user/id/<chat_id>/<project_owner>", methods=["GET"])
 def get_user_id(chat_id, project_owner):
     user = UserUtils(chat_id)
