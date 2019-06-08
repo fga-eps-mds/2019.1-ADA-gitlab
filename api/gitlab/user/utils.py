@@ -1,7 +1,6 @@
 # api/gitlab/__init__.py
 
 from requests import post
-from requests.exceptions import HTTPError
 import json
 import os
 import telegram
@@ -17,17 +16,9 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 class UserUtils(GitlabUtils):
     def __init__(self, chat_id):
         super().__init__(chat_id)
-        self.headers = {
-                "Content-Type": "application/json"
-            }
 
-    def get_user_project(self, project_owner):
-        user_id = self.get_user_id(project_owner)
-        if not user_id:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
-        url = self.GITLAB_API_URL + "users/{user_id}/projects".format(
-              user_id=user_id)
+    def get_user_project(self):
+        url = self.GITLAB_API_URL + "/projects?membership=true"
         projects = super(UserUtils, self).get_request(url)
         return projects
 
@@ -44,9 +35,7 @@ class UserUtils(GitlabUtils):
 
     def get_own_user_data(self):
         url = self.GITLAB_API_URL + \
-              "user?access_token="\
-              "{access_token}".format(
-               access_token=self.GITLAB_API_TOKEN)
+              "user"
 
         requested_user = self.get_request(url)
         gitlab_data = {
@@ -55,8 +44,8 @@ class UserUtils(GitlabUtils):
                       }
         return gitlab_data
 
-    def select_repos_by_buttons(self, project_owner):
-        repo_infos = self.get_user_project(project_owner)
+    def select_repos_by_buttons(self):
+        repo_infos = self.get_user_project()
         repositories = []
         for item in repo_infos:
             repositories.append(item["path_with_namespace"])
@@ -72,8 +61,7 @@ class UserUtils(GitlabUtils):
 
     def send_button_message(self, user_infos, chat_id):
         bot = Bot(token=ACCESS_TOKEN)
-        repo_names = self.select_repos_by_buttons(
-                     user_infos["gitlab_username"])
+        repo_names = self.select_repos_by_buttons()
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
         bot.send_message(chat_id=chat_id,
                          text="Encontrei esses repositórios na sua "

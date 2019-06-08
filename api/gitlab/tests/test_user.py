@@ -2,12 +2,11 @@ import json
 import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.user.schemas import\
-    valid_schema, unauthorized_schema,\
+    unauthorized_schema,\
     user_data_valid_schema, project_id_schema,\
-    get_user_project_schema, user_id_schema
+    user_id_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
-from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
 from gitlab.user.utils import authenticate_access_token
@@ -65,24 +64,6 @@ class TestUser(BaseTestCase):
             invalid_get_user_id_content_in_binary
 
     @patch('gitlab.utils.gitlab_utils.get')
-    def test_get_user_project(self, mocked_get):
-        mocked_get.side_effect = (self.mocked_get_user_id_response,
-                                  self.mocked_get_user_project_response)
-        requested_user = self.user_utils.get_user_project(
-                                self.user.gitlab_user)
-        validate(requested_user, valid_schema)
-
-    @patch('gitlab.utils.gitlab_utils.get')
-    def test_get_user_project_invalid_user(self, mocked_get):
-        mocked_get.return_value = self.mocked_invalid_get_user_id_response
-        invalid_user = "wrong_user"
-        with self.assertRaises(HTTPError) as context:
-            self.user_utils.get_user_project(invalid_user)
-        unauthorized_json = json.loads(str(context.exception))
-        self.assertTrue(unauthorized_json["status_code"], 404)
-        validate(unauthorized_json, unauthorized_schema)
-
-    @patch('gitlab.utils.gitlab_utils.get')
     def test_get_user_id(self, mocked_get):
         mocked_get.return_value = self.mocked_get_user_id_response
         user_id = self.user_utils.get_user_id(self.user.gitlab_user)
@@ -96,18 +77,17 @@ class TestUser(BaseTestCase):
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_select_repos_by_buttons(self, mocked_get):
-        mocked_get.side_effect = (self.mocked_get_user_id_response,
-                                  self.mocked_get_user_project_response)
-        buttons = self.user_utils.select_repos_by_buttons(
-                                    self.user.gitlab_user)
+        mocked_get.side_effect = (self.mocked_get_user_project_response,
+                                  self.mocked_get_user_id_response)
+        buttons = self.user_utils.select_repos_by_buttons()
         self.assertIsInstance(buttons, list)
 
     @patch('gitlab.utils.gitlab_utils.get')
     @patch('gitlab.user.utils.Bot')
     def test_send_button_message(self, mocked_bot, mocked_get):
         mocked_get.side_effect = (self.mocked_get_user_data_response,
-                                  self.mocked_get_user_id_response,
-                                  self.mocked_get_user_project_response)
+                                  self.mocked_get_user_project_response,
+                                  self.mocked_get_user_id_response)
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         user_data = self.user_utils.get_own_user_data()
@@ -121,41 +101,6 @@ class TestUser(BaseTestCase):
         mocked_bot.send_message = Mock()
         status = send_message(self.GITLAB_API_TOKEN, self.user.chat_id)
         self.assertEqual(status, "OK")
-
-    @patch('gitlab.utils.gitlab_utils.get')
-    def test_view_get_user_project(self, mocked_get):
-        mocked_get.side_effect = (self.mocked_get_user_id_response,
-                                  self.mocked_get_user_project_response)
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=self.user.gitlab_user)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 200)
-        validate(data, get_user_project_schema)
-
-    @patch('gitlab.utils.gitlab_utils.get')
-    def test_view_get_user_project_blank_project_owner(self, mocked_get):
-        mocked_get.return_value = self.mocked_404_response
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=None)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 404)
-        validate(data, unauthorized_schema)
-
-    @patch('gitlab.utils.gitlab_utils.get')
-    def test_view_get_user_project_invalid_project_owner(self, mocked_get):
-        mocked_get.return_value = self.mocked_404_response
-        project_owner = "wrong_user"
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=project_owner)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 404)
-        validate(data, unauthorized_schema)
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_view_get_user_id(self, mocked_get):
@@ -235,8 +180,8 @@ class TestUser(BaseTestCase):
                                                 mocked_bot,
                                                 mocked_request):
         mocked_get.side_effect = (self.mocked_get_user_data_response,
-                                  self.mocked_get_user_id_response,
-                                  self.mocked_get_user_project_response)
+                                  self.mocked_get_user_project_response,
+                                  self.mocked_get_user_id_response)
         mocked_auth_access_token.return_value = "9a3506fced2455e52fe1ac48d"
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
@@ -255,26 +200,6 @@ class TestUser(BaseTestCase):
         mocked_response.status_code = 200
         mocked_post.return_value = mocked_response
         authenticate_access_token("44456")
-
-    @patch('gitlab.utils.gitlab_utils.get')
-    def test_view_get_user_project_not_found(self, mocked_get):
-        mocked_project_not_found_response = Response()
-        mocked_project_not_found_response.status_code = 200
-        project_not_found_response_content = []
-        project_not_found_content_in_binary = json.\
-            dumps(project_not_found_response_content).encode('utf-8')
-        mocked_project_not_found_response._content = \
-            project_not_found_content_in_binary
-
-        mocked_get.side_effect = (self.mocked_get_user_id_response,
-                                  mocked_project_not_found_response)
-        response = self.client.get("/user/{chat_id}/{project_owner}"
-                                   .format(chat_id=self.user.chat_id,
-                                           project_owner=self.user.gitlab_user)
-                                   )
-        data = json.loads(response.data.decode())
-        self.assertEqual(response.status_code, 404)
-        validate(data, unauthorized_schema)
 
 
 if __name__ == "__main__":
