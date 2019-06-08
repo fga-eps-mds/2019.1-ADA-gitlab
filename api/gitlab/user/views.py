@@ -11,7 +11,6 @@ import os
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
 GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")

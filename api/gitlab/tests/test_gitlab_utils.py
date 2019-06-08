@@ -9,12 +9,14 @@ from gitlab.pipeline.pipeline_utils import Pipeline
 from gitlab.report.report_utils import Report
 from requests.exceptions import HTTPError
 from unittest.mock import patch
+from gitlab.webhook.utils import Webhook
 
 
 class TestGitlabUtils(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        self.webhook = Webhook(self.user.chat_id)
         self.build = Build(self.user.chat_id)
         self.pipeline = Pipeline(self.user.chat_id)
         self.report = Report(self.user.chat_id)
