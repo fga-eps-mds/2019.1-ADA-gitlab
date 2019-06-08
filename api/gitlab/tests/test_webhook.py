@@ -209,15 +209,24 @@ class TestWebhook(BaseTestCase):
                 data=content_json, headers=self.headers)
         self.assertEqual(response.status_code, 200)
 
+    @patch('gitlab.webhook.views.request')
     @patch('gitlab.webhook.utils.post')
-    def test_view_set_webhook(self, mocked_post):
-        mocked_post.return_value = self.mocked_ok_pipeline_response.status_code
-        self.webhook.register_user(self.user_data)
-        content_dict = {
+    def test_view_set_webhook(self, mocked_post, mocked_request):
+        mocked_request.get_json.return_value = {
                         "project_id": "9121",
                         "chat_id": "12345689"
         }
+        content_dict = {"id": 814315,
+                        "url": "https://gitlab.adachatops.com/",
+                        "push_events": True,
+                        "project_id": 11789629,
+                        }
         content_json = json.dumps(content_dict)
+        mocked_response = Response()
+        mocked_response.status_code = 200
+        mocked_response._content = content_json
+        mocked_post.return_value = mocked_response
+        self.webhook.register_user(self.user_data)
         response = self.client.post("/webhook",
                                     data=content_json,
                                     headers=self.headers)
