@@ -27,7 +27,6 @@ unit-test:
     FLASK_APP: gitlab/__init__.py
     APP_SETTINGS: gitlab.config.DevelopmentConfig
   before_script:
-    - export GITLAB_API_TOKEN=$GITLAB_API_TOKEN
     - export DB_NAME=$DB_NAME
     - export DB_URL=mongodb://mongo/$DB_NAME
     - export ACCESS_TOKEN=$ACCESS_TOKEN
