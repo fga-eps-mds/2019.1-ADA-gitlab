@@ -8,6 +8,7 @@ import os
 import telegram
 from telegram import Bot
 from gitlab.utils.gitlab_utils import GitlabUtils
+import sys
 
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
@@ -46,8 +47,9 @@ class UserUtils(GitlabUtils):
                       }
         return gitlab_data
 
-    def select_repos_by_buttons(self, project_owner):
+    def select_repos_by_buttons(self):
         repo_infos = self.get_user_project()
+        print("###"*30 + "\n" + str(repo_infos) + "###"*30 + "\n", file=sys.stderr)
         repositories = []
         for item in repo_infos:
             repositories.append(item["path_with_namespace"])
@@ -63,8 +65,7 @@ class UserUtils(GitlabUtils):
 
     def send_button_message(self, user_infos, chat_id):
         bot = Bot(token=ACCESS_TOKEN)
-        repo_names = self.select_repos_by_buttons(
-                     user_infos["gitlab_username"])
+        repo_names = self.select_repos_by_buttons()
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
         bot.send_message(chat_id=chat_id,
                          text="Encontrei esses repositórios na sua "
