@@ -16,7 +16,7 @@ def get_project_build(chat_id):
                                           build.check_project_exists,
                                           build)
     except HTTPError as http_error:
-        build.error_message(http_error)
+        return build.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:

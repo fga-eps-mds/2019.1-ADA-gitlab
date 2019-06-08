@@ -153,3 +153,14 @@ valid_project_schema = {
     },
     "required": ["project"]
 }
+
+pipeline_invalid_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "message": {"type": "string"},
+        "status_code": {"type": "integer"}
+    },
+    "required": ["message", "status_code"]
+}

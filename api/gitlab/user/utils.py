@@ -42,6 +42,10 @@ class UserUtils(GitlabUtils):
         except IndexError:
             return None
 
+    def get_user_domain(self):
+        user = User.objects(chat_id=self.chat_id).first()
+        return user.domain
+
     def get_own_user_data(self):
         url = self.GITLAB_API_URL + \
               "user?access_token="\
@@ -82,9 +86,6 @@ class UserUtils(GitlabUtils):
                          reply_markup=reply_markup)
         return "OK"
 
-    def get_user_domain(self):
-        user = User.objects(chat_id=self.chat_id).first()
-        return user.domain
 
 def authenticate_access_token(code):
     header = {"Content-Type": "application/json"}
