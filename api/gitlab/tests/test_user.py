@@ -5,7 +5,8 @@ from gitlab.tests.jsonschemas.user.schemas import\
     valid_schema, unauthorized_schema,\
     user_data_valid_schema, project_id_schema,\
     get_user_project_schema, user_id_schema,\
-    save_user_domain_schema, user_invalid_schema
+    save_user_domain_schema, user_invalid_schema,\
+    get_user_domain_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
 from requests.exceptions import HTTPError
@@ -64,6 +65,16 @@ class TestUser(BaseTestCase):
             dumps(invalid_get_user_id_response_content).encode('utf-8')
         self.mocked_invalid_get_user_id_response._content = \
             invalid_get_user_id_content_in_binary
+
+        self.mocked_get_user_domain_response = Response()
+        self.mocked_get_user_domain_response.status_code = 200
+        get_user_domain_response_content = [{"chat_id": 360396695,
+                                             "domain": "https://www.youtube.com.br"
+                                            }]
+        get_user_domain_content_in_binary = json.\
+            dumps(get_user_domain_response_content).encode('utf-8')
+        self.mocked_get_user_domain_response._content = \
+            get_user_domain_content_in_binary
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_get_user_project(self, mocked_get):
@@ -214,6 +225,28 @@ class TestUser(BaseTestCase):
                                    )
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 404)
+        validate(data, unauthorized_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_view_get_user_domain(self, mocked_get):
+        mocked_get.return_value = self.mocked_get_user_domain_response
+        response = self.client.get("/user/{chat_id}/domain"
+                                   .format(chat_id=self.user.chat_id)
+                                   )
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 200)
+        validate(data, get_user_domain_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_view_get_user_domain_invalid_information(self, mocked_get):
+        mocked_get.return_value = self.mocked_get_user_domain_response
+
+        chat_id = "wrong_chat_id"
+        response = self.client.get("/user/{chat_id}/domain"
+                                   .format(chat_id=chat_id)
+                                   )
+        data = json.loads(response.data.decode())
+        self.assertEqual(data["status_code"], 404)
         validate(data, unauthorized_schema)
 
     def test_view_save_user_domain(self):

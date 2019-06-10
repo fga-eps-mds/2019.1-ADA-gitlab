@@ -8,7 +8,7 @@ from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
-import sys
+
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
@@ -108,7 +108,7 @@ def get_user_domain(chat_id):
     try:
         user = UserUtils(chat_id)
         user_domain = user.get_user_domain()
-        print(user_domain, file=sys.stderr)
+        
     except HTTPError as http_error:
         return user.error_message(http_error)
     except AttributeError:

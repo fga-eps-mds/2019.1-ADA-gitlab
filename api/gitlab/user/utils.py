@@ -2,9 +2,11 @@
 
 import requests
 from requests.exceptions import HTTPError
+from requests import post
 import json
 import os
 import telegram
+from telegram import Bot
 from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
 
@@ -75,7 +77,7 @@ class UserUtils(GitlabUtils):
         return repo_names
 
     def send_button_message(self, user_infos, chat_id):
-        bot = telegram.Bot(token=ACCESS_TOKEN)
+        bot = Bot(token=ACCESS_TOKEN)
         repo_names = self.select_repos_by_buttons(
                      user_infos["gitlab_username"])
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
@@ -108,7 +110,7 @@ def authenticate_access_token(code):
 
 
 def send_message(token, chat_id):
-    bot = telegram.Bot(token=ACCESS_TOKEN)
+    bot = Bot(token=ACCESS_TOKEN)
     bot.send_message(chat_id=chat_id,
                      text="Você foi "
                      "cadastrado com "
