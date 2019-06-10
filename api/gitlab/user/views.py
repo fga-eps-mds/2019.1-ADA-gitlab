@@ -12,30 +12,11 @@ import os
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
 GITLAB_REDIRECT_URI = os.getenv("REDIRECT_URI", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 BOT_NAME = os.getenv("BOT_NAME", "")
-
-
-@user_blueprint.route("/user/<chat_id>/<project_owner>", methods=["GET"])
-def get_user_project(chat_id, project_owner):
-    try:
-        user = UserUtils(chat_id)
-        user_repos = user.get_user_project(project_owner)
-        if len(user_repos) == 0:
-            return jsonify(NOT_FOUND), 404
-    except HTTPError as http_error:
-        return user.error_message(http_error)
-    else:
-        repositories_names = []
-        for item in user_repos:
-            repositories_names.append(item["path_with_namespace"])
-        return jsonify({
-            "repositories": repositories_names
-        }), 200
 
 
 @user_blueprint.route("/user/id/<chat_id>/<project_owner>", methods=["GET"])
