@@ -4,9 +4,8 @@ from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.user.schemas import\
     unauthorized_schema,\
     user_data_valid_schema, project_id_schema,\
-    get_user_project_schema, user_id_schema,\
-    save_user_domain_schema, user_invalid_schema,\
-    get_user_domain_schema
+    user_id_schema, get_user_domain_schema,\
+    save_user_domain_schema, user_invalid_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
 from requests import Response
@@ -68,8 +67,9 @@ class TestUser(BaseTestCase):
         self.mocked_get_user_domain_response = Response()
         self.mocked_get_user_domain_response.status_code = 200
         get_user_domain_response_content = [{"chat_id": 360396695,
-                                             "domain": "https://www.youtube.com.br"
-                                            }]
+                                             "domain":
+                                             "https://www.youtube.com.br"
+                                             }]
         get_user_domain_content_in_binary = json.\
             dumps(get_user_domain_response_content).encode('utf-8')
         self.mocked_get_user_domain_response._content = \

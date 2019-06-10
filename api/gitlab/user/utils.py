@@ -1,7 +1,6 @@
 # api/gitlab/__init__.py
 
-import requests
-from requests.exceptions import HTTPError
+
 from requests import post
 import json
 import os

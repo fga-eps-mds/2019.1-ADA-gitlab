@@ -128,7 +128,7 @@ get_user_domain_schema = {
     "title": "get user domain schema",
     "type": "object",
     "properties": {
-        "chat_id":{"type": "string"},
+        "chat_id": {"type": "string"},
         "domain": {"type": "null"}
     },
     "required": ["chat_id", "domain"]

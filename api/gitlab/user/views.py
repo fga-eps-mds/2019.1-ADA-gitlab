@@ -84,14 +84,12 @@ def save_user_domain(chat_id):
             "status": "success"
         }), 200
 
+
 @user_blueprint.route("/user/<chat_id>/domain", methods=["GET"])
 def get_user_domain(chat_id):
     try:
         user = UserUtils(chat_id)
         user_domain = user.get_user_domain()
-        
-    except HTTPError as http_error:
-        return user.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:
