@@ -1,11 +1,11 @@
 # api/gitlab/__init__.py
 
-import requests
-from requests.exceptions import HTTPError
+from requests import post
 import json
 import os
 import telegram
 from gitlab.data.user import User
+from telegram import Bot
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 APP_ID = os.getenv("APP_ID", "")
@@ -17,17 +17,9 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 class UserUtils(GitlabUtils):
     def __init__(self, chat_id):
         super().__init__(chat_id)
-        self.headers = {
-                "Content-Type": "application/json"
-            }
 
-    def get_user_project(self, project_owner):
-        user_id = self.get_user_id(project_owner)
-        if not user_id:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
-        url = self.GITLAB_API_URL + "users/{user_id}/projects".format(
-              user_id=user_id)
+    def get_user_project(self):
+        url = self.GITLAB_API_URL + "/projects?membership=true"
         projects = super(UserUtils, self).get_request(url)
         return projects
 
@@ -48,9 +40,7 @@ class UserUtils(GitlabUtils):
 
     def get_own_user_data(self):
         url = self.GITLAB_API_URL + \
-              "user?access_token="\
-              "{access_token}".format(
-               access_token=self.GITLAB_API_TOKEN)
+              "user"
 
         requested_user = self.get_request(url)
         gitlab_data = {
@@ -59,8 +49,8 @@ class UserUtils(GitlabUtils):
                       }
         return gitlab_data
 
-    def select_repos_by_buttons(self, project_owner):
-        repo_infos = self.get_user_project(project_owner)
+    def select_repos_by_buttons(self):
+        repo_infos = self.get_user_project()
         repositories = []
         for item in repo_infos:
             repositories.append(item["path_with_namespace"])
@@ -75,9 +65,8 @@ class UserUtils(GitlabUtils):
         return repo_names
 
     def send_button_message(self, user_infos, chat_id):
-        bot = telegram.Bot(token=ACCESS_TOKEN)
-        repo_names = self.select_repos_by_buttons(
-                     user_infos["gitlab_username"])
+        bot = Bot(token=ACCESS_TOKEN)
+        repo_names = self.select_repos_by_buttons()
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
         bot.send_message(chat_id=chat_id,
                          text="Encontrei esses repositórios na sua "
@@ -99,16 +88,16 @@ def authenticate_access_token(code):
     }
     url = "https://gitlab.com/oauth/token"
     data = json.dumps(data)
-    post = requests.post(url=url,
+    post_response = post(url=url,
                          headers=header,
                          data=data)
-    post_json = post.json()
+    post_json = post_response.json()
     GITLAB_TOKEN = post_json['access_token']
     return GITLAB_TOKEN
 
 
 def send_message(token, chat_id):
-    bot = telegram.Bot(token=ACCESS_TOKEN)
+    bot = Bot(token=ACCESS_TOKEN)
     bot.send_message(chat_id=chat_id,
                      text="Você foi "
                      "cadastrado com "

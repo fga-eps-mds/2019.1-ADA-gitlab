@@ -7,21 +7,32 @@ from gitlab.build.build_utils import Build
 from gitlab.utils.gitlab_utils import GitlabUtils
 from gitlab.pipeline.pipeline_utils import Pipeline
 from gitlab.report.report_utils import Report
-from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
+from unittest.mock import patch
+from gitlab.webhook.utils import Webhook
 
 
 class TestGitlabUtils(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.webhook = Webhook()
+        self.webhook = Webhook(self.user.chat_id)
         self.build = Build(self.user.chat_id)
         self.pipeline = Pipeline(self.user.chat_id)
         self.report = Report(self.user.chat_id)
         self.gitlab_utils = GitlabUtils(self.user.chat_id)
 
-    def test_get_project_id(self):
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_request')
+    def test_get_project_id(self, mocked_get_request):
+        mocked_get_request.return_value = {"id": 12532279,
+                                           "description": None,
+                                           "name": "Ada-gitlab",
+                                           "path": "ada-gitlab",
+                                           "default_branch": "master",
+                                           "tag_list": [],
+                                           "avatar_url": None,
+                                           "star_count": 0,
+                                           "forks_count": 0}
         project_id = self.gitlab_utils.get_project_id(self.user.gitlab_user,
                                                       self.project.name)
         self.assertIsInstance(project_id, int)
@@ -46,3 +57,10 @@ class TestGitlabUtils(BaseTestCase):
         unauthorized_json = json.loads(str(context.exception))
         self.assertTrue(unauthorized_json["status_code"], 404)
         validate(unauthorized_json, invalid_project_schema)
+
+    def test_error_message_unauthorized(self):
+        http_error = HTTPError('{"status_code": 401}')
+        response = self.gitlab_utils.error_message(http_error)
+        data = json.loads(response[0].data.decode())
+        self.assertTrue(data["status_code"], 401)
+        validate(data, invalid_project_schema)

@@ -8,7 +8,6 @@ from gitlab.report.error_messages import NOT_FOUND
 
 rerun_pipeline_blueprint = Blueprint("rerun_pipeline", __name__)
 CORS(rerun_pipeline_blueprint)
-# GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
 @rerun_pipeline_blueprint.route("/rerun_pipeline/<chat_id>/<pipeline_id>",
