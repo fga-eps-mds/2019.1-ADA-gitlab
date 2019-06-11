@@ -68,7 +68,7 @@ How to run Docker:
 * Run this command to start the container on your computer:
 
 ```sh
-docker-compose -f docker-compose-dev.yml up --build
+docker-compose up --build
 ```
 
 #### Running Ada on a Terminal
@@ -83,7 +83,7 @@ Then follow these commands:
 * Run the following command to create the image of the container:
 
 ```sh
-docker-compose -f docker-compose-dev.yml up --build
+docker-compose up --build
 ```
 
 * Run Docker:
