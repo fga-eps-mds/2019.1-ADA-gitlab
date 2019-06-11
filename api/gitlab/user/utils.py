@@ -1,11 +1,12 @@
 # api/gitlab/__init__.py
 
+
 from requests import post
 import json
 import os
 import telegram
-from gitlab.data.user import User
 from telegram import Bot
+from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 APP_ID = os.getenv("APP_ID", "")

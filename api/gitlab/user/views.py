@@ -9,6 +9,7 @@ from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
 
+
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
 APP_ID = os.getenv("APP_ID", "")
@@ -89,9 +90,6 @@ def get_user_domain(chat_id):
     try:
         user = UserUtils(chat_id)
         user_domain = user.get_user_domain()
-
-    except HTTPError as http_error:
-        return user.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:
