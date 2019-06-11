@@ -33,7 +33,7 @@ Exporte as variáveis de ambiente conforme as instruções presentes nesse [docu
 Execute o Docker a partir do seguinte comando:
 
 ```sh
-docker-compose -f docker-compose-dev.yml up --build
+docker-compose up --build
 ```
 
 ## Equipe

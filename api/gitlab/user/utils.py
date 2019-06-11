@@ -61,7 +61,7 @@ class UserUtils(GitlabUtils):
             project_name = project_name[-1]
             buttons.append(telegram.InlineKeyboardButton(
                 text=project_name,
-                callback_data="meu repositorio do gitlab é " + repositorio))
+                callback_data="labrepo: " + repositorio))
         repo_names = [buttons[i:i+2] for i in range(0, len(buttons), 2)]
         return repo_names
 
