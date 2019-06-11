@@ -1,10 +1,12 @@
 # api/gitlab/__init__.py
 
+
 from requests import post
 import json
 import os
 import telegram
 from telegram import Bot
+from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
 
 APP_ID = os.getenv("APP_ID", "")
@@ -32,6 +34,10 @@ class UserUtils(GitlabUtils):
             return user_id[0]["id"]
         except IndexError:
             return None
+
+    def get_user_domain(self):
+        user = User.objects(chat_id=self.chat_id).first()
+        return user.domain
 
     def get_own_user_data(self):
         url = self.GITLAB_API_URL + \

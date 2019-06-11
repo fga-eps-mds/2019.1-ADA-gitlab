@@ -12,6 +12,7 @@ class User(mongoengine.Document):
     chat_id = mongoengine.StringField(max_length=100)
     gitlab_user_id = mongoengine.StringField(max_length=100)
     api_token = mongoengine.StringField(max_length=100)
+    domain = mongoengine.URLField()
     meta = {
         'db_alias': 'AdaBot',
         'collection': 'User'

@@ -112,3 +112,24 @@ get_user_project_schema = {
     },
     "required": ["repositories"]
 }
+
+save_user_domain_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "User response schema",
+    "type": "object",
+    "properties": {
+        "status": {"type": "string"}
+    },
+    "required": ["status"]
+}
+
+get_user_domain_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "get user domain schema",
+    "type": "object",
+    "properties": {
+        "chat_id": {"type": "string"},
+        "domain": {"type": "null"}
+    },
+    "required": ["chat_id", "domain"]
+}
