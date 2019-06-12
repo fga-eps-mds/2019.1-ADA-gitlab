@@ -39,21 +39,9 @@ invalid_project_schema = {
     "required": ["status_code"]
 }
 
-user_valid_schema = {
+http_error_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "User response schema",
-    "type": "object",
-    "properties": {
-        "repositories": {
-            "type": "array",
-        }
-    },
-    "required": ["repositories"]
-}
-
-user_invalid_schema = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "User response schema",
+    "title": "Http error schema",
     "type": "object",
     "properties": {
         "message": {"type": "string"},
@@ -62,74 +50,50 @@ user_invalid_schema = {
     "required": ["message", "status_code"]
 }
 
-user_data_valid_schema = {
+message_error_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "User data schema",
+    "title": "Wrong data",
     "type": "object",
     "properties": {
-        "gitlab_username": {
-            "type": "string",
-        },
-        "gitlab_user_id": {
-            "type": "integer",
-        }
+        "message": {"type": "string"}
     },
-    "required": ["gitlab_username", "gitlab_user_id"]
+    "required": ["message"]
 }
 
-project_id_schema = {
+pipeline_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "project id schema",
+    "title": "Pipeline schema",
     "type": "object",
     "properties": {
-        "project_id": {
-            "type": "integer"
-        }
+        "job_id": {"type": "integer"},
+        "branch": {"type": "string"},
+        "commit": {"type": "string"},
+        "job_name": {"type": "string"},
+        "stage": {"type": "string"},
+        "status": {"type": "string"},
+        "web_url": {"type": "string"}
     },
-    "required": ["project_id"]
+    "required": ["web_url", "job_id", "branch", "commit", "stage",
+                 "job_name", "status"]
 }
 
-user_id_schema = {
+build_messages_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "user id schema",
+    "title": "Pipeline schema",
     "type": "object",
     "properties": {
-        "user_id": {
-            "type": "integer"
-        }
+        "jobs_message": {"type": "string"},
+        "summary_message": {"type": "string"}
     },
-    "required": ["user_id"]
+    "required": ["jobs_message", "summary_message"]
 }
 
-get_user_project_schema = {
+views_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "get user project schema",
-    "type": "object",
-    "properties": {
-        "repositories": {
-            "type": "array"
-        }
-    },
-    "required": ["repositories"]
-}
-
-save_user_domain_schema = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "User response schema",
+    "title": "Pipeline schema",
     "type": "object",
     "properties": {
         "status": {"type": "string"}
-    },
+        },
     "required": ["status"]
-}
-
-get_user_domain_schema = {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "get user domain schema",
-    "type": "object",
-    "properties": {
-        "chat_id": {"type": "string"},
-        "domain": {"type": "null"}
-    },
-    "required": ["chat_id", "domain"]
 }

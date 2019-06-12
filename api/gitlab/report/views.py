@@ -1,50 +1,29 @@
 from flask import jsonify, Blueprint
 from flask_cors import CORS
-from gitlab.report.utils import Report
-import json
+from gitlab.report.report_utils import Report
 from requests.exceptions import HTTPError
-import os
-from gitlab.data.user import User
-from gitlab.data.project import Project
-from gitlab.report.error_messages import UNAUTHORIZED, NOT_FOUND
+from gitlab.report.error_messages import NOT_FOUND
 
 
 report_blueprint = Blueprint("report", __name__)
 CORS(report_blueprint)
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 
 
-@report_blueprint.route("/report/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
-
-@report_blueprint.route("/report/<chat_id>", methods=["GET"])
-def generate_report(chat_id):
+@report_blueprint.route("/report/<kind>/<chat_id>", methods=["GET"])
+def get_data(kind, chat_id):
     try:
-        user = User.objects(chat_id=chat_id).first()
-        project = user.project
-        user_has_project = Project.objects(id=project.id)
-        if user_has_project:
-            report = Report(GITLAB_API_TOKEN)
-            generated_report = report.repo_informations(
-                                                        user, project)
+        report = Report(chat_id)
+        if kind != "project":
+            data = report.get_data(kind, chat_id)
         else:
-            dict_error = {"status_code": 404}
-            raise HTTPError(json.dumps(dict_error))
-
+            data = report.return_project(chat_id,
+                                         report.check_project_exists,
+                                         report)
     except HTTPError as http_error:
-        dict_message = json.loads(str(http_error))
-        if dict_message["status_code"] == 401:
-            return jsonify(UNAUTHORIZED), 401
-        else:
-            return jsonify(NOT_FOUND), 404
+        return report.error_message(http_error)
     except AttributeError:
         return jsonify(NOT_FOUND), 404
     else:
         return jsonify(
-            generated_report
+            data
         ), 200

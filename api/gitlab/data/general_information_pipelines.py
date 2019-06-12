@@ -14,9 +14,9 @@ class GeneralInformationPipelines(mongoengine.Document):
         'collection': 'GeneralInformationPipeline'
     }
 
-    def create_general_information_pipeline(self, project: Project,
-                                            number_of_pipelines: int,
-                                            successful_pipelines: int):
+    def create_general_information_pipeline(self, project,
+                                            number_of_pipelines,
+                                            successful_pipelines):
         self.project = project
         self.number_of_pipelines = number_of_pipelines
         self.successful_pipelines = successful_pipelines
@@ -25,16 +25,16 @@ class GeneralInformationPipelines(mongoengine.Document):
         return self
 
     @staticmethod
-    def get_general_information_pipeline(project: Project):
+    def get_general_information_pipeline(project):
         general_information_pipeline = GeneralInformationPipelines.objects(
             project=project).first()
         return general_information_pipeline
 
-    def add_pipeline(self, pipeline, project: Project):
-        general_information_pipeline = self.\
-                                    get_general_information_pipeline(project)
-        general_information_pipeline.modify(inc__number_of_pipelines=1)
+    def add_pipeline(self, pipeline, project):
         all_jobs_successful = True
+        general_information_pipeline = self.\
+            get_general_information_pipeline(project)
+        general_information_pipeline.modify(inc__number_of_pipelines=1)
         for job in pipeline.jobs:
             if not job['status']:
                 all_jobs_successful = False

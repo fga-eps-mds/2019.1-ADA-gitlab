@@ -3,20 +3,21 @@ from gitlab.data.project import Project
 import json
 from requests.exceptions import HTTPError
 import os
-import requests
+from gitlab.utils.gitlab_utils import GitlabUtils
+from requests import get, post
 
-
-GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
 
-class Webhook():
+class Webhook(GitlabUtils):
+    def __init__(self, chat_id):
+        super().__init__(chat_id)
+
     def register_repo(self, repo_data):
         project_name = repo_data["project_name"]
-        chat_id = repo_data["chat_id"]
         project_id = repo_data["project_id"]
 
-        user = User.objects(chat_id=chat_id).first()
+        user = User.objects(chat_id=self.chat_id).first()
         try:
             if user.project:
                 dict_error = {"message":
@@ -43,7 +44,7 @@ class Webhook():
         if existing_user:
             dict_error = {"message":
                           "Eu vi aqui que você já cadastrou o usuário "
-                          "do GitLab. Sinto muito, mas no momento não "
+                          "do GitLab. Sinto muitos, mas no momento não "
                           "é possível cadastrar um novo usuário do GitLab "
                           "ou alterá-lo."}
             raise HTTPError(json.dumps(dict_error))
@@ -51,13 +52,12 @@ class Webhook():
 
     def get_pipeline_infos(self, project_id, pipeline_id):
         headers = {"Content-Type": "application/json",
-                   "Authorization": "Bearer " + GITLAB_API_TOKEN}
-        response = requests.get("https://gitlab.com/api/"
-                                "v4/projects/{project_id}/pipelines/"
-                                "{pipeline_id}/jobs".format(
-                                        project_id=project_id,
-                                        pipeline_id=pipeline_id),
-                                headers=headers)
+                   "Authorization": "Bearer " + self.GITLAB_API_TOKEN}
+        response = get("https://gitlab.com/api/"
+                       "v4/projects/{project_id}/pipelines/"
+                       "{pipeline_id}/jobs".format(
+                        project_id=project_id,
+                        pipeline_id=pipeline_id), headers=headers)
         response.raise_for_status()
         resp = response.json()
         requested_build = []
@@ -81,25 +81,25 @@ class Webhook():
         jobs_message = "Os passos da build são:\n"
 
         for i, item in enumerate(job_build):
-            if job_build[i]['status'] == "success":
+            if job_build[i]["status"] == "success":
                 status = "✅"
-            elif job_build[i]['status'] == "failed":
+            elif job_build[i]["status"] == "failed":
                 status = "❌"
             else:
                 status = "🔄"
 
             jobs_message += "{status} {job_name}\n"\
                             .format(status=status,
-                                    job_name=job_build[i]['job_name'])
+                                    job_name=job_build[i]["job_name"])
 
-        summary_message = 'A build #{job_id} '\
-                          'da branch {branch}, '\
-                          'commit "{commit}", '\
-                          'está no estágio de "{stage}".'\
-                          .format(job_id=job_build[0]['job_id'],
-                                  branch=job_build[0]['branch'],
-                                  commit=job_build[0]['commit'],
-                                  stage=job_build[0]['stage'])
+        summary_message = "A build #{job_id} "\
+                          "da branch {branch}, "\
+                          "commit {commit}, "\
+                          "está no estágio de {stage}."\
+                          .format(job_id=job_build[0]["job_id"],
+                                  branch=job_build[0]["branch"],
+                                  commit=job_build[0]["commit"],
+                                  stage=job_build[0]["stage"])
         return {"jobs_message": jobs_message,
                 "summary_message": summary_message}
 
@@ -120,5 +120,19 @@ class Webhook():
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
         else:
-            return 'OK'
+            return "OK"
         return status_message
+
+    def set_webhook(self, project_id):
+        data = {
+            "id": project_id,
+            "url": "https://gitlab.adachatops.com/{chat_id}/{project_id}"
+                   .format(chat_id=self.chat_id, project_id=project_id),
+            "pipeline_events": True,
+            "enable_ssl_verification": False
+        }
+        url = "https://gitlab.com/api/v4/" +\
+            "projects/{project_id}/hooks"\
+            .format(project_id=project_id)
+        r = post(url, headers=self.headers, data=json.dumps(data))
+        r.raise_for_status()
