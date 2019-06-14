@@ -2,46 +2,31 @@ import json
 import unittest
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.pipeline.schemas import\
-     ping_schema, valid_schema, unauthorized_schema,\
-     invalid_project_schema, pipeline_valid_schema,\
+     valid_schema, unauthorized_schema,\
+     pipeline_valid_schema,\
      pipeline_invalid_schema
 from jsonschema import validate
-from gitlab.pipeline.utils import Pipeline
+from gitlab.pipeline.pipeline_utils import Pipeline
 from requests.exceptions import HTTPError
-from gitlab.data.user import User
-from gitlab.data import init_db
-from gitlab.data.project import Project
-import os
+from requests import Response
+from unittest.mock import patch
 
 
 class TestPipeline(BaseTestCase):
-    def setup(self):
-        init_db()
-        Project.drop_collection()
-        User.drop_collection()
+    def setUp(self):
+        super().setUp()
+        self.pipeline = Pipeline(self.user.chat_id)
 
-    def test_ping_pong(self):
-        response = self.client.get("/pipeline/ping")
-        data = json.loads(response.data.decode())
-        ping_string = json.dumps(ping_schema)
-        ping_json = json.loads(ping_string)
-        self.assertEqual(response.status_code, 200)
-        validate(data, ping_json)
-
-    def test_view_get_project_pipeline(self):
-        user = User()
-        user.username = 'joaovitor'
-        user.chat_id = '1234'
-        user.gitlab_user = 'joaovitor3'
-        user.gitlab_user_id = '1195203'
-        user.save()
-        project = Project()
-        project_name = 'ada-gitlab'
-        project_id = '11789629'
-        project.save_webhook_infos(user, project_name, project_id)
-        user.save_gitlab_repo_data(project)
+    @patch('gitlab.pipeline.pipeline_utils.Pipeline.get_request')
+    def test_view_get_project_pipeline(self, mocked_get_request):
+        mocked_get_request.return_value = [{"id": 63936796,
+                                            "sha": "717b7e",
+                                            "ref": "master",
+                                            "status": "failed",
+                                            "web_url": "https://gitlab.com/"
+                                            }]
         response = self.client.get("/pipeline/{chat_id}"
-                                   .format(chat_id=user.chat_id))
+                                   .format(chat_id=self.user.chat_id))
         data = json.loads(response.data.decode())
         pipeline_string = json.dumps(pipeline_valid_schema)
         pipeline_json = json.loads(pipeline_string)
@@ -56,32 +41,96 @@ class TestPipeline(BaseTestCase):
         self.assertTrue(invalid_project_json["status_code"], 404)
         validate(invalid_project_json, pipeline_invalid_schema)
 
-    def test_get_project_pipeline(self):
-        GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        pipeline = Pipeline(GITLAB_API_TOKEN)
-        project_id = "11789629"
-        requested_pipeline = pipeline.get_project_pipeline(project_id)
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.return_project')
+    @patch('gitlab.utils.gitlab_utils.json')
+    def test_pipeline_error_message(self, mocked_json, mocked_return_project):
+        mocked_return_project.side_effect = HTTPError
+        mocked_json.loads.return_value = {"status_code": 404}
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
+    def test_view_get_project_pipeline_invalid_token(self, mocked_access_token,
+                                                     mocked_get):
+        mocked_access_token.return_value = "wrong_token"
+        mocked_get.side_effect = HTTPError
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    @patch('gitlab.utils.gitlab_utils.User.get_user_project')
+    def test_view_get_project_pipeline_invalid_project_id(self,
+                                                          mocked_user_project,
+                                                          mocked_get):
+        mock_project = self.project
+        mock_project.project_id = "1234"
+        mocked_user_project.return_value = mock_project
+        mocked_get.side_effect = HTTPError
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    @patch('gitlab.utils.gitlab_utils.User.get_user_project')
+    def test_view_get_project_pipeline_invalid_project(self,
+                                                       mocked_user_project,
+                                                       mocked_get):
+        mocked_get.side_effect = HTTPError
+        mocked_user_project.return_value = None
+        response = self.client.get("/pipeline/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        invalid_project_json = json.loads(response.data.decode())
+        self.assertTrue(invalid_project_json["status_code"], 404)
+        validate(invalid_project_json, pipeline_invalid_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_get_project_pipeline(self, mocked_get):
+        mocked_response = Response()
+        mocked_json_content = [{"id": 63936796,
+                                "sha": "717b7e",
+                                "ref": "master",
+                                "status": "failed",
+                                "web_url": "https://gitlab.com/"
+                                }]
+        content_in_binary = json.dumps(mocked_json_content).encode('utf-8')
+        mocked_response._content = content_in_binary
+        mocked_response.status_code = 200
+        mocked_get.return_value = mocked_response
+        requested_pipeline = self.pipeline.get_project_pipeline(
+                                        self.project.project_id)
         validate(requested_pipeline, valid_schema)
 
-    def test_get_project_pipeline_invalid_token(self):
-        GITLAB_API_TOKEN = "wrong_token"
-        pipeline = Pipeline(GITLAB_API_TOKEN)
-        project_id = "11789629"
-        with self.assertRaises(HTTPError) as context:
-            pipeline.get_project_pipeline(project_id)
+    @patch('gitlab.utils.gitlab_utils.get')
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_access_token')
+    def test_get_project_pipeline_invalid_token(self, mocked_access_token,
+                                                mocked_get):
+        mocked_access_token.return_value = "wrong_token"
+        mocked_get.side_effect = AttributeError
+        wrong_pipeline = Pipeline(self.user.chat_id)
+        with self.assertRaises(AttributeError) as context:
+            wrong_pipeline.get_project_pipeline(self.project.project_id)
         unauthorized_json = json.loads(str(context.exception))
         self.assertTrue(unauthorized_json["status_code"], 401)
         validate(unauthorized_json, unauthorized_schema)
 
-    def test_get_project_pipeline_invalid_project(self):
-        GITLAB_API_TOKEN = os.getenv("GITLAB_API_TOKEN", "")
-        pipeline = Pipeline(GITLAB_API_TOKEN)
-        project_id = "wrong_name"
+    @patch('gitlab.utils.gitlab_utils.GitlabUtils.get_request')
+    def test_get_project_pipeline_no_pipeline(self, mocked_get_request):
+        mocked_get_request.return_value = []
+        wrong_pipeline = Pipeline(self.user.chat_id)
         with self.assertRaises(HTTPError) as context:
-            pipeline.get_project_pipeline(project_id)
-        invalid_project_json = json.loads(str(context.exception))
-        self.assertTrue(invalid_project_json["status_code"], 404)
-        validate(invalid_project_json, invalid_project_schema)
+            wrong_pipeline.get_project_pipeline(self.project.project_id)
+        unauthorized_json = json.loads(str(context.exception))
+        self.assertTrue(unauthorized_json["status_code"], 404)
+        validate(unauthorized_json, unauthorized_schema)
 
 
 if __name__ == "__main__":

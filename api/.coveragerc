@@ -4,6 +4,9 @@ omit =
       */gitlab/config.py
 
 [report]
+exclude_lines =
+      continue
+      pass
 omit =
       */gitlab/tests/*
       */gitlab/config.py

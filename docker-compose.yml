@@ -12,12 +12,15 @@ services:
     ports:
       - 5000:5000
     environment:
-      - GITLAB_API_TOKEN=${GITLAB_API_TOKEN}
       - FLASK_APP=gitlab/__init__.py
       - FLASK_ENV=development
       - APP_SETTINGS=gitlab.config.DevelopmentConfig
       - DB_URL=${DB_URL}
       - DB_NAME=${DB_NAME}
+      - APP_ID=${APP_ID}
+      - APP_SECRET=${APP_SECRET}
+      - BOT_NAME=${BOT_NAME}
+      - REDIRECT_URI=${REDIRECT_URI}
       - ACCESS_TOKEN=${ACCESS_TOKEN}
   mongo-gitlab:
     image: mongo
