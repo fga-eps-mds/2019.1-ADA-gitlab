@@ -31,7 +31,6 @@ services:
       - 20191-ada_adanetwork
     ports:
       - 27010:27010
-
 networks:
   20191-ada_adanetwork:
     external: true

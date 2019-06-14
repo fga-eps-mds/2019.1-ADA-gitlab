@@ -4,6 +4,10 @@ from flask.cli import FlaskGroup
 
 from gitlab import create_app
 import unittest
+import os
+import sys
+import subprocess
+
 
 COV = coverage.coverage(
     branch=True,
@@ -46,6 +50,22 @@ def cov():
         return 0
     return 1
 
+def env_loader():
+    variables = {
+        'DB_URL': os.getenv('DB_URL', ''),
+        'DB_NAME': os.getenv('DB_NAME', ''),
+        'ACCESS_TOKEN': os.getenv('ACCESS_TOKEN', '')
+    }
+    with open(os.path.join('cronjob','loaded-env.txt'), 'w') as f:
+        for name in variables:
+            f.write(f'{name}={variables[name]}\n')
+        f.close()
+
+def setup_cron():
+    a = subprocess.call(['./entrypoint_cron.sh'])
+    print(a, file=sys.stderr)
 
 if __name__ == "__main__":
+    env_loader()
     cli()
+    setup_cron()
