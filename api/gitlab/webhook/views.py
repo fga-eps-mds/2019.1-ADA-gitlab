@@ -10,6 +10,7 @@ from telegram import Bot
 import telegram
 from gitlab.rerun_pipeline.utils import RerunPipeline
 from gitlab.webhook.error_messages import NOT_FOUND
+from gitlab.user.utils import UserUtils
 
 webhook_blueprint = Blueprint("webhook", __name__)
 CORS(webhook_blueprint)
@@ -85,3 +86,17 @@ def set_webhook():
         return jsonify({
             "status": "OK"
         }), 200
+
+@webhook_blueprint.route("/user/change_repo_gitlab/<chat_id>", methods=["GET"])
+def change_repository_gitlab(chat_id):
+    try:
+        user = UserUtils(chat_id)
+        user_infos = user.get_own_user_data()
+        user.send_button_message(user_infos, chat_id)
+    except HTTPError as http_error:
+        return user.error_message(http_error)
+    else:
+        return jsonify({
+                "status": "OK"
+            }), 200
+

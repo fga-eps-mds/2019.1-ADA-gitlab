@@ -18,17 +18,18 @@ class Webhook(GitlabUtils):
         project_id = repo_data["project_id"]
 
         user = User.objects(chat_id=self.chat_id).first()
-        try:
-            if user.project:
-                dict_error = {"message":
-                              "Eu vi aqui que você já tem um projeto "
-                              "cadastrado. Sinto muito, mas no momento "
-                              "não é possível cadastrar um projeto novo "
-                              "ou alterá-lo."}
-                raise HTTPError(json.dumps(dict_error))
+        try:         
             project = Project()
-            project.save_webhook_infos(user, project_name, project_id)
+
+            if user.project:
+                webhook = Webhook(user.chat_id)
+                webhook.delete_webhook(project_id)
+                project = user.project
+                project.update_webhook_infos(project, project_id)
+            else:
+                project.save_webhook_infos(user, project_name, project_id)
             user.save_gitlab_repo_data(project)
+            
         except AttributeError:
             dict_error = {"message":
                           "Tive um erro tentando cadastrar seu repositório. "
@@ -136,3 +137,17 @@ class Webhook(GitlabUtils):
             .format(project_id=project_id)
         r = post(url, headers=self.headers, data=json.dumps(data))
         r.raise_for_status()
+
+    def delete_webhook(self, project_id):
+        url = "https://gitlab.com/api/v4/" +\
+              "projects/{project_id}/hooks"\
+              .format(project_id=project_id)
+        hook = self.request_url(url, "get")
+        if len(hook):
+            hook_id = hook[0]["id"]
+            delete_hook_url = "https://gitlab.com/api/v4/" +\
+                              "projects/{project_id}/"\
+                              "hooks/{hook_id}".format(project_id=project_id,
+                                                       hook_id=hook_id)
+            req = requests.delete(delete_hook_url, headers=self.headers)
+            req.raise_for_status()
