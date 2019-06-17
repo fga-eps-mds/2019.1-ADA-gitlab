@@ -87,6 +87,7 @@ def set_webhook():
             "status": "OK"
         }), 200
 
+
 @webhook_blueprint.route("/user/change_repo_gitlab/<chat_id>", methods=["GET"])
 def change_repository_gitlab(chat_id):
     try:
@@ -99,4 +100,3 @@ def change_repository_gitlab(chat_id):
         return jsonify({
                 "status": "OK"
             }), 200
-

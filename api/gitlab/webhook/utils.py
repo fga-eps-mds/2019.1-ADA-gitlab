@@ -5,7 +5,6 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
 from requests import get, post, delete
-import sys
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 
@@ -19,23 +18,16 @@ class Webhook(GitlabUtils):
         project_id = repo_data["project_id"]
 
         user = User.objects(chat_id=self.chat_id).first()
-        try:         
+        try:
             project = Project()
-            
             if user.project:
-                print("###"*30 + "\n" + "ENTROU" + "###"*30 + "\n", file=sys.stderr)
-                to_delete_project=user.project
-                print("###"*30 + "\n" + to_delete_project.project_id + "###"*30 + "\n", file=sys.stderr)
+                to_delete_project = user.project
                 self.delete_webhook(to_delete_project.project_id)
-                print("###"*30 + "\n" + "DELETOU" + "###"*30 + "\n", file=sys.stderr)
                 project = user.project
                 project.update_webhook_infos(project_name, project_id)
-                print("###"*30 + "\n" + "ATUALIZOU" + "###"*30 + "\n", file=sys.stderr)
             else:
-                print("###"*30 + "\n" + "ELSE" + "###"*30 + "\n", file=sys.stderr) 
                 project.save_webhook_infos(user, project_name, project_id)
             user.save_gitlab_repo_data(project)
-            
         except AttributeError:
             dict_error = {"message":
                           "Tive um erro tentando cadastrar seu repositório. "
@@ -148,20 +140,14 @@ class Webhook(GitlabUtils):
         url = "https://gitlab.com/api/v4/" +\
               "projects/{project_id}/hooks"\
               .format(project_id=project_id)
-        #hook = self.get_request(url)
         response = get(url, headers=self.headers)
         response.raise_for_status()
         hook = response.json()
-        
         if len(hook):
             hook_id = hook[0]["id"]
-            print("###"*30 + "\n" + str(hook_id) + "###"*30 + "\n", file=sys.stderr)
-            print("###"*30 + "\n" + project_id + "###"*30 + "\n", file=sys.stderr)
-
             delete_hook_url = "https://gitlab.com/api/v4/"\
                               "projects/{project_id}/"\
                               "hooks/{hook_id}".format(project_id=project_id,
-                                                       hook_id=hook_id)                                                            
-            print("###"*30 + "\n" + delete_hook_url + "###"*30 + "\n", file=sys.stderr)
+                                                       hook_id=hook_id)
             req = delete(delete_hook_url, headers=self.headers)
             req.raise_for_status()
