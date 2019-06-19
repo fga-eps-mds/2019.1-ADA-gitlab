@@ -1,1 +1,0 @@
-* * * * * export $(cat /loaded-env.txt | xargs); /usr/local/bin/python3.6 /usr/src/app/cronjob/monitoring_domain.py >> ~/cron.log 2>&1

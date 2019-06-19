@@ -15,10 +15,5 @@ RUN pip install -r requirements.txt
 # add app
 ADD ./api /usr/src/app
 
-ADD ./api/cronjob/crontab /etc/cron.d/domain-cron
-
-RUN chmod 0644 /etc/cron.d/domain-cron
-RUN crontab /etc/cron.d/domain-cron
-
 # new
 CMD python manage.py run -h 0.0.0.0
