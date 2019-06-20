@@ -34,7 +34,7 @@ services:
   cronjob:
     image: joaovitor3/ada-gitlab-cronjob:homolog
     volumes:
-      - ./outputs:/home
+      - ./outputs:/cronjob/home
     stdin_open: true
     tty: true
     networks:
