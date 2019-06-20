@@ -5,8 +5,11 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
 from requests import get, post, delete
+import sys
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
+DEV_ENVIRONMENT = os.getenv("DEV_ENVIRONMENT", "")
+WEBHOOK_URL_ENVIRONMENT = os.getenv("WEBHOOK_URL_ENVIRONMENT", "")
 
 
 class Webhook(GitlabUtils):
@@ -144,7 +147,16 @@ class Webhook(GitlabUtils):
         response.raise_for_status()
         hook = response.json()
         if len(hook):
-            hook_id = hook[0]["id"]
+            if DEV_ENVIRONMENT == "test":
+                user_hooks_url = WEBHOOK_URL_ENVIRONMENT
+            elif DEV_ENVIRONMENT == "homolog":
+                user_hooks_url = WEBHOOK_URL_ENVIRONMENT
+            elif DEV_ENVIRONMENT == "prod":
+                user_hooks_url = WEBHOOK_URL_ENVIRONMENT
+            for user_hooks in hook:
+                if  user_hooks_url in user_hooks["url"]:
+                    hook_id = user_hooks["id"]
+                              
             delete_hook_url = "https://gitlab.com/api/v4/"\
                               "projects/{project_id}/"\
                               "hooks/{hook_id}".format(project_id=project_id,
