@@ -97,3 +97,14 @@ def get_user_domain(chat_id):
             "chat_id": chat_id,
             "domain": user_domain
         }), 200
+
+
+@user_blueprint.route("/user/infos/<chat_id>", methods=["GET"])
+def get_user_infos(chat_id):
+    dict_user = {"username": 0,
+                 "repository": 0}
+    user = User.objects(chat_id=chat_id).first()
+    if user:
+        dict_user["username"] = user.gitlab_user
+        dict_user["repository"] = user.project.name
+    return jsonify(dict_user), 200

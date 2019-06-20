@@ -133,3 +133,14 @@ get_user_domain_schema = {
     },
     "required": ["chat_id", "domain"]
 }
+
+get_user_infos_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "get user infos domain schema",
+    "type": "object",
+    "properties": {
+        "username": {"type": "string"},
+        "repository": {"type": "string"}
+    },
+    "required": ["username", "repository"]
+}
