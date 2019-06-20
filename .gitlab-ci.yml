@@ -53,15 +53,13 @@ build ada-gitlab-homolog:
   only:
     - /ConfigCronjob/
 
-build cronjob-homolog:
+build ada-gitlab-cronjob-homolog:
   image: docker:latest
   stage: build
   services:
     - docker:dind
   script:
     - docker build -f ./docker/cronjob.Dockerfile -t $ADA_GITLAB_CRONJOB_IMAGE:homolog .
-    - docker login -u $DOCKER_USER -p $DOCKER_PASS
-    - docker push $ADA_GITLAB_CRONJOB_IMAGE:homolog
   only:
     - /ConfigCronjob/
 
@@ -81,15 +79,13 @@ build ada-gitlab-prod:
   only:
     - /master/
 
-build cronjob-homolog:
+build ada-gitlab-cronjob-prod:
   image: docker:latest
   stage: build
   services:
     - docker:dind
   script:
-    - docker build -f ./docker/cronjob.Dockerfile -t $ADA_GITLAB_CRONJOB_IMAGE:homolog .
-    - docker login -u $DOCKER_USER -p $DOCKER_PASS
-    - docker push $ADA_GITLAB_CRONJOB_IMAGE:homolog
+    - docker build -f ./docker/cronjob.Dockerfile -t $ADA_GITLAB_CRONJOB_IMAGE:prod .
   only:
     - /master/
 
@@ -112,7 +108,7 @@ deploy ada-gitlab-homolog:
   only:
     - /ConfigCronjob/
 
-deploy cronjob-homolog:
+deploy ada-gitlab-cronjob-homolog:
   image: cdrx/rancher-gitlab-deploy
   stage: deploy
   script:
@@ -144,7 +140,7 @@ deploy ada-gitlab-prod:
   only:
     - /master/
 
-deploy cronjob-prod:
+deploy ada-gitlab-cronjob-prod:
   image: cdrx/rancher-gitlab-deploy
   stage: deploy
   script:

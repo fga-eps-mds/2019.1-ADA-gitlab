@@ -12,7 +12,7 @@ bot = telegram.Bot(token=ACCESS_TOKEN)
 user_list = User.objects(domain__ne=None)
 for user in user_list:
     req = requests.get(user.domain)
-    if req.status == 404:
+    if req.status_code == 404:
         bot.send_message(chat_id=user.chat_id,
                          text="Seu domínio está fora do ar, "
                               "verifique o que pode ter ocorrido "
