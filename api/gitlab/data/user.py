@@ -1,6 +1,6 @@
-import mongoengine
 from gitlab.data import init_db
 from gitlab.data.project import Project
+import mongoengine
 
 
 class User(mongoengine.Document):
