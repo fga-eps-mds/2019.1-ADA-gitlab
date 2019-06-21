@@ -104,10 +104,13 @@ def get_user_domain(chat_id):
 
 @user_blueprint.route("/user/project/<repo_name>/<chat_id>", methods=["GET"])
 def get_repo_name(chat_id, repo_name):
-    user = UserUtils(chat_id)
-    projects = user.get_user_project()
-    repo_name = repo_name[:-3]
-    repository_name = user.compare_repository_name(repo_name, projects)
+    try:
+        user = UserUtils(chat_id)
+        projects = user.get_user_project()
+        repo_name = repo_name[:-3]
+        repository_name = user.compare_repository_name(repo_name, projects)
+    except HTTPError as http_error:
+        return user.error_message(http_error)
     return jsonify({
         "project_name": repository_name
     }), 200
