@@ -20,7 +20,7 @@ class ReportPipelines(GitlabUtils):
         }
         self.pipeline_status = {
             "success_pipeline": 0,
-            "failed_pipeline": 0,
+            "failed_pipeline": 0
         }
 
     def get_pipeline(self, project_id):
@@ -29,26 +29,36 @@ class ReportPipelines(GitlabUtils):
               "pipelines"\
               .format(project_id=project_id)
         pipelines = self.get_request(url)
-        self.pipeline_days['last_30_days'].update(
-                                           self.pipeline_days['last_7_days'])
-
-        self.build_report(pipelines, project_id)
-        self.build_pipeline_statistics("last_30_days")
-        self.update_report_dict("last_30_days")
-        self.build_pipeline_statistics("last_7_days")
-        self.update_report_dict("last_7_days")
-
-        number_of_pipelines = len(pipelines)
-        percent_success = (self.pipeline_status["success_pipeline"]
-                           / number_of_pipelines) * 100.0
-        statistics_dict = {
-            "number_of_pipelines": number_of_pipelines,
-            "succeded_pipelines": self.pipeline_status["success_pipeline"],
-            "failed_pipelines": self.pipeline_status["failed_pipeline"],
-            "percent_succeded": percent_success,
-            "current_pipeline_id": pipelines[0]["id"],
-            "current_pipeline_name": pipelines[0]["ref"]
+        if not pipelines:
+            statistics_dict = {
+                "number_of_pipelines": 0,
+                "succeded_pipelines": 0,
+                "failed_pipelines": 0,
+                "percent_succeded": 0,
+                "current_pipeline_id": 0,
+                "current_pipeline_name": 0
             }
+        else:
+            self.pipeline_days['last_30_days'].update(
+                                            self.pipeline_days['last_7_days'])
+
+            self.build_report(pipelines, project_id)
+            self.build_pipeline_statistics("last_30_days")
+            self.update_report_dict("last_30_days")
+            self.build_pipeline_statistics("last_7_days")
+            self.update_report_dict("last_7_days")
+
+            number_of_pipelines = len(pipelines)
+            percent_success = (self.pipeline_status["success_pipeline"]
+                               / number_of_pipelines) * 100.0
+            statistics_dict = {
+                "number_of_pipelines": number_of_pipelines,
+                "succeded_pipelines": self.pipeline_status["success_pipeline"],
+                "failed_pipelines": self.pipeline_status["failed_pipeline"],
+                "percent_succeded": percent_success,
+                "current_pipeline_id": pipelines[0]["id"],
+                "current_pipeline_name": pipelines[0]["ref"]
+                }
         pipeline_dict = {"pipeline": 0}
         pipeline_data = self.update_report_statistics(statistics_dict)
         pipeline_dict["pipeline"] = pipeline_data
@@ -106,7 +116,7 @@ class ReportPipelines(GitlabUtils):
                 project_id, pipelines[i]["id"])
             if recent_pipelines["last_7_days"]:
                 self.build_pipeline_dict(pipelines, i, "last_7_days")
-            elif recent_pipelines["last_30_days"]:
+            if recent_pipelines["last_30_days"]:
                 self.build_pipeline_dict(pipelines, i, "last_30_days")
             elif pipelines[i]["status"] == "success":
                 self.pipeline_status["success_pipeline"] = (self.
@@ -127,19 +137,16 @@ class ReportPipelines(GitlabUtils):
                       pipeline_id=pipeline_id)
 
         pipeline = self.get_request(url)
-
         todays_date = date.today()
         pipeline_date = datetime.strptime(
             pipeline['created_at'][0:10], "%Y-%m-%d")
         pipeline_date = pipeline_date.date()
         qntd_days = todays_date-pipeline_date
-
         pipeline_qnt = {"last_7_days": None, "last_30_days": None}
-
         if qntd_days.days <= 7:
             pipeline_qnt["last_7_days"] = True
 
-        elif qntd_days.days <= 30:
+        if qntd_days.days <= 30:
             pipeline_qnt["last_30_days"] = True
 
         return pipeline_qnt

@@ -8,7 +8,6 @@ from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
-import sys
 
 
 user_blueprint = Blueprint("user", __name__)
@@ -106,7 +105,6 @@ def get_repo_name(chat_id, repo_name):
     projects = user.get_user_project()
     repo_name = repo_name[:-3]
     repository_name = user.compare_repository_name(repo_name, projects)
-    print(repository_name, file=sys.stderr)
     return jsonify({
         "project_name": repository_name
     }), 200

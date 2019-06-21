@@ -8,7 +8,6 @@ import telegram
 from telegram import Bot
 from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
-import sys
 
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
@@ -82,7 +81,6 @@ class UserUtils(GitlabUtils):
 
     def compare_repository_name(self, repository_name, repositories):
         for repository in repositories:
-            print(repository, file=sys.stderr)
             if repository_name in repository["path_with_namespace"]:
                 return repository["path_with_namespace"]
         return repository_name
