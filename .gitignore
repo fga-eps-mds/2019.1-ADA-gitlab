@@ -67,4 +67,6 @@ venv.bak/
 export.sh
 
 export.sh
+loaded-env.txt
+outputs/*
 # End of https://www.gitignore.io/api/macos,python,visualstudiocode

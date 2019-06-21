@@ -7,6 +7,7 @@ from gitlab.utils.error_messages import UNAUTHORIZED,\
                                         NOT_FOUND
 from gitlab.data.user import User
 import re
+import sys
 
 
 class GitlabUtils:
