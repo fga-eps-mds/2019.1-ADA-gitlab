@@ -8,6 +8,7 @@ from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
+import sys
 
 
 user_blueprint = Blueprint("user", __name__)
@@ -97,3 +98,15 @@ def get_user_domain(chat_id):
             "chat_id": chat_id,
             "domain": user_domain
         }), 200
+
+
+@user_blueprint.route("/user/project/<repo_name>/<chat_id>", methods=["GET"])
+def get_repo_name(chat_id, repo_name):
+    user = UserUtils(chat_id)
+    projects = user.get_user_project()
+    repo_name = repo_name[:-3]
+    repository_name = user.compare_repository_name(repo_name, projects)
+    print(repository_name, file=sys.stderr)
+    return jsonify({
+        "project_name": repository_name
+    }), 200

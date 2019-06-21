@@ -8,6 +8,7 @@ import telegram
 from telegram import Bot
 from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
+import sys
 
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
@@ -59,6 +60,9 @@ class UserUtils(GitlabUtils):
         for repositorio in repositories:
             project_name = repositorio.split('/')
             project_name = project_name[-1]
+            project_len = len(repositorio.encode('utf-8'))
+            if project_len > 54:
+                repositorio = repositorio[:51] + "..."
             buttons.append(telegram.InlineKeyboardButton(
                 text=project_name,
                 callback_data="labrepo: " + repositorio))
@@ -75,6 +79,13 @@ class UserUtils(GitlabUtils):
                          "monitore? Clica nele!",
                          reply_markup=reply_markup)
         return "OK"
+
+    def compare_repository_name(self, repository_name, repositories):
+        for repository in repositories:
+            print(repository, file=sys.stderr)
+            if repository_name in repository["path_with_namespace"]:
+                return repository["path_with_namespace"]
+        return repository_name
 
 
 def authenticate_access_token(code):
