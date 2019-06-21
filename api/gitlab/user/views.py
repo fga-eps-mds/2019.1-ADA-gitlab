@@ -8,7 +8,7 @@ from gitlab.pipeline.views import Pipeline
 from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
-
+import sys
 
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
@@ -38,6 +38,9 @@ def get_project_id(chat_id, project_owner, project_name):
     try:
         repo = Pipeline(chat_id)
         repo_id = repo.get_project_id(project_owner, project_name)
+        print('#'*30, file=sys.stderr)
+        print(repo_id, file=sys.stderr)
+        print('#'*30, file=sys.stderr)
     except HTTPError as http_error:
         return repo.error_message(http_error)
     else:

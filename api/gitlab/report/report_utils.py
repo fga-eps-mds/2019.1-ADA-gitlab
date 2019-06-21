@@ -3,6 +3,7 @@ from gitlab.report.branch_utils import ReportBranches
 from gitlab.report.commit_utils import ReportCommits
 from gitlab.report.pipeline_report_utils \
      import ReportPipelines
+import sys
 
 
 class Report(GitlabUtils):
@@ -13,7 +14,7 @@ class Report(GitlabUtils):
         self.commits = ReportCommits(chat_id)
 
     def get_project(self, project_owner, project_name):
-        url = "https://gitlab.com/"+project_owner+'/'+project_name
+        url = "https://gitlab.com/" + project_name
         project_dict = {"project": {
                         "name": project_name,
                         "web_url": url}

@@ -7,7 +7,6 @@ def env_loader():
         'DB_NAME': os.getenv('DB_NAME', ''),
         'ACCESS_TOKEN': os.getenv('ACCESS_TOKEN', '')
     }
-    print(variables['DB_URL'])
     with open('loaded-env.txt', 'w') as f:
         for name in variables:
             f.write(f'{name}={variables[name]}\n')
