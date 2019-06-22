@@ -7,6 +7,7 @@ from gitlab.utils.gitlab_utils import GitlabUtils
 from requests import get, post, delete
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
+WEBHOOK_URL_ENVIRONMENT = os.getenv("WEBHOOK_URL_ENVIRONMENT", "")
 
 
 class Webhook(GitlabUtils):
@@ -137,17 +138,26 @@ class Webhook(GitlabUtils):
         r.raise_for_status()
 
     def delete_webhook(self, project_id):
-        url = "https://gitlab.com/api/v4/" +\
-              "projects/{project_id}/hooks"\
-              .format(project_id=project_id)
-        response = get(url, headers=self.headers)
-        response.raise_for_status()
-        hook = response.json()
-        if len(hook):
-            hook_id = hook[0]["id"]
-            delete_hook_url = "https://gitlab.com/api/v4/"\
-                              "projects/{project_id}/"\
-                              "hooks/{hook_id}".format(project_id=project_id,
-                                                       hook_id=hook_id)
-            req = delete(delete_hook_url, headers=self.headers)
-            req.raise_for_status()
+        try:
+            url = "https://gitlab.com/api/v4/" +\
+                "projects/{project_id}/hooks"\
+                .format(project_id=project_id)
+            response = get(url, headers=self.headers)
+            response.raise_for_status()
+            hook = response.json()
+            if len(hook):
+                user_hooks_url = WEBHOOK_URL_ENVIRONMENT
+                for user_hooks in hook:
+                    if user_hooks_url in user_hooks["url"]:
+                        hook_id = user_hooks["id"]
+
+                delete_hook_url = "https://gitlab.com/api/v4/"\
+                                  "projects/{project_id}/"\
+                                  "hooks/"\
+                                  "{hook_id}".format(project_id=project_id,
+                                                     hook_id=hook_id)
+                req = delete(delete_hook_url, headers=self.headers)
+                req.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))

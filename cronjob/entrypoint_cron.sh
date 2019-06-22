@@ -1,0 +1,2 @@
+#!/bin/sh
+cron -f

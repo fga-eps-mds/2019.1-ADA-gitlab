@@ -2,7 +2,8 @@ import json
 from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.webhook.schemas import\
      message_error_schema, pipeline_schema,\
-     build_messages_schema, views_schema
+     build_messages_schema, views_schema,\
+     invalid_project_schema
 from jsonschema import validate
 from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
@@ -71,6 +72,17 @@ class TestWebhook(BaseTestCase):
                           "chat_id": "12345689",
                           "gitlab_user_id": self.gitlab_user_id}
 
+        self.mocked_get_hooks_response = Response()
+        self.mocked_get_hooks_response.status_code = 200
+        sucess_mocked_get_hooks_response = [{"id": 123456789,
+                                             "url": "https://gitlab." +
+                                             "adachatops.com/"
+                                             }]
+        get_hooks_in_binary = json.\
+            dumps(sucess_mocked_get_hooks_response).encode('utf-8')
+        self.mocked_get_hooks_response._content = \
+            get_hooks_in_binary
+
     def test_register_repo(self):
         user = self.user
         user.project = None
@@ -82,17 +94,47 @@ class TestWebhook(BaseTestCase):
         repo_data = {"project_name": project_name, "chat_id": "339847919",
                      "project_id": project_id}
         self.webhook.register_repo(repo_data)
+
         user = User.objects(chat_id=self.user.chat_id).first()
         self.assertEqual(user.project.name, project_name)
         self.assertEqual(user.project.project_id, project_id)
 
-    def test_register_repo_http_error(self):
-        repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
-                     "project_id": "12532279"}
+    @patch('gitlab.webhook.utils.os')
+    @patch('gitlab.webhook.utils.delete')
+    @patch('gitlab.webhook.utils.get')
+    def test_register_repo_validation(self, mocked_get, mocked_delete,
+                                      mocked_os):
+        user = self.user
+        user.save()
+        user = User.objects(chat_id=self.user.chat_id).first()
+        project_name = "ada-gitlab"
+        project_id = "12532279"
+        repo_data = {"project_name": project_name, "chat_id": "339847919",
+                     "project_id": project_id}
+        self.webhook.register_repo(repo_data)
+        acess_token = "32y324798798732"
+        webhook_url = "https://gitlab.adachatops.com/"
+        mocked_os.getenv.return_value = acess_token
+        mocked_os.getenv.return_value = webhook_url
+        delete_hook = Response()
+        delete_hook.status_code = 200
+        mocked_get.return_value = self.mocked_get_hooks_response
+        mocked_delete.return_value = delete_hook
+        user = User.objects(chat_id=self.user.chat_id).first()
+        self.assertEqual(user.project.name, project_name)
+        self.assertEqual(user.project.project_id, project_id)
+
+    @patch('gitlab.webhook.utils.get')
+    def test_register_repo_http_error(self, mocked_get):
+        project_name = "ada-gitlab"
+        project_id = "12532279"
+        repo_data = {"project_name": project_name, "chat_id": "339847919",
+                     "project_id": project_id}
+        mocked_get.return_value = self.mocked_404_response
         with self.assertRaises(HTTPError) as context:
             self.webhook.register_repo(repo_data)
         message_error = json.loads(str(context.exception))
-        validate(message_error, message_error_schema)
+        validate(message_error, invalid_project_schema)
 
     def test_register_user(self):
         self.webhook.register_user(self.user_data)
@@ -245,3 +287,19 @@ class TestWebhook(BaseTestCase):
                                     data=content_json,
                                     headers=self.headers)
         self.assertEqual(response.status_code, 400)
+
+    @patch('gitlab.webhook.utils.os')
+    @patch('gitlab.webhook.utils.delete')
+    @patch('gitlab.webhook.utils.get')
+    def test_delete_webhook(self, mocked_get, mocked_delete,
+                            mocked_os):
+        project_id = 9121
+        acess_token = "32y324798798732"
+        webhook_url = "https://gitlab.adachatops.com/"
+        mocked_os.getenv.return_value = acess_token
+        mocked_os.getenv.return_value = webhook_url
+        delete_hook = Response()
+        delete_hook.status_code = 200
+        mocked_get.return_value = self.mocked_get_hooks_response
+        mocked_delete.return_value = delete_hook
+        self.webhook.delete_webhook(project_id)

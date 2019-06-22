@@ -22,6 +22,7 @@ services:
       - BOT_NAME=${BOT_NAME}
       - REDIRECT_URI=${REDIRECT_URI}
       - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - WEBHOOK_URL_ENVIRONMENT=${WEBHOOK_URL_ENVIRONMENT}
   mongo-gitlab:
     image: mongo
     command: mongod --port 27010
@@ -31,7 +32,18 @@ services:
       - 20191-ada_adanetwork
     ports:
       - 27010:27010
-
+  cronjob:
+    image: joaovitor3/ada-gitlab-cronjob:homolog
+    volumes:
+      - ./outputs:/cronjob/home
+    stdin_open: true
+    tty: true
+    networks:
+      - 20191-ada_adanetwork
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_NAME=${DB_NAME}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
 networks:
   20191-ada_adanetwork:
     external: true
