@@ -8,6 +8,7 @@ import telegram
 from telegram import Bot
 from gitlab.data.user import User
 from gitlab.utils.gitlab_utils import GitlabUtils
+import sys
 
 APP_ID = os.getenv("APP_ID", "")
 APP_SECRET = os.getenv("APP_SECRET", "")
@@ -35,6 +36,14 @@ class UserUtils(GitlabUtils):
         except IndexError:
             return None
 
+    def get_project_fullname(self, project_id):
+        url = self.GITLAB_API_URL +\
+              "/projects/{project_id}"\
+              .format(project_id=project_id)
+        project = self.get_request(url)
+        project_fullname = project["path_with_namespace"]
+        return project_fullname
+
     def get_user_domain(self):
         user = User.objects(chat_id=self.chat_id).first()
         return user.domain
@@ -52,19 +61,29 @@ class UserUtils(GitlabUtils):
 
     def select_repos_by_buttons(self):
         repo_infos = self.get_user_project()
-        repositories = []
-        for item in repo_infos:
-            repositories.append(item["path_with_namespace"])
+        repositories = {"repositories": []}
+
+        for i, item in enumerate(repo_infos):
+            repository_data = {"path_with_namespace": 0, "id": 0}
+            (repository_data
+                ["path_with_namespace"]) = (repo_infos[i]
+                                                      ["path_with_namespace"])
+            repository_data["id"] = repo_infos[i]["id"]
+            repositories["repositories"].append(repository_data)
+
         buttons = []
-        for repositorio in repositories:
-            project_name = repositorio.split('/')
-            project_name = project_name[-1]
-            project_len = len(repositorio.encode('utf-8'))
+        for repo in repositories["repositories"]:
+            project = repo["path_with_namespace"].split('/')
+            organization = project[0] 
+            project_name = project[-1]
+            complete_name = organization + '/' + project_name
+            project_len = len(complete_name.encode('utf-8'))
             if project_len > 54:
-                repositorio = repositorio[:51] + "..."
+                complete_name = complete_name[:51] + "..."
             buttons.append(telegram.InlineKeyboardButton(
-                text=project_name,
-                callback_data="labrepo: " + repositorio))
+                            text=complete_name,
+                            callback_data="labrepo: " +
+                                          str(repo["id"])))
         repo_names = [buttons[i:i+2] for i in range(0, len(buttons), 2)]
         return repo_names
 

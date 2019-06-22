@@ -38,14 +38,25 @@ def get_project_id(chat_id, project_owner, project_name):
     try:
         repo = Pipeline(chat_id)
         repo_id = repo.get_project_id(project_owner, project_name)
-        print('#'*30, file=sys.stderr)
-        print(repo_id, file=sys.stderr)
-        print('#'*30, file=sys.stderr)
     except HTTPError as http_error:
         return repo.error_message(http_error)
     else:
         return jsonify({
             "project_id": repo_id
+        }), 200
+
+
+@user_blueprint.route("/user/project/<chat_id>/<project_id>",
+                      methods=["GET"])
+def get_project_fullname(chat_id, project_id):
+    try:
+        user = UserUtils(chat_id)
+        project_fullname = user.get_project_fullname(project_id)
+    except HTTPError as http_error:
+        return user.error_message(http_error)
+    else:
+        return jsonify({
+            "project_fullname": project_fullname
         }), 200
 
 
@@ -102,15 +113,15 @@ def get_user_domain(chat_id):
         }), 200
 
 
-@user_blueprint.route("/user/project/<repo_name>/<chat_id>", methods=["GET"])
-def get_repo_name(chat_id, repo_name):
-    user = UserUtils(chat_id)
-    projects = user.get_user_project()
-    repo_name = repo_name[:-3]
-    repository_name = user.compare_repository_name(repo_name, projects)
-    return jsonify({
-        "project_name": repository_name
-    }), 200
+# @user_blueprint.route("/user/project/<repo_name>/<chat_id>", methods=["GET"])
+# def get_repo_name(chat_id, repo_name):
+#     user = UserUtils(chat_id)
+#     projects = user.get_user_project()
+#     repo_name = repo_name[:-3]
+#     repository_name = user.compare_repository_name(repo_name, projects)
+#     return jsonify({
+#         "project_name": repository_name
+#     }), 200
 
 
 @user_blueprint.route("/user/infos/<chat_id>", methods=["GET"])
