@@ -10,6 +10,7 @@ from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
 from gitlab.data.user import User
+import sys
 
 
 class TestWebhook(BaseTestCase):
@@ -128,11 +129,12 @@ class TestWebhook(BaseTestCase):
     def test_register_repo_http_error(self, mocked_get):
         project_name = "ada-gitlab"
         project_id = "12532279"
-        repo_data = {"project_name": project_name, "chat_id": "339847919",
+        repo_data = {"project_name": project_name, "chat_id": "sasa",
                      "project_id": project_id}
         mocked_get.return_value = self.mocked_404_response
-        with self.assertRaises(HTTPError) as context:
+        with self.assertRaises(HTTPError) as context: 
             self.webhook.register_repo(repo_data)
+        print(self.webhook.register_repo, file=sys.stderr);
         message_error = json.loads(str(context.exception))
         validate(message_error, invalid_project_schema)
 
