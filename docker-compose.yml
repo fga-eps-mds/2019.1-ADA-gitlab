@@ -22,7 +22,6 @@ services:
       - BOT_NAME=${BOT_NAME}
       - REDIRECT_URI=${REDIRECT_URI}
       - ACCESS_TOKEN=${ACCESS_TOKEN}
-      - DEV_ENVIRONMENT=${DEV_ENVIRONMENT}
       - WEBHOOK_URL_ENVIRONMENT=${WEBHOOK_URL_ENVIRONMENT}
   mongo-gitlab:
     image: mongo

@@ -29,6 +29,8 @@ class BaseTestCase(TestCase):
 
         self.mocked_404_response = Response()
         self.mocked_404_response.status_code = 404
+        self.response_unauthorized = Response()
+        self.response_unauthorized.status_code = 401
 
     def create_app(self):
         app = create_app()
