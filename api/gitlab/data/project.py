@@ -1,5 +1,5 @@
-import mongoengine
 from gitlab.data import init_db
+import mongoengine
 
 
 class Project(mongoengine.Document):
