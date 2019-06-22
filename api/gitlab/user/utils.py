@@ -59,11 +59,10 @@ class UserUtils(GitlabUtils):
         user = User.objects(chat_id=self.chat_id).first()
         username = user.gitlab_user
         for repositorio in repositories:
-            
             project_name = repositorio.split('/')
             repo_username = project_name[0]
             project_name = project_name[-1]
-            if repo_username==username:
+            if repo_username == username:
                 buttons.append(telegram.InlineKeyboardButton(
                     text=project_name,
                     callback_data="labrepo: " + repositorio))

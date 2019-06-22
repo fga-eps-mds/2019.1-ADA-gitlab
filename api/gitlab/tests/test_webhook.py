@@ -132,9 +132,9 @@ class TestWebhook(BaseTestCase):
         repo_data = {"project_name": project_name, "chat_id": "sasa",
                      "project_id": project_id}
         mocked_get.return_value = self.mocked_404_response
-        with self.assertRaises(HTTPError) as context: 
+        with self.assertRaises(HTTPError) as context:
             self.webhook.register_repo(repo_data)
-        print(self.webhook.register_repo, file=sys.stderr);
+        print(self.webhook.register_repo, file=sys.stderr)
         message_error = json.loads(str(context.exception))
         validate(message_error, invalid_project_schema)
 

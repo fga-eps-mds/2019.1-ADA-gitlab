@@ -156,7 +156,7 @@ class Webhook(GitlabUtils):
                                   "projects/{project_id}/"\
                                   "hooks/"\
                                   "{hook_id}".format(project_id=project_id,
-                                                     hook_id=hook_id) 
+                                                     hook_id=hook_id)
                 req = delete(delete_hook_url, headers=self.headers)
                 req.raise_for_status()
         except HTTPError as http_error:
