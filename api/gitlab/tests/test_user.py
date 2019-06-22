@@ -6,7 +6,7 @@ from gitlab.tests.jsonschemas.user.schemas import\
     user_data_valid_schema, project_id_schema,\
     user_id_schema, get_user_domain_schema,\
     save_user_domain_schema, user_invalid_schema,\
-    get_user_infos_schema
+    get_user_infos_schema, get_repo_name_schema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
 from requests import Response

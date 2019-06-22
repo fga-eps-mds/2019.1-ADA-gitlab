@@ -144,3 +144,13 @@ get_user_infos_schema = {
     },
     "required": ["username", "repository"]
 }
+
+get_repo_name_schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "get user infos domain schema",
+    "type": "object",
+    "properties": {
+        "username": {"project_name": "string"}
+    },
+    "required": ["project_name"]
+}

@@ -77,9 +77,6 @@ class UserUtils(GitlabUtils):
             organization = project[0] 
             project_name = project[-1]
             complete_name = organization + '/' + project_name
-            project_len = len(complete_name.encode('utf-8'))
-            if project_len > 54:
-                complete_name = complete_name[:51] + "..."
             buttons.append(telegram.InlineKeyboardButton(
                             text=complete_name,
                             callback_data="labrepo: " +

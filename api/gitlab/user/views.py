@@ -113,17 +113,6 @@ def get_user_domain(chat_id):
         }), 200
 
 
-# @user_blueprint.route("/user/project/<repo_name>/<chat_id>", methods=["GET"])
-# def get_repo_name(chat_id, repo_name):
-#     user = UserUtils(chat_id)
-#     projects = user.get_user_project()
-#     repo_name = repo_name[:-3]
-#     repository_name = user.compare_repository_name(repo_name, projects)
-#     return jsonify({
-#         "project_name": repository_name
-#     }), 200
-
-
 @user_blueprint.route("/user/infos/<chat_id>", methods=["GET"])
 def get_user_infos(chat_id):
     dict_user = {"username": 0,
