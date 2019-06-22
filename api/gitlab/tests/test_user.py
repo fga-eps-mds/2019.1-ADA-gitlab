@@ -75,7 +75,7 @@ class TestUser(BaseTestCase):
             dumps(get_user_domain_response_content).encode('utf-8')
         self.mocked_get_user_domain_response._content = \
             get_user_domain_content_in_binary
-            
+
         get_repo_content = [
             {
                 "name": "mocked_user",
@@ -104,7 +104,6 @@ class TestUser(BaseTestCase):
         self.mocked_post_valid = Response()
         self.mocked_post_valid._content = mocked_post_content_in_binary
         self.mocked_post_valid.status_code = 200
-
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_get_user_id(self, mocked_get):
@@ -309,16 +308,18 @@ class TestUser(BaseTestCase):
         response = self.client.get("/user/change_repo_gitlab/{chat_id}"
                                    .format(chat_id=self.user.chat_id))
         self.assertEqual(response.status_code, 200)
-        
+
     @patch('gitlab.user.utils.Bot')
     @patch('gitlab.utils.gitlab_utils.get')
-    def test_view_change_repository_gitlab_invalid(self, mocked_get, mocked_bot):
+    def test_view_change_repository_gitlab_invalid(self, mocked_get,
+                                                   mocked_bot):
         mocked_get.return_value = self.response_unauthorized
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         response = self.client.get("/user/change_repo_gitlab/{chat_id}"
                                    .format(chat_id=self.user.chat_id))
         self.assertEqual(response.status_code, 401)
+
 
 if __name__ == "__main__":
     unittest.main()

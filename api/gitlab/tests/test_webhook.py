@@ -10,7 +10,6 @@ from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
 from gitlab.data.user import User
-import gitlab.webhook.utils
 
 
 class TestWebhook(BaseTestCase):
@@ -66,17 +65,18 @@ class TestWebhook(BaseTestCase):
             dumps(failed_pipeline_response_content).encode('utf-8')
         self.mocked_failed_pipeline_response._content = \
             failed_pipeline_response_content_in_binary
-            
+
         self.gitlab_user = "adatestbot"
         self.gitlab_user_id = "4047441"
         self.user_data = {"gitlab_user": self.gitlab_user,
                           "chat_id": "12345689",
                           "gitlab_user_id": self.gitlab_user_id}
-        
+
         self.mocked_get_hooks_response = Response()
         self.mocked_get_hooks_response.status_code = 200
-        sucess_mocked_get_hooks_response = [{"id":123456789,
-                                             "url":"https://gitlab.adachatops.com/"     
+        sucess_mocked_get_hooks_response = [{"id": 123456789,
+                                             "url": "https://gitlab." +
+                                             "adachatops.com/"
                                              }]
         get_hooks_in_binary = json.\
             dumps(sucess_mocked_get_hooks_response).encode('utf-8')
@@ -94,7 +94,7 @@ class TestWebhook(BaseTestCase):
         repo_data = {"project_name": project_name, "chat_id": "339847919",
                      "project_id": project_id}
         self.webhook.register_repo(repo_data)
-        
+
         user = User.objects(chat_id=self.user.chat_id).first()
         self.assertEqual(user.project.name, project_name)
         self.assertEqual(user.project.project_id, project_id)
@@ -103,7 +103,7 @@ class TestWebhook(BaseTestCase):
     @patch('gitlab.webhook.utils.delete')
     @patch('gitlab.webhook.utils.get')
     def test_register_repo_validation(self, mocked_get, mocked_delete,
-                            mocked_os):
+                                      mocked_os):
         user = self.user
         user.save()
         user = User.objects(chat_id=self.user.chat_id).first()
@@ -287,7 +287,7 @@ class TestWebhook(BaseTestCase):
                                     data=content_json,
                                     headers=self.headers)
         self.assertEqual(response.status_code, 400)
-        
+
     @patch('gitlab.webhook.utils.os')
     @patch('gitlab.webhook.utils.delete')
     @patch('gitlab.webhook.utils.get')

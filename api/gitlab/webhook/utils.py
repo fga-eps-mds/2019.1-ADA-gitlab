@@ -148,13 +148,14 @@ class Webhook(GitlabUtils):
             if len(hook):
                 user_hooks_url = WEBHOOK_URL_ENVIRONMENT
                 for user_hooks in hook:
-                    if  user_hooks_url in user_hooks["url"]:
+                    if user_hooks_url in user_hooks["url"]:
                         hook_id = user_hooks["id"]
-                                
+
                 delete_hook_url = "https://gitlab.com/api/v4/"\
-                                "projects/{project_id}/"\
-                                "hooks/{hook_id}".format(project_id=project_id,
-                                                        hook_id=hook_id)
+                                  "projects/{project_id}/"\
+                                  "hooks/"\
+                                  "{hook_id}".format(project_id=project_id,
+                                                     hook_id=hook_id)
                 req = delete(delete_hook_url, headers=self.headers)
                 req.raise_for_status()
         except HTTPError as http_error:
