@@ -3,7 +3,6 @@ from gitlab.report.branch_utils import ReportBranches
 from gitlab.report.commit_utils import ReportCommits
 from gitlab.report.pipeline_report_utils \
      import ReportPipelines
-import sys
 
 
 class Report(GitlabUtils):

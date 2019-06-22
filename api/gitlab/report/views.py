@@ -3,7 +3,6 @@ from flask_cors import CORS
 from gitlab.report.report_utils import Report
 from requests.exceptions import HTTPError
 from gitlab.report.error_messages import NOT_FOUND
-import sys
 
 
 report_blueprint = Blueprint("report", __name__)

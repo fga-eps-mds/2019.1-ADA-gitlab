@@ -6,7 +6,7 @@ from gitlab.tests.jsonschemas.user.schemas import\
     user_data_valid_schema, project_id_schema,\
     user_id_schema, get_user_domain_schema,\
     save_user_domain_schema, user_invalid_schema,\
-    get_user_infos_schema, get_repo_name_schema
+    get_user_infos_schema, get_repo_full_name_shcema
 from jsonschema import validate
 from gitlab.user.utils import UserUtils, send_message
 from requests import Response
@@ -268,6 +268,35 @@ class TestUser(BaseTestCase):
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 200)
         validate(data, get_user_infos_schema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_views_get_project_fullname(self, mocked_get):
+        mocked_get_user_project_response = Response()
+        mocked_get_user_project_response.status_code = 200
+        get_user_project_response_content = {"id": self.project.project_id,
+                                             "path_with_namespace":
+                                             "adatestbot/ada"}
+        get_user_project_content_in_binary = json.\
+            dumps(get_user_project_response_content).encode('utf-8')
+        mocked_get_user_project_response._content = \
+            get_user_project_content_in_binary
+        mocked_get.return_value = mocked_get_user_project_response
+        response = self.client.get("/user/project/{chat_id}/{project_id}"
+                                   .format(chat_id=self.user.chat_id,
+                                           project_id=self.project.project_id))
+        data = json.loads((response.data.decode()))
+        self.assertEqual(response.status_code, 200)
+        validate(data, get_repo_full_name_shcema)
+
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_views_get_project_fullname_invalid(self, mocked_get):
+        mocked_get.return_value = self.mocked_404_response
+        response = self.client.get("/user/project/{chat_id}/{project_id}"
+                                   .format(chat_id=self.user.chat_id,
+                                           project_id=self.project.project_id))
+        data = json.loads(response.data.decode())
+        self.assertEqual(data["status_code"], 404)
+        validate(data, unauthorized_schema)
 
 
 if __name__ == "__main__":

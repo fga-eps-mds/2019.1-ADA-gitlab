@@ -1,7 +1,6 @@
 from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
 from datetime import date, datetime
-import sys
 
 
 class ReportPipelines(GitlabUtils):

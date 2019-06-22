@@ -150,7 +150,18 @@ get_repo_name_schema = {
     "title": "get user infos domain schema",
     "type": "object",
     "properties": {
-        "username": {"project_name": "string"}
+        "project_name": "string"
     },
     "required": ["project_name"]
+}
+
+get_repo_full_name_shcema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "get user infos domain schema",
+    "type": "object",
+    "properties": {
+        "project_fullname": {"type": "string"}
+    },
+    "required": ["project_fullname"]
+
 }

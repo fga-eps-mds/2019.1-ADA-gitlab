@@ -165,6 +165,16 @@ class TestWebhook(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         validate(data, views_schema)
 
+    def test_view_register_repo_http_error(self):
+        repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
+                     "project_id": "12532279"}
+        response = self.client.post("/webhooks/repo",
+                                    data=json.dumps(repo_data),
+                                    headers=self.headers)
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 400)
+        validate(data, message_error_schema)
+
     @patch('gitlab.webhook.views.Bot')
     @patch('gitlab.webhook.utils.get')
     def test_view_webhook_repository(self, mocked_get, mocked_bot):
