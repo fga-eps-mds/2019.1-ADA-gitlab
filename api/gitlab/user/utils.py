@@ -56,12 +56,20 @@ class UserUtils(GitlabUtils):
         for item in repo_infos:
             repositories.append(item["path_with_namespace"])
         buttons = []
+        user = User.objects(chat_id=self.chat_id).first()
+        username = user.gitlab_user
         for repositorio in repositories:
             project_name = repositorio.split('/')
+            repo_username = project_name[0]
             project_name = project_name[-1]
-            buttons.append(telegram.InlineKeyboardButton(
-                text=project_name,
-                callback_data="labrepo: " + repositorio))
+            if repo_username == username:
+                buttons.append(telegram.InlineKeyboardButton(
+                    text=project_name,
+                    callback_data="labrepo: " + repositorio))
+            else:
+                buttons.append(telegram.InlineKeyboardButton(
+                    text=repositorio,
+                    callback_data="labrepo: " + repositorio))
         repo_names = [buttons[i:i+2] for i in range(0, len(buttons), 2)]
         return repo_names
 
