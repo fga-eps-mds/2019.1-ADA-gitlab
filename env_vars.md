@@ -60,3 +60,10 @@ URL definida para realizar o redirecionamento para o telegram assim que é cadas
 export REDIRECT_URI=http://localhost:5000/user/gitlab/authorize
 ```
 
+#### Exporte a variável de url base para o webhook
+
+URL base para encontrar o webhook da sua aplicação.Por exemplo: 'https://gitlab.adachatops.com/'. A url vária de acordo com o ambiente de homologação e de produção.
+
+```sh
+export WEBHOOK_URL_ENVIRONMENT='URL_WEBHOOK'
+```
