@@ -5,7 +5,6 @@ stages:
 
 variables:
   ADA_GITLAB_IMAGE: $DOCKER_USER/ada-gitlab
-  ADA_GITLAB_CRONJOB_IMAGE: $DOCKER_USER/ada-gitlab-cronjob
 
 #############################################################
 ########################## TEST #############################
@@ -53,16 +52,6 @@ build ada-gitlab-homolog:
   only:
     - /devel/
 
-build ada-gitlab-cronjob-homolog:
-  image: docker:latest
-  stage: build
-  services:
-    - docker:dind
-  script:
-    - docker build -f ./docker/cronjob.Dockerfile -t $ADA_GITLAB_CRONJOB_IMAGE:homolog .
-  only:
-    - /devel/
-
 #############################################################
 ################## BUILD PROD ###############################
 #############################################################
@@ -78,17 +67,6 @@ build ada-gitlab-prod:
     - docker push $ADA_GITLAB_IMAGE:prod
   only:
     - /master/
-
-build ada-gitlab-cronjob-prod:
-  image: docker:latest
-  stage: build
-  services:
-    - docker:dind
-  script:
-    - docker build -f ./docker/cronjob.Dockerfile -t $ADA_GITLAB_CRONJOB_IMAGE:prod .
-  only:
-    - /master/
-
 
 #############################################################
 ################## DEPLOY HOMOLOG ###########################
@@ -108,20 +86,6 @@ deploy ada-gitlab-homolog:
   only:
     - /devel/
 
-deploy ada-gitlab-cronjob-homolog:
-  image: cdrx/rancher-gitlab-deploy
-  stage: deploy
-  script:
-    - "upgrade
-            --rancher-url $RANCHER_URL
-            --rancher-key $RANCHER_ACCESS_KEY
-            --rancher-secret $RANCHER_SECRET_KEY
-            --environment $RANCHER_ENVIRONMENT
-            --stack $RANCHER_HOMOLOG_STACK
-            --service ada-gitlab-cronjob-homolog"
-  only:
-    - /devel/
-
 #############################################################
 ################## DEPLOY PROD ##############################
 #############################################################
@@ -137,19 +101,5 @@ deploy ada-gitlab-prod:
             --environment $RANCHER_ENVIRONMENT
             --stack $RANCHER_PROD_STACK
             --service ada-gitlab"
-  only:
-    - /master/
-
-deploy ada-gitlab-cronjob-prod:
-  image: cdrx/rancher-gitlab-deploy
-  stage: deploy
-  script:
-    - "upgrade
-            --rancher-url $RANCHER_URL
-            --rancher-key $RANCHER_ACCESS_KEY
-            --rancher-secret $RANCHER_SECRET_KEY
-            --environment $RANCHER_ENVIRONMENT
-            --stack $RANCHER_PROD_STACK
-            --service ada-gitlab-cronjob"
   only:
     - /master/

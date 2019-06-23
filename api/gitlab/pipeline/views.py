@@ -8,14 +8,6 @@ pipeline_blueprint = Blueprint("pipeline", __name__)
 CORS(pipeline_blueprint)
 
 
-@pipeline_blueprint.route("/pipeline/ping", methods=["GET"])
-def ping_pong():
-    return jsonify({
-        "status": "success",
-        "message": "pong!"
-    }), 200
-
-
 @pipeline_blueprint.route("/pipeline/<chat_id>", methods=["GET"])
 def get_project_pipeline(chat_id):
     try:
