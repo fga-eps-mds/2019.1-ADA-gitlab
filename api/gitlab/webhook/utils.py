@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
 from requests import get, post, delete
+import sys
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 WEBHOOK_URL_ENVIRONMENT = os.getenv("WEBHOOK_URL_ENVIRONMENT", "")
@@ -82,7 +83,7 @@ class Webhook(GitlabUtils):
 
     def build_message(self, job_build):
         jobs_message = "Os passos da build são:\n"
-
+        print(job_build, file=sys.stderr)
         for i, item in enumerate(job_build):
             if job_build[i]["status"] == "success":
                 status = "✅"
@@ -108,23 +109,23 @@ class Webhook(GitlabUtils):
 
     def build_status_message(self, content, jobs):
         if content["object_attributes"]["status"] == "success":
-            status_message = "Muito bem! Um novo pipeline (de id #{id} "\
-                             "da branch {branch}) terminou com sucesso. "\
+            status_message = "Muito bem! Um novo pipeline de id *{id}* "\
+                             "da branch *{branch}* terminou com sucesso. "\
                              "Se você quiser conferí-lo, "\
-                             "o link é {link}".format(
+                             "é só clicar nesse [link]({link}).".format(
                                 id=content["object_attributes"]["id"],
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
+            return status_message
         elif content["object_attributes"]["status"] == "failed":
-            status_message = "Poxa.. Um novo pipeline (de {id} e "\
-                             "{branch}) falhou. Se você "\
-                             "quiser conferí-lo, o link é {link}".format(
+            status_message = "Poxa.. Um novo pipeline de id *{id}* e "\
+                             "*{branch}* falhou. Se você "\
+                             "quiser conferí-lo, "\
+                             "é só clicar nesse [link]({link}).".format(
                                 id=content["object_attributes"]["id"],
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
-        else:
-            return "OK"
-        return status_message
+            return status_message
 
     def set_webhook(self, project_id):
         data = {
@@ -150,19 +151,21 @@ class Webhook(GitlabUtils):
             response = get(url, headers=self.headers)
             response.raise_for_status()
             hook = response.json()
+            hook_id = None
             if len(hook):
                 user_hooks_url = WEBHOOK_URL_ENVIRONMENT
                 for user_hooks in hook:
                     if user_hooks_url in user_hooks["url"]:
                         hook_id = user_hooks["id"]
 
-                delete_hook_url = "https://gitlab.com/api/v4/"\
-                                  "projects/{project_id}/"\
-                                  "hooks/"\
-                                  "{hook_id}".format(project_id=project_id,
-                                                     hook_id=hook_id)
-                req = delete(delete_hook_url, headers=self.headers)
-                req.raise_for_status()
+                if hook_id:
+                    delete_hook_url = "https://gitlab.com/api/v4/"\
+                                    "projects/{project_id}/"\
+                                    "hooks/"\
+                                    "{hook_id}".format(project_id=project_id,
+                                                       hook_id=hook_id)
+                    req = delete(delete_hook_url, headers=self.headers)
+                    req.raise_for_status()
         except HTTPError as http_error:
             dict_error = {"status_code": http_error.response.status_code}
             raise HTTPError(json.dumps(dict_error))

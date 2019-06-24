@@ -13,7 +13,7 @@ class Report(GitlabUtils):
         self.commits = ReportCommits(chat_id)
 
     def get_project(self, project_owner, project_name):
-        url = "https://gitlab.com/" + project_name
+        url = "https://gitlab.com/" + project_owner + '/' + project_name
         project_dict = {"project": {
                         "name": project_name,
                         "web_url": url}

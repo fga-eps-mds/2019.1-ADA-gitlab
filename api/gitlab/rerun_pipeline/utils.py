@@ -28,7 +28,7 @@ class RerunPipeline(GitlabUtils):
         buttons = []
         buttons.append(telegram.InlineKeyboardButton(
                 text="Reiniciar pipeline",
-                callback_data="quero reiniciar a pipeline " + str(pipeline_id))
+                callback_data="rerunpipe " + str(pipeline_id))
                       )
         button_array = [buttons]
         return button_array
