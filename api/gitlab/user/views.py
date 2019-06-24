@@ -9,7 +9,6 @@ from gitlab.data.user import User
 from requests.exceptions import HTTPError
 import os
 
-
 user_blueprint = Blueprint("user", __name__)
 CORS(user_blueprint)
 APP_ID = os.getenv("APP_ID", "")
@@ -43,6 +42,20 @@ def get_project_id(chat_id, project_owner, project_name):
     else:
         return jsonify({
             "project_id": repo_id
+        }), 200
+
+
+@user_blueprint.route("/user/project/<chat_id>/<project_id>",
+                      methods=["GET"])
+def get_project_fullname(chat_id, project_id):
+    try:
+        user = UserUtils(chat_id)
+        project_fullname = user.get_project_fullname(project_id)
+    except HTTPError as http_error:
+        return user.error_message(http_error)
+    else:
+        return jsonify({
+            "project_fullname": project_fullname
         }), 200
 
 

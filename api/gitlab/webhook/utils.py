@@ -15,7 +15,9 @@ class Webhook(GitlabUtils):
         super().__init__(chat_id)
 
     def register_repo(self, repo_data):
-        project_name = repo_data["project_name"]
+        project_fullname = repo_data["project_name"]
+        project_fullname_splited = project_fullname.split('/')
+        project_name = project_fullname_splited[-1]
         project_id = repo_data["project_id"]
 
         user = User.objects(chat_id=self.chat_id).first()

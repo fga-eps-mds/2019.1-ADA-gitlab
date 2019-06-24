@@ -3,14 +3,13 @@ from gitlab.tests.base import BaseTestCase
 from gitlab.tests.jsonschemas.webhook.schemas import\
      message_error_schema, pipeline_schema,\
      build_messages_schema, views_schema,\
-     invalid_project_schema
+     invalid_project_schema, unauthorized_schema
 from jsonschema import validate
 from gitlab.webhook.utils import Webhook
 from requests.exceptions import HTTPError
 from requests import Response
 from unittest.mock import patch, Mock
 from gitlab.data.user import User
-import sys
 
 
 class TestWebhook(BaseTestCase):
@@ -134,7 +133,6 @@ class TestWebhook(BaseTestCase):
         mocked_get.return_value = self.mocked_404_response
         with self.assertRaises(HTTPError) as context:
             self.webhook.register_repo(repo_data)
-        print(self.webhook.register_repo, file=sys.stderr)
         message_error = json.loads(str(context.exception))
         validate(message_error, invalid_project_schema)
 
@@ -208,6 +206,16 @@ class TestWebhook(BaseTestCase):
         data = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 200)
         validate(data, views_schema)
+
+    def test_view_register_repo_http_error(self):
+        repo_data = {"project_name": "ada-gitlab", "chat_id": "339847919",
+                     "project_id": "12532279"}
+        response = self.client.post("/webhooks/repo",
+                                    data=json.dumps(repo_data),
+                                    headers=self.headers)
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 400)
+        validate(data, unauthorized_schema)
 
     @patch('gitlab.webhook.views.Bot')
     @patch('gitlab.webhook.utils.get')

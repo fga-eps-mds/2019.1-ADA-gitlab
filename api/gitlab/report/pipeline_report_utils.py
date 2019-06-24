@@ -1,6 +1,5 @@
 from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
-from datetime import date, datetime
 
 
 class ReportPipelines(GitlabUtils):
@@ -8,56 +7,78 @@ class ReportPipelines(GitlabUtils):
         super().__init__(chat_id)
         self.repo = report_dict
         self.pipelines_ids = []
-        self.pipeline_days = {
-            "last_7_days": {
-                "number_of_pipelines": 0,
+        self.pipeline_status = {
+            "success_pipeline": 0,
+            "failed_pipeline": 0,
+            "another_status": 0
+        }
+        self.last_50_pipelines = {
+                "another_status": 0,
                 "percent_succeded": 0,
                 "percent_failed": 0,
                 "succeded_pipelines": 0,
                 "failed_pipelines": 0
-            },
-            "last_30_days": {}
         }
-        self.pipeline_status = {
-            "success_pipeline": 0,
-            "failed_pipeline": 0,
-        }
+        self.last_pipelines = 50
 
     def get_pipeline(self, project_id):
-        url = self.GITLAB_API_URL +\
-              "projects/{project_id}/"\
-              "pipelines"\
-              .format(project_id=project_id)
-        pipelines = self.get_request(url)
-        self.pipeline_days['last_30_days'].update(
-                                           self.pipeline_days['last_7_days'])
+        i = 0
+        pipelines = []
+        while True:
+            i += 1
+            url = self.GITLAB_API_URL +\
+                "projects/{project_id}/"\
+                "pipelines?per_page=100&page={i}"\
+                .format(project_id=project_id,
+                        i=i)
+            response = self.get_request(url)
+            for item in response:
+                pipelines.append(item)
+            if len(response) < 100:
+                break
 
-        self.build_report(pipelines, project_id)
-        self.build_pipeline_statistics("last_30_days")
-        self.update_report_dict("last_30_days")
-        self.build_pipeline_statistics("last_7_days")
-        self.update_report_dict("last_7_days")
-
-        number_of_pipelines = len(pipelines)
-        percent_success = (self.pipeline_status["success_pipeline"]
-                           / number_of_pipelines) * 100.0
-        statistics_dict = {
-            "number_of_pipelines": number_of_pipelines,
-            "succeded_pipelines": self.pipeline_status["success_pipeline"],
-            "failed_pipelines": self.pipeline_status["failed_pipeline"],
-            "percent_succeded": percent_success,
-            "current_pipeline_id": pipelines[0]["id"],
-            "current_pipeline_name": pipelines[0]["ref"]
+        if not pipelines:
+            statistics_dict = {
+                "number_of_pipelines": 0,
+                "succeded_pipelines": 0,
+                "failed_pipelines": 0,
+                "another_status": 0,
+                "percent_succeded": 0,
+                "percent_failed": 0,
+                "current_pipeline_id": 0,
+                "current_pipeline_name": 0
             }
+        else:
+            self.build_report(pipelines, project_id)
+            number_of_pipelines = len(pipelines)
+            percent_success = (self.pipeline_status["success_pipeline"]
+                               / number_of_pipelines) * 100.0
+            percent_failed = (self.pipeline_status["failed_pipeline"]
+                              / number_of_pipelines) * 100.0
+            number_of_last_pipelines = self.last_pipelines
+            if len(pipelines) < self.last_pipelines:
+                number_of_last_pipelines = len(pipelines)
+            self.last_50_pipelines["percent_succeded"] = format(
+                (100.0 * self.last_50_pipelines["succeded_pipelines"]
+                 / number_of_last_pipelines), '.2f')
+            self.last_50_pipelines["percent_failed"] = format(
+                (100.0 * self.last_50_pipelines["failed_pipelines"]
+                 / number_of_last_pipelines), '.2f')
+            statistics_dict = {
+                "number_of_pipelines": number_of_pipelines,
+                "succeded_pipelines": self.pipeline_status["success_pipeline"],
+                "failed_pipelines": self.pipeline_status["failed_pipeline"],
+                "another_status": self.pipeline_status["another_status"],
+                "percent_succeded": round(percent_success, 2),
+                "percent_failed": round(percent_failed, 2),
+                "current_pipeline_id": pipelines[0]["id"],
+                "current_pipeline_name": pipelines[0]["ref"],
+                "50_last": self.last_50_pipelines
+                }
         pipeline_dict = {"pipeline": 0}
         pipeline_data = self.update_report_statistics(statistics_dict)
         pipeline_dict["pipeline"] = pipeline_data
         return pipeline_dict
-
-    def update_report_dict(self, days_key):
-        update_days = self.repo["pipelines"]["recents_pipelines"][days_key]
-        for key in self.pipeline_days[days_key]:
-            update_days[key] = self.pipeline_days[days_key][key]
 
     def update_report_statistics(self, statistics_dict):
         pipelines_statistics = self.repo["pipelines"]
@@ -65,81 +86,27 @@ class ReportPipelines(GitlabUtils):
             pipelines_statistics[key] = statistics_dict[key]
         return pipelines_statistics
 
-    def build_pipeline_dict(self, pipelines, i,
-                            days_key):
-        self.pipeline_days[days_key]["number_of_pipelines"] += 1
-        if pipelines[i]["status"] == "success":
-            self.pipeline_days[days_key]["succeded_pipelines"] += 1
-            self.pipeline_status["success_pipeline"] = (self.
-                                                        pipeline_status
-                                                        ["success_pipeline"]
-                                                        + 1)
-        else:
-            self.pipeline_days[days_key]["failed_pipelines"] += 1
-            self.pipeline_status["failed_pipeline"] = (self.
-                                                       pipeline_status
-                                                       ["failed_pipeline"]
-                                                       + 1)
-
-    def build_pipeline_statistics(self, days_key):
-        if self.pipeline_days[days_key]["number_of_pipelines"]:
-            (self.pipeline_days[days_key]
-                               ["percent_succeded"]) = ((self.
-                                                         pipeline_days
-                                                         [days_key]
-                                                         ["succeded"
-                                                          "_pipelines"] /
-                                                         self.pipeline_days
-                                                         [days_key]
-                                                         ["number_of_"
-                                                          "pipelines"]) * 100)
-            (self.pipeline_days[days_key]
-                               ["percent_failed"]) = (100 - self.
-                                                      pipeline_days
-                                                      [days_key]
-                                                      ["percent_succeded"])
-
     def build_report(self, pipelines, project_id):
         for i, item in enumerate(pipelines):
             self.pipelines_ids.append(pipelines[i]["id"])
-            recent_pipelines = self.check_pipeline_date(
-                project_id, pipelines[i]["id"])
-            if recent_pipelines["last_7_days"]:
-                self.build_pipeline_dict(pipelines, i, "last_7_days")
-            elif recent_pipelines["last_30_days"]:
-                self.build_pipeline_dict(pipelines, i, "last_30_days")
-            elif pipelines[i]["status"] == "success":
+            if pipelines[i]["status"] == "success":
                 self.pipeline_status["success_pipeline"] = (self.
                                                             pipeline_status
                                                             ["success_"
                                                              "pipeline"] + 1)
-            else:
+                if i < 50:
+                    self.last_50_pipelines["succeded_pipelines"] += 1
+            elif pipelines[i]["status"] == "failed":
                 self.pipeline_status["failed_pipeline"] = (self.
                                                            pipeline_status
                                                            ["failed_"
                                                             "pipeline"] + 1)
-
-    def check_pipeline_date(self, project_id, pipeline_id):
-        url = self.GITLAB_API_URL +\
-              "projects/{project_id}/"\
-              "pipelines/{pipeline_id}"\
-              .format(project_id=project_id,
-                      pipeline_id=pipeline_id)
-
-        pipeline = self.get_request(url)
-
-        todays_date = date.today()
-        pipeline_date = datetime.strptime(
-            pipeline['created_at'][0:10], "%Y-%m-%d")
-        pipeline_date = pipeline_date.date()
-        qntd_days = todays_date-pipeline_date
-
-        pipeline_qnt = {"last_7_days": None, "last_30_days": None}
-
-        if qntd_days.days <= 7:
-            pipeline_qnt["last_7_days"] = True
-
-        elif qntd_days.days <= 30:
-            pipeline_qnt["last_30_days"] = True
-
-        return pipeline_qnt
+                if i < 50:
+                    self.last_50_pipelines["failed_pipelines"] += 1
+            else:
+                self.pipeline_status["another_status"] = (self.
+                                                          pipeline_status
+                                                          ["another_status"
+                                                           ] + 1)
+                if i < 50:
+                    self.last_50_pipelines["another_status"] += 1
