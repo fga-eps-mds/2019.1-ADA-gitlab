@@ -52,3 +52,25 @@ class Test(BaseTestCase):
 
         user_db = User.objects(username=username).first()
         self.assertEqual(user, user_db)
+
+    def test_update_webhook_infos(self):
+        User.drop_collection()
+        user = User()
+        username = "teste_User"
+        user.create_user(username)
+        user.save()
+
+        Project.drop_collection()
+        project = Project()
+        project.user_id = user.id
+        project.description = "Test user add project"
+        project.name = "Test user add project"
+        project.web_url = "https://useraddProject.com"
+        project.branches = ["branch1", "branch2"]
+        project.save()
+
+        user.save_gitlab_repo_data(project)
+        project.update_webhook_infos(str(project.name), str(project.user_id))
+
+        project_user = User.objects(project=project).first()
+        self.assertEqual(user, project_user)

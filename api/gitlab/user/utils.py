@@ -61,7 +61,6 @@ class UserUtils(GitlabUtils):
     def select_repos_by_buttons(self):
         repo_infos = self.get_user_project()
         repositories = {"repositories": []}
-
         for i, item in enumerate(repo_infos):
             repository_data = {"path_with_namespace": 0, "id": 0}
             (repository_data

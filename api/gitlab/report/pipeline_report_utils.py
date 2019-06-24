@@ -1,6 +1,5 @@
 from gitlab.report.report_json import report_dict
 from gitlab.utils.gitlab_utils import GitlabUtils
-import sys
 
 
 class ReportPipelines(GitlabUtils):
@@ -25,7 +24,6 @@ class ReportPipelines(GitlabUtils):
     def get_pipeline(self, project_id):
         i = 0
         pipelines = []
-        print("#"*30, file=sys.stderr)
         while True:
             i += 1
             url = self.GITLAB_API_URL +\
@@ -39,7 +37,6 @@ class ReportPipelines(GitlabUtils):
             if len(response) < 100:
                 break
 
-        print(pipelines[0], file=sys.stderr)
         if not pipelines:
             statistics_dict = {
                 "number_of_pipelines": 0,

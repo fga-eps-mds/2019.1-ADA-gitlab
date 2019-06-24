@@ -83,7 +83,7 @@ project_id_schema = {
     "type": "object",
     "properties": {
         "project_id": {
-            "type": "integer"
+            "type": "string"
         }
     },
     "required": ["project_id"]

@@ -34,7 +34,7 @@ class TestUser(BaseTestCase):
 
         self.mocked_get_user_project_response = Response()
         self.mocked_get_user_project_response.status_code = 200
-        self.get_user_project_response_content = [{"id": 12571001,
+        self.get_user_project_response_content = [{"id": "12571001",
                                                    "name": "Ada",
                                                    "name_with_namespace":
                                                    "Ada Lovelace / Ada",
@@ -75,6 +75,36 @@ class TestUser(BaseTestCase):
             dumps(get_user_domain_response_content).encode('utf-8')
         self.mocked_get_user_domain_response._content = \
             get_user_domain_content_in_binary
+
+        get_repo_content = [
+            {
+                "name": "mocked_user",
+                "path_with_namespace": "mocked_user/mocked_repo",
+                "id": 123456
+            }
+        ]
+        get_repo_content_in_binary = json.dumps(get_repo_content).\
+            encode('utf-8')
+        self.mocked_valid_get_repo = Response()
+        self.mocked_valid_get_repo._content = get_repo_content_in_binary
+        self.mocked_valid_get_repo.status_code = 200
+        get_own_data_content = {
+            "username": "mocked_user",
+            "id": "123456789"
+        }
+        get_own_data_content_in_binary = json.dumps(
+            get_own_data_content).encode('utf-8')
+        self.mocked_valid_own_data = Response()
+        self.mocked_valid_own_data._content = get_own_data_content_in_binary
+        self.mocked_valid_own_data.status_code = 200
+        mocked_post_content = {
+            "access_token": "xyz789abc123"
+        }
+        mocked_post_content_in_binary = json.dumps(mocked_post_content).\
+            encode('utf-8')
+        self.mocked_post_valid = Response()
+        self.mocked_post_valid._content = mocked_post_content_in_binary
+        self.mocked_post_valid.status_code = 200
 
     @patch('gitlab.utils.gitlab_utils.get')
     def test_get_user_id(self, mocked_get):
@@ -297,6 +327,28 @@ class TestUser(BaseTestCase):
         data = json.loads(response.data.decode())
         self.assertEqual(data["status_code"], 404)
         validate(data, unauthorized_schema)
+
+    @patch('gitlab.user.utils.Bot')
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_view_change_repository_gitlab(self, mocked_get, mocked_bot):
+        mocked_get.side_effect = (self.mocked_valid_own_data,
+                                  self.mocked_valid_get_repo)
+        mocked_bot.return_value = Mock()
+        mocked_bot.send_message = Mock()
+        response = self.client.get("/user/change_repo_gitlab/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        self.assertEqual(response.status_code, 200)
+
+    @patch('gitlab.user.utils.Bot')
+    @patch('gitlab.utils.gitlab_utils.get')
+    def test_view_change_repository_gitlab_invalid(self, mocked_get,
+                                                   mocked_bot):
+        mocked_get.return_value = self.response_unauthorized
+        mocked_bot.return_value = Mock()
+        mocked_bot.send_message = Mock()
+        response = self.client.get("/user/change_repo_gitlab/{chat_id}"
+                                   .format(chat_id=self.user.chat_id))
+        self.assertEqual(response.status_code, 401)
 
 
 if __name__ == "__main__":
