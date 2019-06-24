@@ -129,8 +129,10 @@ class Webhook(GitlabUtils):
     def set_webhook(self, project_id):
         data = {
             "id": project_id,
-            "url": "https://gitlab.adachatops.com/{chat_id}/{project_id}"
-                   .format(chat_id=self.chat_id, project_id=project_id),
+            "url": WEBHOOK_URL_ENVIRONMENT + "webhook/{chat_id}/{project_id}"
+                                             .format(
+                                              chat_id=self.chat_id,
+                                              project_id=project_id),
             "pipeline_events": True,
             "enable_ssl_verification": False
         }

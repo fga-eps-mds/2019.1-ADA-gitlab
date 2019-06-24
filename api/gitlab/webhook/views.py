@@ -42,8 +42,8 @@ def webhook_repository(chat_id, project_id):
                 buttons = rerunpipeline.build_buttons(pipeline_id)
                 reply_markup = telegram.InlineKeyboardMarkup(buttons)
                 bot.send_message(chat_id=user.chat_id,
-                                 text="Se você quiser reiniciar essa pipeline, \
-                                       é só clicar nesse botão",
+                                 text="Se você quiser reiniciar essa pipeline,"
+                                      " é só clicar nesse botão",
                                  reply_markup=reply_markup)
             return "OK"
     else:
