@@ -18,26 +18,19 @@ report_dict = {
     "pipelines": {
         "number_of_pipelines": 0,
         "succeded_pipelines": 0,
+        "another_status": 0,
         "failed_pipelines": 0,
         "percent_succeded": 0,
+        "percent_failed": 0,
         "current_pipeline_id": 0,
         "current_pipeline_name": 0,
-        "recents_pipelines": {
-            "last_7_days": {
-                "number_of_pipelines": 0,
-                "percent_succeded": 0,
-                "percent_failed": 0,
-                "succeded_pipelines": 0,
-                "failed_pipelines": 0
-            },
-            "last_30_days": {
-                "number_of_pipelines": 0,
-                "percent_succeded": 0,
-                "percent_failed": 0,
-                "succeded_pipelines": 0,
-                "failed_pipelines": 0
-            }
-          }
+        "50_last": {
+            "succeded_pipelines": 0,
+            "another_status": 0,
+            "failed_pipelines": 0,
+            "percent_succeded": 0,
+            "percent_failed": 0
+        }
     },
     "pipelines_times": {
         "average": 0,

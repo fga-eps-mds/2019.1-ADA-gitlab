@@ -12,7 +12,7 @@ ping_schema = {
 valid_schema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "User response schema",
-    "type": "array",
+    "type": "object",
     "properties": {
         "status_code": {"type": "integer"}
     },

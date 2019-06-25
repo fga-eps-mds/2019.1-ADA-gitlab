@@ -21,3 +21,9 @@ class Project(mongoengine.Document):
         self.project_id = project_id
         self.save()
         return self
+
+    def update_webhook_infos(self, name, project_id):
+        self.name = name
+        self.project_id = project_id
+        self.update(name=name, project_id=project_id)
+        return self

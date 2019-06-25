@@ -4,9 +4,10 @@ import json
 from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
-from requests import get, post
+from requests import get, post, delete
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
+WEBHOOK_URL_ENVIRONMENT = os.getenv("WEBHOOK_URL_ENVIRONMENT", "")
 
 
 class Webhook(GitlabUtils):
@@ -14,20 +15,22 @@ class Webhook(GitlabUtils):
         super().__init__(chat_id)
 
     def register_repo(self, repo_data):
-        project_name = repo_data["project_name"]
+        project_fullname = repo_data["project_name"]
+        project_fullname_splited = project_fullname.split('/')
+        project_name = project_fullname_splited[-1]
         project_id = repo_data["project_id"]
 
         user = User.objects(chat_id=self.chat_id).first()
         try:
-            if user.project:
-                dict_error = {"message":
-                              "Eu vi aqui que você já tem um projeto "
-                              "cadastrado. Sinto muito, mas no momento "
-                              "não é possível cadastrar um projeto novo "
-                              "ou alterá-lo."}
-                raise HTTPError(json.dumps(dict_error))
             project = Project()
-            project.save_webhook_infos(user, project_name, project_id)
+            if user.project:
+                to_delete_project = user.project
+                self.delete_webhook(project_id)
+                self.delete_webhook(to_delete_project.project_id)
+                project = user.project
+                project.update_webhook_infos(project_name, project_id)
+            else:
+                project.save_webhook_infos(user, project_name, project_id)
             user.save_gitlab_repo_data(project)
         except AttributeError:
             dict_error = {"message":
@@ -79,7 +82,6 @@ class Webhook(GitlabUtils):
 
     def build_message(self, job_build):
         jobs_message = "Os passos da build são:\n"
-
         for i, item in enumerate(job_build):
             if job_build[i]["status"] == "success":
                 status = "✅"
@@ -105,29 +107,31 @@ class Webhook(GitlabUtils):
 
     def build_status_message(self, content, jobs):
         if content["object_attributes"]["status"] == "success":
-            status_message = "Muito bem! Um novo pipeline (de id #{id} "\
-                             "da branch {branch}) terminou com sucesso. "\
+            status_message = "Muito bem! Um novo pipeline de id *{id}* "\
+                             "da branch *{branch}* terminou com sucesso. "\
                              "Se você quiser conferí-lo, "\
-                             "o link é {link}".format(
+                             "é só clicar nesse [link]({link}).".format(
                                 id=content["object_attributes"]["id"],
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
+            return status_message
         elif content["object_attributes"]["status"] == "failed":
-            status_message = "Poxa.. Um novo pipeline (de {id} e "\
-                             "{branch}) falhou. Se você "\
-                             "quiser conferí-lo, o link é {link}".format(
+            status_message = "Poxa.. Um novo pipeline de id *{id}* e "\
+                             "*{branch}* falhou. Se você "\
+                             "quiser conferí-lo, "\
+                             "é só clicar nesse [link]({link}).".format(
                                 id=content["object_attributes"]["id"],
                                 branch=content["object_attributes"]["ref"],
                                 link=jobs[0]["web_url"])
-        else:
-            return "OK"
-        return status_message
+            return status_message
 
     def set_webhook(self, project_id):
         data = {
             "id": project_id,
-            "url": "https://gitlab.adachatops.com/{chat_id}/{project_id}"
-                   .format(chat_id=self.chat_id, project_id=project_id),
+            "url": WEBHOOK_URL_ENVIRONMENT + "webhook/{chat_id}/{project_id}"
+                                             .format(
+                                              chat_id=self.chat_id,
+                                              project_id=project_id),
             "pipeline_events": True,
             "enable_ssl_verification": False
         }
@@ -136,3 +140,30 @@ class Webhook(GitlabUtils):
             .format(project_id=project_id)
         r = post(url, headers=self.headers, data=json.dumps(data))
         r.raise_for_status()
+
+    def delete_webhook(self, project_id):
+        try:
+            url = "https://gitlab.com/api/v4/" +\
+                "projects/{project_id}/hooks"\
+                .format(project_id=project_id)
+            response = get(url, headers=self.headers)
+            response.raise_for_status()
+            hook = response.json()
+            hook_id = None
+            if len(hook):
+                user_hooks_url = WEBHOOK_URL_ENVIRONMENT
+                for user_hooks in hook:
+                    if user_hooks_url in user_hooks["url"]:
+                        hook_id = user_hooks["id"]
+
+                if hook_id:
+                    delete_hook_url = "https://gitlab.com/api/v4/"\
+                                    "projects/{project_id}/"\
+                                    "hooks/"\
+                                    "{hook_id}".format(project_id=project_id,
+                                                       hook_id=hook_id)
+                    req = delete(delete_hook_url, headers=self.headers)
+                    req.raise_for_status()
+        except HTTPError as http_error:
+            dict_error = {"status_code": http_error.response.status_code}
+            raise HTTPError(json.dumps(dict_error))
