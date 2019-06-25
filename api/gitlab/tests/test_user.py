@@ -122,7 +122,8 @@ class TestUser(BaseTestCase):
     def test_select_repos_by_buttons(self, mocked_get):
         mocked_get.side_effect = (self.mocked_get_user_project_response,
                                   self.mocked_get_user_id_response)
-        buttons = self.user_utils.select_repos_by_buttons()
+        buttons = self.user_utils.select_repos_by_buttons(
+                                self.user.gitlab_user)
         self.assertIsInstance(buttons, list)
 
     @patch('gitlab.utils.gitlab_utils.get')
