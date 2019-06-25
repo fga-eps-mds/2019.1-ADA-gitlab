@@ -58,7 +58,7 @@ class UserUtils(GitlabUtils):
                       }
         return gitlab_data
 
-    def select_repos_by_buttons(self):
+    def select_repos_by_buttons(self, username):
         repo_infos = self.get_user_project()
         repositories = {"repositories": []}
         for i, item in enumerate(repo_infos):
@@ -75,6 +75,8 @@ class UserUtils(GitlabUtils):
             organization = project[0]
             project_name = project[-1]
             complete_name = organization + '/' + project_name
+            if username in complete_name:
+                complete_name = project_name
             buttons.append(telegram.InlineKeyboardButton(
                             text=complete_name,
                             callback_data="labrepo: " +
@@ -84,7 +86,8 @@ class UserUtils(GitlabUtils):
 
     def send_button_message(self, user_infos, chat_id):
         bot = Bot(token=ACCESS_TOKEN)
-        repo_names = self.select_repos_by_buttons()
+        repo_names = self.select_repos_by_buttons(
+                user_infos["gitlab_username"])
         reply_markup = telegram.InlineKeyboardMarkup(repo_names)
         bot.send_message(chat_id=chat_id,
                          text="Encontrei esses repositórios na sua "
