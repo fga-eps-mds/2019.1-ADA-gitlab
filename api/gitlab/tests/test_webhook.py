@@ -224,9 +224,9 @@ class TestWebhook(BaseTestCase):
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         content_dict = {"object_kind": "pipeline",
-                        "finished_at": "xtz",
                         "object_attributes":
                         {
+                            "finished_at": "xtz",
                             "status": "success",
                             "id": "63218612",
                             "ref": "teste"
@@ -247,9 +247,9 @@ class TestWebhook(BaseTestCase):
         mocked_bot.return_value = Mock()
         mocked_bot.send_message = Mock()
         content_dict = {"object_kind": "pipeline",
-                        "finished_at": "dahusa",
                         "object_attributes":
                         {
+                            "finished_at": "xtz",
                             "status": "failed",
                             "id": "63218612",
                             "ref": "teste"

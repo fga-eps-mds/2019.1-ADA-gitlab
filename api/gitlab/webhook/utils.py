@@ -5,7 +5,6 @@ from requests.exceptions import HTTPError
 import os
 from gitlab.utils.gitlab_utils import GitlabUtils
 from requests import get, post, delete
-import sys
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 WEBHOOK_URL_ENVIRONMENT = os.getenv("WEBHOOK_URL_ENVIRONMENT", "")
@@ -83,7 +82,6 @@ class Webhook(GitlabUtils):
 
     def build_message(self, job_build):
         jobs_message = "Os passos da build são:\n"
-        print(job_build, file=sys.stderr)
         for i, item in enumerate(job_build):
             if job_build[i]["status"] == "success":
                 status = "✅"
