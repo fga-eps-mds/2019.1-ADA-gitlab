@@ -1,7 +1,7 @@
 Flask==1.0.2
 Flask-Testing==0.7.1
 flake8==3.7.7
-flask_cors==3.0.6
+flask_cors==3.0.9
 requests==2.21.0
 jsonschema==3.0.1
 coverage==4.5.3
